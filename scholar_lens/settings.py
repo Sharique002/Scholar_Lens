@@ -22,8 +22,18 @@ SECRET_KEY = os.environ.get(
 DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
 # Allowed Hosts
-raw_hosts = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,testserver').split(',')
+raw_hosts = os.environ.get('ALLOWED_HOSTS', '*,localhost,127.0.0.1,.onrender.com').split(',')
 ALLOWED_HOSTS = [h.strip() for h in raw_hosts if h.strip()]
+if not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ['*']
+
+render_host = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if render_host and render_host not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(render_host)
+if '.onrender.com' not in ALLOWED_HOSTS and '*' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('.onrender.com')
+if 'scholar-lens.onrender.com' not in ALLOWED_HOSTS and '*' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('scholar-lens.onrender.com')
 
 # CSRF Trusted Origins (required for HTTPS in Django 4+)
 raw_csrf = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
@@ -31,10 +41,20 @@ if raw_csrf:
     CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in raw_csrf.split(',') if origin.strip()]
 else:
     CSRF_TRUSTED_ORIGINS = [
-        f"https://{h}" for h in ALLOWED_HOSTS if h not in ('localhost', '127.0.0.1', 'testserver', '*')
-    ] + [
-        f"http://{h}" for h in ALLOWED_HOSTS if h not in ('*',)
+        'https://*.onrender.com',
+        'https://scholar-lens.onrender.com',
+        'http://localhost:8000',
+        'http://127.0.0.1:8000',
     ]
+
+if 'https://*.onrender.com' not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append('https://*.onrender.com')
+if 'https://scholar-lens.onrender.com' not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append('https://scholar-lens.onrender.com')
+if render_host:
+    rendered_origin = f"https://{render_host}"
+    if rendered_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(rendered_origin)
 
 # SSL Proxy Header (standard for Render, Railway, Fly.io, Heroku, Nginx)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
