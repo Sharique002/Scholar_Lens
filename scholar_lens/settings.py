@@ -14,6 +14,16 @@ try:
 except ImportError:
     pass
 
+# Helper to safely parse integer environment variables with empty string safety
+def get_int_env(key, default):
+    val = os.environ.get(key, None)
+    if val is None or str(val).strip() == '':
+        return default
+    try:
+        return int(val)
+    except (ValueError, TypeError):
+        return default
+
 # Security
 SECRET_KEY = os.environ.get(
     'SECRET_KEY',
@@ -22,7 +32,7 @@ SECRET_KEY = os.environ.get(
 DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
 # Allowed Hosts
-raw_hosts = os.environ.get('ALLOWED_HOSTS', '*,localhost,127.0.0.1,.onrender.com').split(',')
+raw_hosts = os.environ.get('ALLOWED_HOSTS', '*,localhost,127.0.0.1,.onrender.com,.vercel.app').split(',')
 ALLOWED_HOSTS = [h.strip() for h in raw_hosts if h.strip()]
 if not ALLOWED_HOSTS:
     ALLOWED_HOSTS = ['*']
@@ -30,10 +40,17 @@ if not ALLOWED_HOSTS:
 render_host = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if render_host and render_host not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(render_host)
+
+vercel_host = os.environ.get('VERCEL_URL')
+if vercel_host and vercel_host not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(vercel_host)
+
 if '.onrender.com' not in ALLOWED_HOSTS and '*' not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append('.onrender.com')
 if 'scholar-lens.onrender.com' not in ALLOWED_HOSTS and '*' not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append('scholar-lens.onrender.com')
+if '.vercel.app' not in ALLOWED_HOSTS and '*' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('.vercel.app')
 
 # CSRF Trusted Origins (required for HTTPS in Django 4+)
 raw_csrf = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
@@ -43,6 +60,7 @@ else:
     CSRF_TRUSTED_ORIGINS = [
         'https://*.onrender.com',
         'https://scholar-lens.onrender.com',
+        'https://*.vercel.app',
         'http://localhost:8000',
         'http://127.0.0.1:8000',
     ]
@@ -51,12 +69,18 @@ if 'https://*.onrender.com' not in CSRF_TRUSTED_ORIGINS:
     CSRF_TRUSTED_ORIGINS.append('https://*.onrender.com')
 if 'https://scholar-lens.onrender.com' not in CSRF_TRUSTED_ORIGINS:
     CSRF_TRUSTED_ORIGINS.append('https://scholar-lens.onrender.com')
+if 'https://*.vercel.app' not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append('https://*.vercel.app')
 if render_host:
     rendered_origin = f"https://{render_host}"
     if rendered_origin not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(rendered_origin)
+if vercel_host:
+    v_origin = f"https://{vercel_host}"
+    if v_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(v_origin)
 
-# SSL Proxy Header (standard for Render, Railway, Fly.io, Heroku, Nginx)
+# SSL Proxy Header (standard for Render, Railway, Fly.io, Heroku, Nginx, Vercel)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Application definition
@@ -137,10 +161,12 @@ elif USE_POSTGRES:
         }
     }
 else:
+    # On Vercel serverless, root filesystem is read-only; use /tmp
+    db_file = Path('/tmp/db.sqlite3') if ('VERCEL' in os.environ or os.environ.get('NOW_REGION')) else (BASE_DIR / 'db.sqlite3')
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'NAME': db_file,
         }
     }
 
@@ -190,12 +216,12 @@ CSRF_COOKIE_SECURE = not DEBUG
 if not DEBUG:
     SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False').lower() in ('true', '1', 'yes')
     if SECURE_SSL_REDIRECT:
-        SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS', '31536000'))
+        SECURE_HSTS_SECONDS = get_int_env('SECURE_HSTS_SECONDS', 31536000)
         SECURE_HSTS_INCLUDE_SUBDOMAINS = True
         SECURE_HSTS_PRELOAD = True
 
 # File upload settings
-MAX_UPLOAD_SIZE_MB = int(os.environ.get('MAX_UPLOAD_SIZE_MB', '20'))
+MAX_UPLOAD_SIZE_MB = get_int_env('MAX_UPLOAD_SIZE_MB', 20)
 MAX_UPLOAD_SIZE = MAX_UPLOAD_SIZE_MB * 1024 * 1024  # Convert to bytes
 FILE_UPLOAD_MAX_MEMORY_SIZE = MAX_UPLOAD_SIZE
 DATA_UPLOAD_MAX_MEMORY_SIZE = MAX_UPLOAD_SIZE
@@ -208,8 +234,8 @@ OPENAI_EMBEDDING_MODEL = os.environ.get('OPENAI_EMBEDDING_MODEL', 'text-embeddin
 # Google Scholar Configuration
 SERPAPI_API_KEY = os.environ.get('SERPAPI_API_KEY', '')
 SCHOLAR_API_PROVIDER = os.environ.get('SCHOLAR_API_PROVIDER', 'serpapi')
-SCHOLAR_API_TIMEOUT = int(os.environ.get('SCHOLAR_API_TIMEOUT', '10'))
-SCHOLAR_MAX_RESULTS = int(os.environ.get('SCHOLAR_MAX_RESULTS', '5'))
+SCHOLAR_API_TIMEOUT = get_int_env('SCHOLAR_API_TIMEOUT', 10)
+SCHOLAR_MAX_RESULTS = get_int_env('SCHOLAR_MAX_RESULTS', 5)
 
 # Site configuration
 SITE_NAME = os.environ.get('SITE_NAME', 'Scholar Lens')
