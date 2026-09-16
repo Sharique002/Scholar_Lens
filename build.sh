@@ -14,4 +14,7 @@ python manage.py collectstatic --noinput
 echo "==> Running database migrations..."
 python manage.py migrate --noinput
 
+echo "==> Initializing admin and faculty accounts..."
+python manage.py init_admin
+
 echo "==> Build complete!"
