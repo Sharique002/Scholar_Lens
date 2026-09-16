@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Research Gaps: {{ paper.title }}</h2>
+
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    {% if not gaps %}
+    <form method="post" action="{% url 'ai_engine:gaps' paper.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Detect Gaps</button>
+    </form>
+    {% else %}
+    <div class="row mt-3">
+        {% for gap in gaps %}
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong>{{ gap.title }}</strong>
+                    {% if gap.severity == 'HIGH' %}
+                        <span class="badge bg-danger">HIGH</span>
+                    {% elif gap.severity == 'MEDIUM' %}
+                        <span class="badge bg-warning text-dark">MEDIUM</span>
+                    {% else %}
+                        <span class="badge bg-success">LOW</span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <p><strong>Area:</strong> {{ gap.area }}</p>
+                    <p>{{ gap.description }}</p>
+                    <p><strong>Suggestions:</strong> {{ gap.suggestions }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="alert alert-warning mt-4 text-sm">
+        <small><strong>Disclaimer:</strong> This AI-generated assessment is an analytical aid and does not certify research originality, novelty, plagiarism status, patentability, or publication acceptance.</small>
+    </div>
+</div>
+{% endblock %}

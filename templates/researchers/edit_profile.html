@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Edit Profile</h2>
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.non_field_errors }}
+                        
+                        {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                            <small class="form-text text-muted">{{ field.help_text }}</small>
+                            {% endif %}
+                            {% for error in field.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                        
+                        <button type="submit" class="btn btn-primary">Save Profile</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">Manage Interests</div>
+                <div class="card-body">
+                    <ul class="list-group mb-3">
+                        {% for interest in user.researcher_profile.interests.all %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ interest.name }}
+                            <form method="post" action="{% url 'researchers:remove_interest' interest.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger">X</button>
+                            </form>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <form method="post" action="{% url 'researchers:add_interest' %}">
+                        {% csrf_token %}
+                        <div class="mb-2">
+                            <input type="text" name="name" class="form-control" placeholder="Interest Name" required>
+                        </div>
+                        <div class="mb-2">
+                            <input type="text" name="category" class="form-control" placeholder="Category" required>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-success">Add Interest</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">Manage Skills</div>
+                <div class="card-body">
+                    <ul class="list-group mb-3">
+                        {% for skill in user.researcher_profile.skills.all %}
+                        <li class="list-group-item">
+                            {{ skill.name }} ({{ skill.get_category_display }})
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <form method="post" action="{% url 'researchers:add_skill' %}">
+                        {% csrf_token %}
+                        <div class="mb-2">
+                            <input type="text" name="name" class="form-control" placeholder="Skill Name" required>
+                        </div>
+                        <div class="mb-2">
+                            <select name="category" class="form-control" required>
+                                <option value="PROGRAMMING">Programming Language</option>
+                                <option value="FRAMEWORK">Framework/Library</option>
+                                <option value="TOOL">Software/Tool</option>
+                                <option value="METHOD">Methodology</option>
+                                <option value="DOMAIN">Domain Knowledge</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-success">Add Skill</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

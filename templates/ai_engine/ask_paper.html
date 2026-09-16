@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ask Paper - {{ paper.title }} | Scholar Lens{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'papers:list' %}">Papers</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'papers:detail' paper.pk %}">{{ paper.title|truncatechars:35 }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Grounded RAG Assistant</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="h3 fw-bold mb-1"><i class="bi bi-chat-square-quote-fill text-primary me-2"></i>Ask Your Paper</h2>
+            <p class="text-muted mb-0">Evidence-grounded conversational intelligence for: <a href="{% url 'papers:detail' paper.pk %}" class="fw-semibold text-decoration-none">{{ paper.title }}</a></p>
+        </div>
+        <a href="{% url 'papers:detail' paper.pk %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Return to Paper
+        </a>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-octagon me-2"></i>{{ error }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+            <span class="small fw-bold text-muted text-uppercase">Grounded Document Q&A History</span>
+            <span class="badge bg-light text-secondary border">Context: {{ paper.chunks.count }} Indexed Chunks ({{ paper.page_count|default:1 }} Pages)</span>
+        </div>
+        <div class="card-body p-4" style="min-height: 380px; max-height: 520px; overflow-y: auto;">
+            {% if not history %}
+                <div class="text-center py-5">
+                    <i class="bi bi-journal-text display-4 text-muted mb-3 d-block"></i>
+                    <h5 class="fw-bold text-secondary">No questions asked yet</h5>
+                    <p class="text-muted small">Ask questions about methodology, mathematical formulations, experimental datasets, or specific findings.</p>
+                </div>
+            {% else %}
+                {% for msg in history %}
+                <div class="mb-4">
+                    <!-- User Question -->
+                    <div class="d-flex align-items-start mb-2">
+                        <div class="badge bg-primary rounded-circle p-2 me-2">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        <div class="bg-primary text-white p-3 rounded shadow-sm" style="max-width: 85%;">
+                            <strong class="d-block small opacity-75 mb-1">Researcher Query</strong>
+                            {{ msg.question }}
+                        </div>
+                    </div>
+
+                    <!-- AI Answer -->
+                    <div class="d-flex align-items-start ps-4">
+                        <div class="badge bg-dark rounded-circle p-2 me-2">
+                            <i class="bi bi-robot"></i>
+                        </div>
+                        <div class="bg-light border p-3 rounded shadow-sm w-100">
+                            <strong class="d-block small text-primary mb-1">Scholar Lens RAG Synthesis</strong>
+                            <p class="mb-2">{{ msg.answer|linebreaksbr }}</p>
+
+                            <!-- Sources & Citations -->
+                            {% if msg.sources %}
+                            <div class="mt-3 pt-2 border-top">
+                                <span class="small fw-bold text-secondary d-block mb-1">
+                                    <i class="bi bi-pin-map-fill me-1"></i>Cited Document Sources:
+                                </span>
+                                <div class="d-flex flex-wrap gap-2">
+                                    {% for src in msg.sources %}
+                                        {% if src.section %}
+                                            <div class="badge bg-white text-dark border p-2 text-start font-monospace small">
+                                                <span class="badge bg-secondary me-1">[{{ src.source_id|default:forloop.counter }}]</span>
+                                                <strong>{{ src.section }}</strong> — Page {{ src.page_number|default:"1" }}
+                                                {% if src.snippet %}
+                                                <div class="text-muted fst-italic mt-1" style="font-size: 0.75rem; max-width: 450px; white-space: normal;">
+                                                    "{{ src.snippet }}"
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Chunk {{ src }}</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <div class="card-footer bg-white border-top p-3">
+            <form method="post" action="{% url 'ai_engine:ask_paper' paper.id %}">
+                {% csrf_token %}
+                <div class="input-group">
+                    <input type="text" name="question" class="form-control" placeholder="Ask a specific question about methodology, evidence, or conclusions..." required>
+                    <button class="btn btn-primary px-4" type="submit">
+                        <i class="bi bi-send-fill me-1"></i> Ask
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="alert alert-light border shadow-sm mt-3 py-2 px-3 small text-muted d-flex align-items-center">
+        <i class="bi bi-shield-check text-success fs-5 me-2"></i>
+        <span>Answers are synthesized strictly from indexed document text and chunk embeddings. Hallucinations are actively suppressed.</span>
+    </div>
+</div>
+{% endblock %}

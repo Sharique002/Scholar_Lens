@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Researchers Directory - Scholar Lens Academic Network{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- 1. TOP METRICS STRIP -->
+    <div class="module-metrics-strip">
+        <div class="metric-strip-item">
+            <div class="metric-strip-num">1-Click</div>
+            <div class="metric-strip-label">Direct Collaboration Invite Dispatch</div>
+        </div>
+        <div class="metric-strip-item">
+            <div class="metric-strip-num">M:N Graph</div>
+            <div class="metric-strip-label">Cross-Disciplinary Skill Matchmaking</div>
+        </div>
+        <div class="metric-strip-item">
+            <div class="metric-strip-num">Verified</div>
+            <div class="metric-strip-label">ORCID &amp; Institutional Credentials</div>
+        </div>
+        <div class="metric-strip-item">
+            <div class="metric-strip-num">100% Open</div>
+            <div class="metric-strip-label">Peer-to-Peer Scholarly Network</div>
+        </div>
+    </div>
+
+    <!-- 2. MINT SHOWCASE CONTAINER -->
+    <div class="module-showcase-box">
+        <div class="module-showcase-grid">
+            <!-- Left Hero Column -->
+            <div class="module-hero-left">
+                <div class="module-hero-pill">
+                    <span>👥</span> MODULE 03 &bull; RESEARCHERS DIRECTORY &amp; NETWORK
+                </div>
+                <h1 class="module-hero-title">Connect With Leading Scholarly Minds!</h1>
+                <p class="module-hero-desc">
+                    Explore verified faculty, postdocs, and student researchers across global institutions. Discover shared research interests, complementary technical skills, and initiate high-impact research partnerships with 1-click proposals.
+                </p>
+                <div class="flex gap-2 align-center">
+                    <a href="{% url 'collaboration:recommendations' %}" class="module-hero-btn">
+                        Smart Match Recommendations ➔
+                    </a>
+                </div>
+
+                <!-- Interactive Visual Card -->
+                <div class="module-preview-card">
+                    <div class="preview-card-header">
+                        <span class="preview-tag">VERIFIED FACULTY PROFILE</span>
+                        <span class="preview-chip-status">COLLABORATION OPEN 🟢</span>
+                    </div>
+                    <h3 class="preview-card-title">Dr. Elena Rostova &bull; MIT Dept. of EECS</h3>
+                    <p class="text-secondary small mb-2">
+                        Associate Professor specializing in machine learning evaluation benchmarks, academic peer-review integrity, and neuro-symbolic systems.
+                    </p>
+                    <div class="preview-chips-row">
+                        <span class="preview-chip coral">Skills: Python &bull; PyTorch &bull; NLP</span>
+                        <span class="preview-chip yellow">Interests: Machine Learning</span>
+                        <span class="preview-chip">ORCID: 0009-0002-8192-3491</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right 5 Feature Cards Stack -->
+            <div class="module-feature-stack">
+                <div class="module-feature-item accent-coral">
+                    <div class="module-feature-icon">🧠</div>
+                    <div class="module-feature-info">
+                        <h4>Smart Matchmaking Engine</h4>
+                        <p>Qualitative recommendation engine scoring compatibility based on shared interests and complementary skills.</p>
+                    </div>
+                </div>
+
+                <div class="module-feature-item">
+                    <div class="module-feature-icon">🏷️</div>
+                    <div class="module-feature-info">
+                        <h4>Categorized Skills &amp; Interests</h4>
+                        <p>Granular taxonomy covering programming languages, frameworks, methodologies, and research domains.</p>
+                    </div>
+                </div>
+
+                <div class="module-feature-item">
+                    <div class="module-feature-icon">📬</div>
+                    <div class="module-feature-info">
+                        <h4>Formal Collaboration Requests</h4>
+                        <p>Send structured collaboration invitations with personalized proposals and project associations.</p>
+                    </div>
+                </div>
+
+                <div class="module-feature-item">
+                    <div class="module-feature-icon">🌐</div>
+                    <div class="module-feature-info">
+                        <h4>Public Academic Showcases</h4>
+                        <p>Showcase authored papers, active projects, bio, ORCID identifiers, and verified institution affiliations.</p>
+                    </div>
+                </div>
+
+                <div class="module-feature-item">
+                    <div class="module-feature-icon">🟢</div>
+                    <div class="module-feature-info">
+                        <h4>Live Collaboration Availability</h4>
+                        <p>Filter researchers actively seeking co-authors, lab members, and academic partners.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. WORKING INTERFACE: SEARCH, FILTERS & RESEARCHERS DIRECTORY -->
+    <div class="module-work-header">
+        <div>
+            <h2 class="module-work-title">Scholarly Researchers Directory</h2>
+            <p class="text-secondary mb-0">Discover potential research partners, co-authors, and mentors across academic disciplines.</p>
+        </div>
+        <a href="{% url 'collaboration:recommendations' %}" class="btn btn-pill-dark">
+            ⚡ View AI Recommendations
+        </a>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="module-filter-bar">
+        <form method="GET" action="{% url 'researchers:list' %}" class="row g-3 align-items-center">
+            <div class="col-md-7">
+                <input type="text" name="q" value="{{ query }}" class="form-control retro-input w-100" placeholder="Search researchers by name, headline, institution, or keyword...">
+            </div>
+            <div class="col-md-3">
+                <select name="availability" class="form-select retro-input w-100">
+                    <option value="">All Availability Statuses</option>
+                    <option value="true" {% if availability == 'true' %}selected{% endif %}>🟢 Available for Collaboration</option>
+                    <option value="false" {% if availability == 'false' %}selected{% endif %}>⚪ Not Currently Available</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-pill-yellow w-100">Search</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Researchers Grid -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for profile in page_obj %}
+        <div class="col">
+            <div class="retro-card">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width: 44px; height: 44px; border-radius: 50%; background-color: var(--color-mint); border: 2px solid var(--ink-black); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.1rem; color: var(--ink-black); box-shadow: 1.5px 2px 0 var(--ink-black);">
+                                {{ profile.user.first_name|default:profile.user.username|slice:":1"|upper }}
+                            </div>
+                            <div>
+                                <h4 style="font-family: var(--font-display); font-size: 1.1rem; font-weight: 800; margin: 0; line-height: 1.2;">
+                                    <a href="{% url 'researchers:detail' profile.pk %}" style="text-decoration: none; color: var(--ink-black);">
+                                        {{ profile.user.get_full_name|default:profile.user.username }}
+                                    </a>
+                                </h4>
+                                {% if profile.user.profile.institution %}
+                                <small class="text-muted fw-semibold">{{ profile.user.profile.institution }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if profile.is_available_for_collaboration %}
+                        <span class="preview-chip-status" style="font-size: 0.675rem; padding: 0.2rem 0.55rem;">
+                            AVAILABLE 🟢
+                        </span>
+                        {% else %}
+                        <span class="badge-tag-pill" style="font-size: 0.675rem; padding: 0.2rem 0.55rem; background: #E5E5E5;">
+                            BUSY ⚪
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <p style="font-size: 0.85rem; font-weight: 700; color: var(--ink-charcoal); line-height: 1.4; margin-bottom: 0.75rem;">
+                        {{ profile.headline|default:"Academic Researcher & Scholar" }}
+                    </p>
+
+                    <!-- Interests Badges -->
+                    <div class="d-flex flex-wrap gap-1 mb-2">
+                        {% for interest in profile.interests.all|slice:":3" %}
+                        <span class="preview-chip" style="font-size: 0.7rem; padding: 0.15rem 0.55rem;">
+                            {{ interest.name }}
+                        </span>
+                        {% endfor %}
+                        {% if profile.interests.count > 3 %}
+                        <span class="preview-chip yellow" style="font-size: 0.7rem; padding: 0.15rem 0.55rem;">
+                            +{{ profile.interests.count|add:"-3" }} more
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div style="border-top: 1.5px dashed var(--border-light); padding-top: 0.85rem; margin-top: 0.75rem;" class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted fw-bold">
+                        {% if profile.years_experience %}{{ profile.years_experience }} yr{{ profile.years_experience|pluralize }} exp{% else %}Scholar{% endif %}
+                    </small>
+                    <a href="{% url 'researchers:detail' profile.pk %}" class="btn btn-sm btn-pill-white" style="font-size: 0.8rem; padding: 0.3rem 0.8rem;">
+                        View Profile &bull; Collaborate ➔
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <div class="module-filter-bar text-center py-5">
+                <h3 style="font-family: var(--font-display); font-weight: 800;">No researchers found</h3>
+                <p class="text-secondary">Try adjusting your search criteria or explore our AI-powered matchmaking recommendations.</p>
+                <a href="{% url 'collaboration:recommendations' %}" class="btn btn-pill-yellow mt-2">View Recommendations</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav class="mt-4" aria-label="Researchers pagination">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if availability %}&availability={{ availability }}{% endif %}">Previous</a></li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item"><a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if availability %}&availability={{ availability }}{% endif %}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if availability %}&availability={{ availability }}{% endif %}">Next</a></li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">Next</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

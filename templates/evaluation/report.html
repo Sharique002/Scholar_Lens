@@ -1,0 +1,321 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Evaluation Report - {{ paper.title }} | Scholar Lens{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <!-- Breadcrumb navigation -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'papers:list' %}">Papers</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'papers:detail' paper.pk %}">{{ paper.title|truncatechars:35 }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Evaluation Report v{{ report.paper_version }}</li>
+        </ol>
+    </nav>
+
+    <!-- Header & Actions -->
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-primary">Version {{ report.paper_version }}</span>
+                <span class="badge bg-secondary">{{ report.model_version|default:report.model_name }}</span>
+                <span class="badge bg-info text-dark">Framework: {{ report.scoring_framework_version }}</span>
+            </div>
+            <h2 class="h3 fw-bold mb-1">AI Research Evaluation & Novelty Assessment</h2>
+            <p class="text-muted mb-0">Paper: <a href="{% url 'papers:detail' paper.pk %}" class="fw-semibold text-decoration-none">{{ paper.title }}</a></p>
+        </div>
+        <div class="d-flex gap-2">
+            {% if can_evaluate %}
+            <form method="post" action="{% url 'evaluation:evaluate' paper.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="re_evaluate" value="1">
+                <button type="submit" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Re-evaluate Paper
+                </button>
+            </form>
+            {% endif %}
+            <a href="{% url 'papers:detail' paper.pk %}" class="btn btn-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Paper
+            </a>
+        </div>
+    </div>
+
+    <!-- Analytical Disclaimer Banner -->
+    <div class="alert alert-warning border-warning d-flex align-items-center shadow-sm py-2 px-3 mb-4" role="alert">
+        <i class="bi bi-shield-exclamation fs-4 me-3 text-warning"></i>
+        <div class="small">
+            <strong>Academic Evaluation Disclaimer:</strong> {{ report.disclaimer }}
+        </div>
+    </div>
+
+    <!-- Executive Metrics Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-4 col-md-5">
+            <div class="card h-100 border-0 shadow-sm text-center py-4 bg-light">
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <span class="text-muted text-uppercase small fw-bold tracking-wider">Overall Research Score</span>
+                    <h1 class="display-2 fw-bold my-2
+                        {% if report.overall_score >= 80 %}text-success
+                        {% elif report.overall_score >= 60 %}text-warning
+                        {% else %}text-danger{% endif %}">
+                        {{ report.overall_score|floatformat:1 }}
+                    </h1>
+                    <span class="text-muted small">Weighted aggregation across 7 canonical dimensions</span>
+                    <div class="mt-3">
+                        <span class="badge {% if report.overall_score >= 70 %}bg-success{% else %}bg-warning text-dark{% endif %} px-3 py-2 fs-6">
+                            Recommendation: {{ report.get_recommendation_display|default:report.recommendation }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8 col-md-7">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-file-text me-2 text-primary"></i>Evaluation Summary Verdict</h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-secondary leading-relaxed mb-3">{{ report.summary|linebreaksbr }}</p>
+                    <div class="row g-2 pt-2 border-top">
+                        <div class="col-sm-6">
+                            <small class="text-muted d-block">Overall Assessment Confidence</small>
+                            <span class="badge {% if report.confidence == 'High' %}bg-success{% elif report.confidence == 'Medium' %}bg-info text-dark{% else %}bg-warning text-dark{% endif %}">
+                                {{ report.confidence }} Confidence
+                            </span>
+                        </div>
+                        <div class="col-sm-6">
+                            <small class="text-muted d-block">Evaluation Timestamp</small>
+                            <span class="small text-dark fw-semibold">{{ report.created_at|date:"M d, Y H:i" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7 Canonical Dimensions Section -->
+    <h4 class="h5 fw-bold mb-3"><i class="bi bi-grid-3x3-gap-fill text-primary me-2"></i>Canonical 7-Dimension Score Breakdown & Evidence</h4>
+    <div class="row g-3 mb-4">
+        {% for score in scores %}
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
+                        <div>
+                            <h5 class="card-title fw-bold mb-1 text-dark">{{ score.get_dimension_display }}</h5>
+                            <span class="badge bg-light text-secondary border">Weight: {{ score.weight|floatformat:2|default:"0.15" }} ({{ score.weight|floatformat:2|stringformat:"s"|slice:"2:"|default:"15" }}%)</span>
+                            <span class="badge {% if score.confidence == 'High' %}bg-success{% elif score.confidence == 'Medium' %}bg-info text-dark{% else %}bg-secondary{% endif %} ms-1">
+                                Confidence: {{ score.confidence|default:"Medium" }}
+                            </span>
+                        </div>
+                        <div class="text-end">
+                            <span class="fs-4 fw-bold {% if score.score >= 80 %}text-success{% elif score.score >= 60 %}text-warning{% else %}text-danger{% endif %}">
+                                {{ score.score|floatformat:1 }}
+                            </span>
+                            <span class="text-muted">/100</span>
+                        </div>
+                    </div>
+
+                    <!-- Progress bar -->
+                    <div class="progress mb-3" style="height: 10px;">
+                        <div class="progress-bar {% if score.score >= 80 %}bg-success{% elif score.score >= 60 %}bg-warning{% else %}bg-danger{% endif %}" 
+                             role="progressbar" 
+                             style="width: {{ score.score }}%" 
+                             aria-valuenow="{{ score.score }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+
+                    <!-- Assessment explanation -->
+                    <div class="mb-3">
+                        <strong class="text-dark small text-uppercase">Assessment:</strong>
+                        <p class="text-muted small mb-0">{{ score.explanation }}</p>
+                    </div>
+
+                    <!-- Supporting Evidence -->
+                    {% if score.supporting_evidence %}
+                    <div class="p-3 bg-light rounded border mb-2">
+                        <strong class="text-primary small d-block mb-2">
+                            <i class="bi bi-journal-bookmark-fill me-1"></i>Supporting Document Evidence:
+                        </strong>
+                        <ul class="list-unstyled mb-0 small">
+                            {% for ev in score.supporting_evidence %}
+                            <li class="mb-1 d-flex align-items-start">
+                                <span class="badge bg-secondary me-2 mt-1">p.{{ ev.page|default:"1" }}</span>
+                                <div>
+                                    <strong class="text-dark">{{ ev.section|default:"Document Context" }}:</strong>
+                                    <span class="text-muted fst-italic">"{{ ev.snippet|truncatechars:200 }}"</span>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <!-- Limitations statement -->
+                    {% if score.limitations %}
+                    <div class="small text-muted fst-italic mt-2">
+                        <i class="bi bi-info-circle me-1"></i><strong>Limitation:</strong> {{ score.limitations }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">No individual dimension scores recorded.</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Strengths & Weaknesses Grid -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card h-100 border-0 shadow-sm border-top border-4 border-success">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold text-success"><i class="bi bi-check-circle-fill me-2"></i>Research Strengths</h6>
+                </div>
+                <ul class="list-group list-group-flush small">
+                    {% for item in report.strengths %}
+                    <li class="list-group-item py-2"><i class="bi bi-check text-success me-2 fs-6"></i>{{ item }}</li>
+                    {% empty %}
+                    <li class="list-group-item text-muted">No specific strengths annotated.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100 border-0 shadow-sm border-top border-4 border-warning">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold text-warning"><i class="bi bi-exclamation-triangle-fill me-2"></i>Areas for Improvement</h6>
+                </div>
+                <ul class="list-group list-group-flush small">
+                    {% for item in report.weaknesses %}
+                    <li class="list-group-item py-2"><i class="bi bi-arrow-right text-warning me-2"></i>{{ item }}</li>
+                    {% empty %}
+                    <li class="list-group-item text-muted">No specific weaknesses identified.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Concerns & Recommendations Grid -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold text-danger"><i class="bi bi-flag-fill me-2"></i>Critical Concerns & Boundary Limitations</h6>
+                </div>
+                <ul class="list-group list-group-flush small">
+                    {% for item in report.concerns %}
+                    <li class="list-group-item py-2">{{ item }}</li>
+                    {% empty %}
+                    <li class="list-group-item text-muted">No critical methodological concerns flagged.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold text-primary"><i class="bi bi-lightbulb-fill me-2"></i>Actionable Recommendations</h6>
+                </div>
+                <ul class="list-group list-group-flush small">
+                    {% for item in report.recommendations %}
+                    <li class="list-group-item py-2">{{ item }}</li>
+                    {% empty %}
+                    <li class="list-group-item text-muted">No specific recommendations provided.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis History Timeline -->
+    {% if history and history|length > 1 %}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+            <h6 class="mb-0 fw-bold"><i class="bi bi-clock-history me-2 text-primary"></i>Evaluation Version History</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 small">
+                <thead class="table-light">
+                    <tr>
+                        <th>Version</th>
+                        <th>Evaluation ID</th>
+                        <th>Date & Time</th>
+                        <th>Model / Provider</th>
+                        <th>Overall Score</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for h in history %}
+                    <tr {% if h.id == report.id %}class="table-active"{% endif %}>
+                        <td>
+                            <span class="fw-bold">v{{ h.paper_version }}</span>
+                            {% if h.id == report.id %}<span class="badge bg-primary ms-1">Current</span>{% endif %}
+                        </td>
+                        <td class="font-monospace text-muted">{{ h.evaluation_id|truncatechars:18 }}</td>
+                        <td>{{ h.created_at|date:"M d, Y H:i" }}</td>
+                        <td>{{ h.model_version }} ({{ h.provider }})</td>
+                        <td>
+                            <span class="fw-bold {% if h.overall_score >= 80 %}text-success{% elif h.overall_score >= 60 %}text-warning{% else %}text-danger{% endif %}">
+                                {{ h.overall_score|floatformat:1 }}/100
+                            </span>
+                        </td>
+                        <td>
+                            {% if h.id != report.id %}
+                            <a href="{% url 'evaluation:report' h.id %}" class="btn btn-sm btn-outline-secondary py-0">View</a>
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Provenance & Reproducibility Block -->
+    <div class="card border-0 bg-light shadow-sm">
+        <div class="card-body p-4">
+            <h6 class="fw-bold text-uppercase small text-muted mb-3">
+                <i class="bi bi-fingerprint me-1"></i>Evaluation Provenance & Audit Metadata
+            </h6>
+            <div class="row g-3 small text-muted">
+                <div class="col-md-4 col-sm-6">
+                    <span class="d-block fw-semibold text-dark">Evaluation ID</span>
+                    <span class="font-monospace">{{ report.evaluation_id }}</span>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <span class="d-block fw-semibold text-dark">Model / Provider</span>
+                    <span>{{ report.model_version }} ({{ report.provider }})</span>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <span class="d-block fw-semibold text-dark">Scoring Framework</span>
+                    <span>{{ report.scoring_framework_version }}</span>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <span class="d-block fw-semibold text-dark">Prompt Specification</span>
+                    <span>{{ report.prompt_version }}</span>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <span class="d-block fw-semibold text-dark">Paper Version</span>
+                    <span>Version {{ report.paper_version }}</span>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <span class="d-block fw-semibold text-dark">Confidence Level</span>
+                    <span>{{ report.confidence }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

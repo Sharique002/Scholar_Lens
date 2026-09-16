@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: scholar_lens
+      POSTGRES_USER: scholar_lens
+      POSTGRES_PASSWORD: scholar_lens
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scholar_lens"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    command: >
+      sh -c "python manage.py migrate &&
+             gunicorn scholar_lens.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120"
+    volumes:
+      - .:/app
+      - media_data:/app/media
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - SECRET_KEY=docker-dev-secret-key-change-in-production
+      - DEBUG=True
+      - USE_POSTGRES=True
+      - DB_NAME=scholar_lens
+      - DB_USER=scholar_lens
+      - DB_PASSWORD=scholar_lens
+      - DB_HOST=db
+      - DB_PORT=5432
+      - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
+    env_file:
+      - .env
+
+volumes:
+  postgres_data:
+  media_data:

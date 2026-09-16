@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ profile.user.get_full_name|default:profile.user.username }} - Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3>{{ profile.user.get_full_name|default:profile.user.username }}</h3>
+                    <p class="text-muted">{{ profile.headline }}</p>
+                    
+                    {% if profile.is_available_for_collaboration %}
+                        <span class="badge bg-success mb-3">Available for Collaboration</span>
+                    {% endif %}
+
+                    {% if profile.user != request.user %}
+                        <a href="{% url 'collaboration:send' profile.user.id %}" class="btn btn-primary w-100 mb-2">Send Collaboration Request</a>
+                    {% else %}
+                        <a href="{% url 'researchers:edit_profile' %}" class="btn btn-secondary w-100 mb-2">Edit Profile</a>
+                    {% endif %}
+                    
+                    <hr>
+                    
+                    {% if profile.google_scholar_url %}
+                        <a href="{{ profile.google_scholar_url }}" target="_blank" class="btn btn-outline-info w-100 mb-2">Google Scholar</a>
+                    {% endif %}
+                    {% if profile.orcid_id %}
+                        <p><strong>ORCID:</strong> {{ profile.orcid_id }}</p>
+                    {% endif %}
+                    <p><strong>Experience:</strong> {{ profile.years_experience }} years</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header"><h4>About</h4></div>
+                <div class="card-body">
+                    {{ profile.expertise_summary|linebreaks|default:"No summary provided." }}
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header"><h4>Interests</h4></div>
+                <div class="card-body">
+                    {% for interest in profile.interests.all %}
+                        <span class="badge bg-info text-dark m-1">{{ interest.name }}</span>
+                    {% empty %}
+                        <p class="text-muted">No interests listed.</p>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header"><h4>Skills</h4></div>
+                <div class="card-body">
+                    {% for skill in profile.skills.all %}
+                        <span class="badge bg-secondary m-1">{{ skill.name }}</span>
+                    {% empty %}
+                        <p class="text-muted">No skills listed.</p>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            {% if papers %}
+            <div class="card mb-4">
+                <div class="card-header"><h4>Research Papers</h4></div>
+                <ul class="list-group list-group-flush">
+                    {% for paper in papers %}
+                    <li class="list-group-item">{{ paper.title }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if projects %}
+            <div class="card mb-4">
+                <div class="card-header"><h4>Led Projects</h4></div>
+                <ul class="list-group list-group-flush">
+                    {% for project in projects %}
+                    <li class="list-group-item">
+                        <a href="{% url 'projects:detail' project.pk %}">{{ project.title }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

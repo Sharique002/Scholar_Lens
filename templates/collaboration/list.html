@@ -1,0 +1,372 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Collaboration Requests - Scholar Lens Collaboration Hub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- 1. TOP METRICS STRIP -->
+    <div class="module-metrics-strip">
+        <div class="metric-strip-item">
+            <div class="metric-strip-num">4 States</div>
+            <div class="metric-strip-label">Pending, Accepted, Declined &amp; Canceled</div>
+        </div>
+        <div class="metric-strip-item">
+            <div class="metric-strip-num">100% RBAC</div>
+            <div class="metric-strip-label">Auto-Provisioned Team Membership</div>
+        </div>
+        <div class="metric-strip-item">
+            <div class="metric-strip-num">Instant</div>
+            <div class="metric-strip-label">1-Click Accept or Decline Responses</div>
+        </div>
+        <div class="metric-strip-item">
+            <div class="metric-strip-num">Audit Trail</div>
+            <div class="metric-strip-label">Integrated Collaboration Activity Logs</div>
+        </div>
+    </div>
+
+    <!-- 2. MINT SHOWCASE CONTAINER -->
+    <div class="module-showcase-box">
+        <div class="module-showcase-grid">
+            <!-- Left Hero Column -->
+            <div class="module-hero-left">
+                <div class="module-hero-pill">
+                    <span>🤝</span> MODULE 06 &bull; RESEARCH COLLABORATION HUB
+                </div>
+                <h1 class="module-hero-title">Manage Your Academic Collaboration Requests!</h1>
+                <p class="module-hero-desc">
+                    Review incoming proposals from co-authors and lab leads, accept team invitations with one click, track your sent collaboration proposals, and build high-impact interdisciplinary partnerships.
+                </p>
+                <div class="flex gap-2 align-center">
+                    <a href="{% url 'researchers:list' %}" class="module-hero-btn">
+                        Explore Researcher Directory ➔
+                    </a>
+                </div>
+
+                <!-- Interactive Visual Card -->
+                <div class="module-preview-card">
+                    <div class="preview-card-header">
+                        <span class="preview-tag">INCOMING LAB INVITATION</span>
+                        <span class="preview-chip-status">PENDING REVIEW ⏳</span>
+                    </div>
+                    <h3 class="preview-card-title">From: Dr. Elena Rostova &bull; MIT Dept. of EECS</h3>
+                    <p class="text-secondary small mb-2">
+                        <em>"We would like to invite you to join our Quantum Neural Error Mitigation Project to contribute on RAG pipeline benchmarks."</em>
+                    </p>
+                    <div class="preview-chips-row">
+                        <span class="preview-chip coral">Project: Quantum Neural Lab</span>
+                        <span class="preview-chip yellow">Role: Researcher</span>
+                        <span class="preview-chip">1-Click Accept Ready</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right 5 Feature Cards Stack -->
+            <div class="module-feature-stack">
+                <div class="module-feature-item accent-coral">
+                    <div class="module-feature-icon">🤝</div>
+                    <div class="module-feature-info">
+                        <h4>Automated Team Provisioning</h4>
+                        <p>When you accept a project invitation, you are automatically enrolled as an active project team member.</p>
+                    </div>
+                </div>
+
+                <div class="module-feature-item">
+                    <div class="module-feature-icon">📬</div>
+                    <div class="module-feature-info">
+                        <h4>Structured Research Proposals</h4>
+                        <p>Send clear collaboration invitations with research motivations, proposed roles, and project linkages.</p>
+                    </div>
+                </div>
+
+                <div class="module-feature-item">
+                    <div class="module-feature-icon">🔒</div>
+                    <div class="module-feature-info">
+                        <h4>Duplicate Request Prevention</h4>
+                        <p>The platform prevents redundant pending requests to the same scholar to maintain clean communications.</p>
+                    </div>
+                </div>
+
+                <div class="module-feature-item">
+                    <div class="module-feature-icon">⚡</div>
+                    <div class="module-feature-info">
+                        <h4>One-Click Status Responses</h4>
+                        <p>Accept or decline invitations in real time with immediate database status updates.</p>
+                    </div>
+                </div>
+
+                <div class="module-feature-item">
+                    <div class="module-feature-icon">📊</div>
+                    <div class="module-feature-info">
+                        <h4>Integrated Activity Auditing</h4>
+                        <p>All collaboration events are logged and audited in your central dashboard activity stream.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. WORKING INTERFACE: COLLABORATION INBOX -->
+    <div class="module-work-header">
+        <div>
+            <h2 class="module-work-title">Collaboration Inbox &amp; Proposals</h2>
+            <p class="text-secondary mb-0">Review pending collaboration requests, accept lab invitations, and monitor sent proposals.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'researchers:list' %}" class="btn btn-pill-dark">
+                + New Proposal
+            </a>
+            <a href="{% url 'collaboration:recommendations' %}" class="btn btn-pill-white">
+                ⚡ AI Recommendations
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter & Tab Switcher Bar -->
+    <div class="module-filter-bar d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <!-- Pure CSS/JS Retro Tab Buttons -->
+        <div class="d-flex gap-2" id="customCollabTabs">
+            <button type="button" class="btn btn-pill-yellow active-tab-btn" id="tabBtnReceived" onclick="switchCollabTab('received')">
+                📥 Received Invitations ({{ received_requests|length }})
+            </button>
+            <button type="button" class="btn btn-pill-white" id="tabBtnSent" onclick="switchCollabTab('sent')">
+                📤 Sent Proposals ({{ sent_requests|length }})
+            </button>
+        </div>
+
+        <!-- Status Filter -->
+        <div class="d-flex align-items-center gap-2">
+            <span class="small text-muted fw-bold">Filter Status:</span>
+            <div class="d-flex gap-1">
+                <a href="{% url 'collaboration:list' %}" class="btn btn-sm {% if not status_filter %}btn-pill-dark{% else %}btn-pill-white{% endif %} py-1 px-3">
+                    All
+                </a>
+                <a href="?status=PENDING" class="btn btn-sm {% if status_filter == 'PENDING' %}btn-pill-dark{% else %}btn-pill-white{% endif %} py-1 px-3">
+                    Pending
+                </a>
+                <a href="?status=ACCEPTED" class="btn btn-sm {% if status_filter == 'ACCEPTED' %}btn-pill-dark{% else %}btn-pill-white{% endif %} py-1 px-3">
+                    Accepted
+                </a>
+                <a href="?status=DECLINED" class="btn btn-sm {% if status_filter == 'DECLINED' %}btn-pill-dark{% else %}btn-pill-white{% endif %} py-1 px-3">
+                    Declined
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 1: RECEIVED REQUESTS -->
+    <div id="paneReceived" class="collab-tab-pane">
+        {% if received_requests %}
+            <div class="row row-cols-1 g-3">
+            {% for req in received_requests %}
+                <div class="col">
+                    <div class="retro-card">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div style="width: 48px; height: 48px; border-radius: 50%; background-color: var(--color-mint); border: 2px solid var(--ink-black); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; color: var(--ink-black); box-shadow: 1.5px 2px 0 var(--ink-black);">
+                                    {{ req.sender.first_name|default:req.sender.username|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <h4 style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 800; margin: 0; line-height: 1.2;">
+                                        From: 
+                                        <a href="{% url 'researchers:detail' req.sender.researcher_profile.pk|default:0 %}" style="text-decoration: none; color: var(--ink-black);">
+                                            {{ req.sender.get_full_name|default:req.sender.username }}
+                                        </a>
+                                    </h4>
+                                    <small class="text-muted fw-semibold">
+                                        {{ req.sender.profile.institution|default:"Academic Researcher" }}
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="preview-chip {% if req.status == 'PENDING' %}yellow{% elif req.status == 'ACCEPTED' %}coral{% else %}{% endif %}" style="font-size: 0.75rem;">
+                                    Status: {{ req.get_status_display }}
+                                </span>
+                                <small class="text-muted fw-bold ms-2">{{ req.created_at|date:"M d, Y &bull; H:i" }}</small>
+                            </div>
+                        </div>
+
+                        <!-- Message Box -->
+                        <div style="background: #FFFFFF; border: 1.5px solid var(--ink-black); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem;">
+                            <span class="small text-muted fw-bold text-uppercase d-block mb-1">PROPOSAL MESSAGE:</span>
+                            <p style="font-size: 0.95rem; color: var(--ink-charcoal); line-height: 1.5; margin: 0;">
+                                {{ req.message|linebreaks }}
+                            </p>
+                        </div>
+
+                        <!-- Footer Info & Actions -->
+                        <div style="border-top: 1.5px dashed var(--border-light); padding-top: 0.85rem;" class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div>
+                                {% if req.project %}
+                                <span class="preview-chip yellow" style="font-size: 0.75rem;">
+                                    🚀 Related Project: 
+                                    <a href="{% url 'projects:detail' req.project.pk %}" style="text-decoration: underline; color: var(--ink-black); font-weight: 800;">
+                                        {{ req.project.title }}
+                                    </a>
+                                </span>
+                                {% else %}
+                                <span class="text-muted small">Direct Researcher Collaboration Proposal</span>
+                                {% endif %}
+                            </div>
+
+                            {% if req.status == 'PENDING' %}
+                            <div class="d-flex gap-2">
+                                <form method="post" action="{% url 'collaboration:respond' req.pk %}" class="d-inline m-0">
+                                    {% csrf_token %}
+                                    <button type="submit" name="action" value="accept" class="btn btn-sm btn-pill-yellow fw-bold" style="padding: 0.35rem 1rem;">
+                                        ✓ Accept &amp; Join Lab
+                                    </button>
+                                </form>
+                                <form method="post" action="{% url 'collaboration:respond' req.pk %}" class="d-inline m-0">
+                                    {% csrf_token %}
+                                    <button type="submit" name="action" value="decline" class="btn btn-sm btn-pill-white fw-bold text-danger" style="padding: 0.35rem 1rem;">
+                                        ✕ Decline
+                                    </button>
+                                </form>
+                            </div>
+                            {% else %}
+                            <div>
+                                <span class="text-muted small fw-bold">Processed &bull; {{ req.get_status_display }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            </div>
+        {% else %}
+            <div class="module-filter-bar text-center py-5">
+                <div style="font-size: 3rem; margin-bottom: 0.5rem;">📥</div>
+                <h3 style="font-family: var(--font-display); font-weight: 800;">No received collaboration requests</h3>
+                <p class="text-secondary max-w-md mx-auto">
+                    When researchers discover your profile and propose partnerships or invite you to project workspaces, they will appear here.
+                </p>
+                <div class="d-flex justify-content-center gap-2 mt-3">
+                    <a href="{% url 'researchers:edit_profile' %}" class="btn btn-pill-yellow">Make Profile Available ➔</a>
+                    <a href="{% url 'researchers:list' %}" class="btn btn-pill-white">Browse Active Researchers</a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Tab 2: SENT REQUESTS -->
+    <div id="paneSent" class="collab-tab-pane" style="display: none;">
+        {% if sent_requests %}
+            <div class="row row-cols-1 g-3">
+            {% for req in sent_requests %}
+                <div class="col">
+                    <div class="retro-card">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div style="width: 48px; height: 48px; border-radius: 50%; background-color: var(--color-yellow); border: 2px solid var(--ink-black); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; color: var(--ink-black); box-shadow: 1.5px 2px 0 var(--ink-black);">
+                                    {{ req.receiver.first_name|default:req.receiver.username|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <h4 style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 800; margin: 0; line-height: 1.2;">
+                                        To: 
+                                        <a href="{% url 'researchers:detail' req.receiver.researcher_profile.pk|default:0 %}" style="text-decoration: none; color: var(--ink-black);">
+                                            {{ req.receiver.get_full_name|default:req.receiver.username }}
+                                        </a>
+                                    </h4>
+                                    <small class="text-muted fw-semibold">
+                                        {{ req.receiver.profile.institution|default:"Academic Researcher" }}
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="preview-chip {% if req.status == 'PENDING' %}yellow{% elif req.status == 'ACCEPTED' %}coral{% else %}{% endif %}" style="font-size: 0.75rem;">
+                                    Status: {{ req.get_status_display }}
+                                </span>
+                                <small class="text-muted fw-bold ms-2">{{ req.created_at|date:"M d, Y &bull; H:i" }}</small>
+                            </div>
+                        </div>
+
+                        <!-- Message Box -->
+                        <div style="background: #FFFFFF; border: 1.5px solid var(--ink-black); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem;">
+                            <span class="small text-muted fw-bold text-uppercase d-block mb-1">YOUR MESSAGE:</span>
+                            <p style="font-size: 0.95rem; color: var(--ink-charcoal); line-height: 1.5; margin: 0;">
+                                {{ req.message|linebreaks }}
+                            </p>
+                        </div>
+
+                        <!-- Footer Info & Actions -->
+                        <div style="border-top: 1.5px dashed var(--border-light); padding-top: 0.85rem;" class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div>
+                                {% if req.project %}
+                                <span class="preview-chip yellow" style="font-size: 0.75rem;">
+                                    🚀 Related Project: 
+                                    <a href="{% url 'projects:detail' req.project.pk %}" style="text-decoration: underline; color: var(--ink-black); font-weight: 800;">
+                                        {{ req.project.title }}
+                                    </a>
+                                </span>
+                                {% else %}
+                                <span class="text-muted small">Direct Collaboration Proposal</span>
+                                {% endif %}
+                            </div>
+
+                            {% if req.status == 'PENDING' %}
+                            <div>
+                                <form method="post" action="{% url 'collaboration:cancel' req.pk %}" class="d-inline m-0">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-pill-white text-secondary fw-bold" style="padding: 0.35rem 1rem;">
+                                        ✕ Cancel Proposal
+                                    </button>
+                                </form>
+                            </div>
+                            {% else %}
+                            <div>
+                                <span class="text-muted small fw-bold">Outcome: {{ req.get_status_display }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            </div>
+        {% else %}
+            <div class="module-filter-bar text-center py-5">
+                <div style="font-size: 3rem; margin-bottom: 0.5rem;">📤</div>
+                <h3 style="font-family: var(--font-display); font-weight: 800;">No sent collaboration requests</h3>
+                <p class="text-secondary max-w-md mx-auto">
+                    You haven't sent any collaboration proposals yet. Search the researchers directory and invite potential co-authors to your projects.
+                </p>
+                <div class="d-flex justify-content-center gap-2 mt-3">
+                    <a href="{% url 'researchers:list' %}" class="btn btn-pill-yellow">Browse Researchers ➔</a>
+                    <a href="{% url 'projects:create' %}" class="btn btn-pill-white">Launch New Project Lab</a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function switchCollabTab(tabName) {
+    const paneReceived = document.getElementById('paneReceived');
+    const paneSent = document.getElementById('paneSent');
+    const btnReceived = document.getElementById('tabBtnReceived');
+    const btnSent = document.getElementById('tabBtnSent');
+
+    if (tabName === 'received') {
+        paneReceived.style.display = 'block';
+        paneSent.style.display = 'none';
+
+        btnReceived.classList.add('btn-pill-yellow');
+        btnReceived.classList.remove('btn-pill-white');
+
+        btnSent.classList.add('btn-pill-white');
+        btnSent.classList.remove('btn-pill-yellow');
+    } else {
+        paneReceived.style.display = 'none';
+        paneSent.style.display = 'block';
+
+        btnSent.classList.add('btn-pill-yellow');
+        btnSent.classList.remove('btn-pill-white');
+
+        btnReceived.classList.add('btn-pill-white');
+        btnReceived.classList.remove('btn-pill-yellow');
+    }
+}
+</script>
+{% endblock %}

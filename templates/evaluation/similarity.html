@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="h3 fw-bold mb-1">Literature Similarity &amp; Overlap Radar</h2>
+            <p class="text-secondary mb-0">Base Paper: <a href="{% url 'papers:detail' paper.pk %}" class="fw-bold text-dark text-decoration-none">{{ paper.title }}</a></p>
+        </div>
+        <a href="{% url 'papers:detail' paper.pk %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back to Paper
+        </a>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <div class="alert alert-warning border-warning d-flex align-items-center py-2 px-3 mb-4">
+        <span class="fs-4 me-3">🛡️</span>
+        <div class="small">
+            <strong>Academic Originality Disclaimer:</strong> Similarity analysis assesses conceptual and methodological overlap across academic literature and Google Scholar sources. High similarity indicates thematic affinity, not lack of originality or copyright infringement.
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-diagram-3-fill text-primary me-2"></i>Comparative Research Overlap ({{ similar_papers|length }} Retrieved)</h5>
+            <span class="badge bg-light text-secondary border">Multi-Dimensional Synthesis</span>
+        </div>
+        <div class="card-body p-4">
+            {% if not similar_papers %}
+                <div class="text-center py-5">
+                    <div style="font-size: 3rem;" class="mb-2">📚</div>
+                    <h5 class="text-muted">No similar literature found yet.</h5>
+                    <p class="text-secondary small">Google Scholar will automatically index related research papers upon publication.</p>
+                </div>
+            {% else %}
+                <div class="d-flex flex-column gap-4">
+                    {% for sp in similar_papers %}
+                    <div class="p-3 bg-light rounded border">
+                        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+                            <div>
+                                <h5 class="fw-bold mb-1">
+                                    {% if sp.is_external and sp.external_url %}
+                                        <a href="{{ sp.external_url }}" target="_blank" rel="noopener noreferrer" class="text-primary text-decoration-none">
+                                            {{ sp.title }} <i class="bi bi-box-arrow-up-right small"></i>
+                                        </a>
+                                    {% else %}
+                                        <a href="{% url 'papers:detail' sp.paper_id %}" class="text-primary text-decoration-none">
+                                            {{ sp.title }}
+                                        </a>
+                                    {% endif %}
+                                </h5>
+                                <div class="d-flex gap-2 align-items-center flex-wrap small text-muted">
+                                    {% if sp.source == 'GOOGLE_SCHOLAR' %}
+                                        <span class="badge bg-primary text-white">Google Scholar</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Repository Paper</span>
+                                    {% endif %}
+                                    {% if sp.publication_date %}
+                                        <span><i class="bi bi-calendar3 me-1"></i>{{ sp.publication_date }}</span>
+                                    {% endif %}
+                                    {% if sp.citation_count %}
+                                        <span><i class="bi bi-quote me-1"></i>{{ sp.citation_count }} citations</span>
+                                    {% endif %}
+                                    {% if sp.shared_areas %}
+                                        <span class="badge bg-white text-dark border">{{ sp.shared_areas }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge {% if sp.similarity >= 75 %}bg-warning text-dark{% elif sp.similarity >= 50 %}bg-info text-dark{% else %}bg-secondary{% endif %} fs-5">
+                                    {{ sp.similarity|floatformat:1 }}%
+                                </span>
+                                <small class="text-muted d-block" style="font-size: 0.7rem;">Overall Similarity</small>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="progress mb-3" style="height: 8px;">
+                            <div class="progress-bar {% if sp.similarity >= 75 %}bg-warning{% elif sp.similarity >= 50 %}bg-info{% else %}bg-secondary{% endif %}"
+                                 role="progressbar" style="width: {{ sp.similarity }}%"
+                                 aria-valuenow="{{ sp.similarity }}" aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+
+                        <!-- 4-Dimension Breakdown Matrix -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-3 col-6">
+                                <div class="p-2 bg-white rounded border text-center">
+                                    <small class="text-muted d-block" style="font-size: 0.72rem;">Conceptual Overlap</small>
+                                    <strong class="text-dark">{{ sp.conceptual_overlap.score|floatformat:0|default:sp.similarity }}%</strong>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="p-2 bg-white rounded border text-center">
+                                    <small class="text-muted d-block" style="font-size: 0.72rem;">Methodology Overlap</small>
+                                    <strong class="text-dark">{{ sp.methodology_overlap.score|floatformat:0|default:"50" }}%</strong>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="p-2 bg-white rounded border text-center">
+                                    <small class="text-muted d-block" style="font-size: 0.72rem;">Contribution Overlap</small>
+                                    <strong class="text-dark">{{ sp.contribution_overlap.score|floatformat:0|default:"45" }}%</strong>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="p-2 bg-white rounded border text-center">
+                                    <small class="text-muted d-block" style="font-size: 0.72rem;">Potential Textual Overlap</small>
+                                    <strong class="text-dark">{{ sp.textual_overlap.score|floatformat:0|default:"10" }}%</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Originality Appraisal -->
+                        {% if sp.originality_concerns %}
+                            <div class="p-2 bg-white rounded border small mb-2">
+                                <strong class="text-dark">Originality Appraisal:</strong>
+                                <span class="text-secondary">{{ sp.originality_concerns }}</span>
+                            </div>
+                        {% endif %}
+
+                        <!-- Evidence Snippets -->
+                        {% if sp.evidence_snippets %}
+                            <div class="small pt-2">
+                                <strong class="text-muted d-block mb-1">Corroborated Overlap Evidence:</strong>
+                                {% for ev in sp.evidence_snippets %}
+                                    <div class="text-secondary fst-italic ps-2 border-start border-2 border-info mb-1">
+                                        {{ ev.snippet }} <span class="text-muted">({{ ev.significance }})</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        {% if sp.is_external and sp.external_url %}
+                            <div class="mt-2 text-end">
+                                <a href="{{ sp.external_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary py-0" style="font-size: 0.75rem;">
+                                    View on Google Scholar ➔
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Account Settings — Scholar Lens{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 680px;">
+    <div class="module-work-header mb-3">
+        <div>
+            <h1 class="module-work-title">Account Settings</h1>
+            <p class="text-secondary mb-0">Manage profile preferences and interface configurations.</p>
+        </div>
+        <a href="{% url 'dashboard:home' %}" class="btn btn-pill-white">
+            ➔ Dashboard
+        </a>
+    </div>
+
+    <div class="retro-card">
+        <form method="post" action="{% url 'dashboard:settings' %}">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-muted text-uppercase" for="email">Institutional Email</label>
+                <input type="email" id="email" class="form-control retro-input w-100" value="{{ user.email }}" disabled style="background: #F2EFE9; cursor: not-allowed;">
+                <div class="small text-secondary mt-1">Managed via institutional single-sign on or administrator settings.</div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-muted text-uppercase" for="username">Scholar Username</label>
+                <input type="text" id="username" class="form-control retro-input w-100" value="{{ user.username }}" disabled style="background: #F2EFE9; cursor: not-allowed;">
+            </div>
+            <div class="mb-4">
+                <label class="form-label small fw-bold text-muted text-uppercase" for="theme">Workspace Interface Theme</label>
+                <select id="theme" class="form-select retro-input w-100">
+                    <option value="retro-modern" selected>Retro-Modern Editorial (Default)</option>
+                    <option value="light">Academic Light</option>
+                    <option value="high-contrast">High Contrast Editorial</option>
+                </select>
+            </div>
+            <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                <a href="{% url 'accounts:profile' %}" class="btn btn-pill-white">View Full Profile</a>
+                <button type="submit" class="btn btn-pill-yellow">Save Preferences</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

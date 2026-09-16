@@ -1,0 +1,393 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Scholar Lens — AI Research Intelligence, Novelty Assessment & Collaboration{% endblock %}
+
+{% block content %}
+<div class="landing-wrapper">
+    <!-- SECTION 1: HERO CONTAINER (Vibrant Sunny Yellow Card with Floating 3D Books) -->
+    <section class="hero-canvas-section">
+        <div class="container">
+            <div class="hero-pop-card">
+                <!-- Floating Ambient 3D Books & Stickers -->
+                <div class="floating-ambient-layer" aria-hidden="true">
+                    <!-- Book 1: Top-Right Cyan/Teal Book entering frame -->
+                    <div class="floating-book book-teal">
+                        <div class="book-cover">
+                            <span class="book-spine-line"></span>
+                            <div class="book-inner-art">
+                                <span class="book-title-mini">PYMUPDF</span>
+                                <span class="book-badge-circle">✦</span>
+                            </div>
+                            <span class="book-sub-mini">PDF EXTRACTION</span>
+                        </div>
+                        <div class="book-pages-edge"></div>
+                    </div>
+
+                    <!-- Book 2: Center-Right Magenta / Hot Pink Book with Navy Spine (Hero Element) -->
+                    <div class="floating-book book-magenta">
+                        <div class="book-spine navy-spine"></div>
+                        <div class="book-cover">
+                            <div class="book-stamp-circle">
+                                <span>95%</span>
+                            </div>
+                            <div class="book-spine-text">EVALUATION &bull; NOVELTY</div>
+                            <div class="book-meta-mini">6 WEIGHTED VECTORS</div>
+                        </div>
+                        <div class="book-pages-edge"></div>
+                    </div>
+
+                    <!-- Book 3: Bottom-Right Crimson Journal -->
+                    <div class="floating-book book-crimson">
+                        <div class="book-cover">
+                            <div class="crimson-ribbon"></div>
+                            <span class="book-title-mini">RAG CHAT</span>
+                            <span class="book-sub-mini">GROUNDED Q&amp;A</span>
+                        </div>
+                        <div class="book-pages-edge"></div>
+                    </div>
+
+                    <!-- Handwritten Annotation Note with Arrow -->
+                    <div class="hero-handwritten-note">
+                        <span class="handwritten-script">AI evaluation for academia &amp; peer review ✨</span>
+                        <svg class="handwritten-arrow" width="48" height="36" viewBox="0 0 48 36" fill="none">
+                            <path d="M2 18C12 12 28 8 44 24M44 24L36 24M44 24L42 16" stroke="#141416" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+
+                    <!-- Circular Rotating Stamp Emblem -->
+                    <div class="hero-circle-stamp" style="width: 86px; height: 86px; max-width: 86px; max-height: 86px;">
+                        <svg viewBox="0 0 100 100" class="rotating-stamp-svg" width="86" height="86" style="width: 86px; height: 86px; max-width: 86px; max-height: 86px; display: block;">
+                            <path id="stampPath" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="transparent"/>
+                            <text font-size="9.5" font-weight="800" fill="#141416" letter-spacing="1.5">
+                                <textPath href="#stampPath">SCHOLAR LENS &bull; AI RESEARCH &bull; NOVELTY &bull; </textPath>
+                            </text>
+                        </svg>
+                        <div class="stamp-center-icon">🔬</div>
+                    </div>
+                </div>
+
+                <!-- Hero Text Content -->
+                <div class="hero-content-inner">
+                    <div class="hero-pill-badge">
+                        <span class="badge-dot"></span>
+                        AI-POWERED RESEARCH INTELLIGENCE
+                    </div>
+
+                    <h1 class="hero-huge-title">
+                        Unbox research<br>
+                        worth talking<br>
+                        about
+                    </h1>
+
+                    <p class="hero-punchy-desc">
+                        Say goodbye to superficial literature reviews. Ingest complete research PDFs,
+                        automatically extract methodologies &amp; datasets, assess novelty across 6 weighted dimensions,
+                        uncover critical research gaps, and chat directly with your papers using contextual RAG.
+                    </p>
+
+                    <div class="hero-cta-group flex gap-3 align-center">
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'papers:upload' %}" class="btn btn-pill-dark btn-lg">
+                                Upload Research Paper ➔
+                            </a>
+                            <a href="{% url 'dashboard:home' %}" class="btn btn-pill-white btn-lg">
+                                Open Dashboard
+                            </a>
+                        {% else %}
+                            <a href="{% url 'accounts:register' %}" class="btn btn-pill-pink btn-lg">
+                                Get Started Free ➔
+                            </a>
+                            <a href="{% url 'papers:list' %}" class="btn btn-pill-white btn-lg">
+                                Explore Research Library
+                            </a>
+                        {% endif %}
+                    </div>
+
+                    <!-- Core Module Chips -->
+                    <div class="hero-stats-chips flex gap-2 mt-4">
+                        <div class="stat-chip">
+                            <span class="chip-num">PyMuPDF</span>
+                            <span class="chip-label">PDF Extraction</span>
+                        </div>
+                        <div class="stat-chip">
+                            <span class="chip-num">6 Vectors</span>
+                            <span class="chip-label">Novelty Engine</span>
+                        </div>
+                        <div class="stat-chip">
+                            <span class="chip-num">RAG</span>
+                            <span class="chip-label">Paper Q&amp;A</span>
+                        </div>
+                        <div class="stat-chip">
+                            <span class="chip-num">Cosine</span>
+                            <span class="chip-label">Semantic Search</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 2: THE 3D UNBOX INTELLIGENCE SHOWCASE (Mint / Turquoise Card) -->
+    <section class="unbox-showcase-section py-4">
+        <div class="container">
+            <div class="showcase-pop-card bg-mint">
+                <div class="showcase-header text-center">
+                    <div class="badge-tag-pill">MODULES 1 &amp; 2: INGESTION &amp; DEEP AI ANALYSIS</div>
+                    <h2 class="showcase-title">Inside your research intelligence workspace</h2>
+                </div>
+
+                <!-- Animated 3D Unboxing Box Model -->
+                <div class="unbox-box-container">
+                    <!-- Handwritten Callout Note -->
+                    <div class="unbox-box-annotation">
+                        <span class="handwritten-script">Full text chunked into vectors with transparent source citations!</span>
+                        <svg class="handwritten-arrow-down" width="40" height="40" viewBox="0 0 40 40" fill="none">
+                            <path d="M20 4 C24 16, 28 24, 18 36 M18 36 L12 28 M18 36 L26 30" stroke="#141416" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+
+                    <div class="box-3d-wrapper">
+                        <!-- Inside Box Contents -->
+                        <div class="box-inside-chamber">
+                            <!-- Paper Document with Novelty Sticker -->
+                            <div class="box-paper-doc">
+                                <div class="box-paper-header flex justify-between align-center">
+                                    <span class="box-paper-tag">PYMUPDF PARSED &bull; 16 PAGES &bull; 8,420 WORDS</span>
+                                    <span class="box-paper-status">STATUS: INDEXED ⚡</span>
+                                </div>
+                                <h3 class="box-paper-title">Attention Is All You Need: Transformer Architecture</h3>
+                                
+                                <div class="paper-extracted-meta-grid">
+                                    <div class="meta-preview-box">
+                                        <span class="meta-k">Core Problem:</span>
+                                        <span class="meta-v">Eliminate sequential recurrent processing in sequence modeling.</span>
+                                    </div>
+                                    <div class="meta-preview-box">
+                                        <span class="meta-k">Methodology:</span>
+                                        <span class="meta-v">Multi-head self-attention mechanisms and positional encodings.</span>
+                                    </div>
+                                    <div class="meta-preview-box">
+                                        <span class="meta-k">Key Datasets:</span>
+                                        <span class="meta-v">WMT 2014 English-German (28.4 BLEU) and English-French (41.8 BLEU).</span>
+                                    </div>
+                                </div>
+
+                                <!-- Novelty Bookmark Tag -->
+                                <div class="novelty-bookmark-tag">
+                                    <div class="bookmark-content">
+                                        <span class="bookmark-badge">NOVELTY SCORE</span>
+                                        <span class="bookmark-score">94.8<small>/100</small></span>
+                                    </div>
+                                </div>
+
+                                <!-- Research Gap Pill & RAG Status -->
+                                <div class="doc-interactive-indicators flex gap-2 align-center mt-3">
+                                    <div class="gap-detected-pill">
+                                        <span class="gap-icon">⚠️</span>
+                                        <span>2 Research Gaps Flagged (Quadratic Complexity, Fixed Context)</span>
+                                    </div>
+                                    <div class="rag-chat-pill">
+                                        <span class="rag-icon">💬</span>
+                                        <span>RAG Assistant Active (12 Chunks Grounded)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Front and Side Walls of Box with Wavy Pattern -->
+                        <div class="box-wall box-wall-front">
+                            <span>SCHOLAR LENS &bull; RESEARCH PAPER INTELLIGENCE CHAMBER</span>
+                            <span>OPEN ACCESS &bull; VERIFIED CITATIONS</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Showcase Pill Buttons Row -->
+                <div class="showcase-pills-row flex justify-center gap-2 mt-4">
+                    <a href="{% url 'papers:list' %}" class="pill-action-btn">📄 Research Papers</a>
+                    <a href="{% url 'search:search' %}" class="pill-action-btn">🔍 Semantic Vector Search</a>
+                    <a href="{% url 'projects:list' %}" class="pill-action-btn">🚀 Research Projects</a>
+                    <a href="{% url 'researchers:list' %}" class="pill-action-btn">👥 Researcher Directory</a>
+                    <a href="{% url 'collaboration:list' %}" class="pill-action-btn">🤝 Collaboration Requests</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 3: HOW IT WORKS (Lilac Card with 4 Bold Color-Blocked Step Cards) -->
+    <section class="how-it-works-section py-4">
+        <div class="container">
+            <div class="how-it-works-card bg-lilac">
+                <div class="how-it-works-header flex justify-between align-center">
+                    <div class="title-with-annotation">
+                        <h2 class="section-huge-title">How Scholar Lens works</h2>
+                        <div class="handwritten-sub-note">
+                            <span class="handwritten-script">Your end-to-end academic intelligence copilot ✦</span>
+                        </div>
+                    </div>
+                    <div class="header-stamp-btn">
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'papers:upload' %}" class="btn btn-pill-pink btn-sm">Upload Paper ➔</a>
+                        {% else %}
+                            <a href="{% url 'accounts:register' %}" class="btn btn-pill-pink btn-sm">Create Account ➔</a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- 4 Step Cards Grid (Cyan, Pink, Yellow, Violet) -->
+                <div class="step-cards-grid">
+                    <!-- Step 1: Cyan / Aqua Card -->
+                    <div class="pop-step-card card-cyan tilt-left">
+                        <div class="step-badge-pill">Step #1 &bull; Ingestion</div>
+                        <div class="step-card-illustration">
+                            <div class="illustration-circle">
+                                <span class="illus-emoji">📄</span>
+                            </div>
+                        </div>
+                        <h3 class="step-card-title">Upload &amp; Extract PDFs</h3>
+                        <p class="step-card-desc">
+                            Upload research papers in PDF format. PyMuPDF extracts full text, calculates word/page counts, creates overlapping text chunks, and computes dense vector embeddings for semantic indexing.
+                        </p>
+                        <div class="step-card-footer">
+                            <span class="card-micro-tag">Module: papers &amp; search</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Hot Neon Pink Card -->
+                    <div class="pop-step-card card-pink tilt-right">
+                        <div class="step-badge-pill">Step #2 &bull; AI Analysis</div>
+                        <div class="step-card-illustration">
+                            <div class="illustration-circle">
+                                <span class="illus-emoji">🧠</span>
+                            </div>
+                        </div>
+                        <h3 class="step-card-title">Structured Insights &amp; RAG</h3>
+                        <p class="step-card-desc">
+                            Automated AI analysis extracts core problems, methodologies, and datasets. Chat interactively with your paper using vector RAG with transparent chunk citations.
+                        </p>
+                        <div class="step-card-footer">
+                            <span class="card-micro-tag">Module: ai_engine (RAG)</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Sunny Yellow Card -->
+                    <div class="pop-step-card card-yellow tilt-left-subtle">
+                        <div class="step-badge-pill">Step #3 &bull; Evaluation</div>
+                        <div class="step-card-illustration">
+                            <div class="illustration-circle">
+                                <span class="illus-emoji">⚖️</span>
+                            </div>
+                        </div>
+                        <h3 class="step-card-title">Score Novelty &amp; Gaps</h3>
+                        <p class="step-card-desc">
+                            Our 6-dimension evaluation framework assesses Novelty (30%), Research Gap (20%), Methodology (20%), Contribution (15%), Evidence (10%), and Clarity (5%) with academic disclaimers.
+                        </p>
+                        <div class="step-card-footer">
+                            <span class="card-micro-tag">Module: evaluation engine</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Periwinkle Purple Card -->
+                    <div class="pop-step-card card-purple tilt-right-subtle">
+                        <div class="step-badge-pill">Step #4 &bull; Collaboration</div>
+                        <div class="step-card-illustration">
+                            <div class="illustration-circle">
+                                <span class="illus-emoji">🤝</span>
+                            </div>
+                        </div>
+                        <h3 class="step-card-title">Match &amp; Collaborate</h3>
+                        <p class="step-card-desc">
+                            Discover researchers based on shared interests and complementary technical skills. Send collaboration requests and co-author projects in shared research workspaces.
+                        </p>
+                        <div class="step-card-footer">
+                            <span class="card-micro-tag">Module: collaboration &amp; projects</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 4: FULL SYSTEM MODULES (Pop-Modern Academic Cards) -->
+    <section class="features-mosaic-section py-4">
+        <div class="container">
+            <div class="section-title-wrap text-center mb-4">
+                <span class="badge-tag-pill">SYSTEM ARCHITECTURE</span>
+                <h2 class="section-huge-title">Complete Research Intelligence Modules</h2>
+                <p class="text-secondary max-w-md">9 modular apps engineered with clean separation of concerns, robust database integrity, and production security.</p>
+            </div>
+
+            <div class="features-mosaic-grid">
+                <!-- Module 1: Evaluation -->
+                <div class="mosaic-card bg-cream">
+                    <div class="mosaic-icon-wrap">⚖️</div>
+                    <h3>6-Dimension Novelty Engine</h3>
+                    <p>Weighted scoring evaluates Novelty, Research Gap, Methodology, Contribution, Evidence, and Clarity with detailed score breakdowns.</p>
+                    <div class="mosaic-pill">App: evaluation</div>
+                </div>
+
+                <!-- Module 2: RAG Assistant -->
+                <div class="mosaic-card bg-cyan-soft">
+                    <div class="mosaic-icon-wrap">💬</div>
+                    <h3>RAG "Ask Your Paper" Chat</h3>
+                    <p>Retrieval-Augmented Generation matches user questions with top-K paper chunk embeddings and returns citations directly from your PDF.</p>
+                    <div class="mosaic-pill">App: ai_engine</div>
+                </div>
+
+                <!-- Module 3: Gap Detection -->
+                <div class="mosaic-card bg-pink-soft">
+                    <div class="mosaic-icon-wrap">🔭</div>
+                    <h3>Research Gap Detector</h3>
+                    <p>Identifies underexplored literature questions, assigns severity levels (High/Medium/Low), and delivers actionable suggestions.</p>
+                    <div class="mosaic-pill">App: ai_engine</div>
+                </div>
+
+                <!-- Module 4: Semantic Search -->
+                <div class="mosaic-card bg-yellow-soft">
+                    <div class="mosaic-icon-wrap">🔮</div>
+                    <h3>Semantic Vector Search</h3>
+                    <p>Vector embeddings computed via OpenAI and searched with NumPy cosine similarity across all ingested literature and chunks.</p>
+                    <div class="mosaic-pill">App: search</div>
+                </div>
+
+                <!-- Module 5: Researchers & Collaboration -->
+                <div class="mosaic-card bg-lilac-soft">
+                    <div class="mosaic-icon-wrap">👥</div>
+                    <h3>Researcher Matchmaking</h3>
+                    <p>Profile registry with ORCID, Google Scholar, and skill taxonomy. Overlap algorithm computes match score and recommends collaborators.</p>
+                    <div class="mosaic-pill">App: researchers &amp; collaboration</div>
+                </div>
+
+                <!-- Module 6: Projects & Workspace -->
+                <div class="mosaic-card bg-mint-soft">
+                    <div class="mosaic-icon-wrap">🚀</div>
+                    <h3>Research Projects Workspace</h3>
+                    <p>Collaborative project management with role-based permissions (Leader, Researcher, Contributor, Reviewer) and paper attachments.</p>
+                    <div class="mosaic-pill">App: projects &amp; dashboard</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 5: FINAL CALL TO ACTION (Warm Retro-Pop Banner) -->
+    <section class="final-cta-section py-5">
+        <div class="container">
+            <div class="cta-pop-banner text-center">
+                <div class="cta-badge">✦ ELEVATE YOUR RESEARCH PIPELINE ✦</div>
+                <h2 class="cta-huge-title">Ready to unbox research that makes history?</h2>
+                <p class="cta-desc">Join students, professors, and independent scholars evaluating originality and discovering collaborative breakthroughs.</p>
+                <div class="cta-buttons flex justify-center gap-3 mt-3">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'papers:upload' %}" class="btn btn-pill-dark btn-lg">Upload Research Paper ➔</a>
+                        <a href="{% url 'papers:list' %}" class="btn btn-pill-white btn-lg">Browse Library</a>
+                    {% else %}
+                        <a href="{% url 'accounts:register' %}" class="btn btn-pill-dark btn-lg">Create Free Account ➔</a>
+                        <a href="{% url 'papers:list' %}" class="btn btn-pill-white btn-lg">Explore Papers</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

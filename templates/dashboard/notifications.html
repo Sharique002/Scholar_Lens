@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Activity &amp; Notifications — Scholar Lens{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="module-work-header">
+        <div>
+            <h1 class="module-work-title">Notifications &amp; Activity Log</h1>
+            <p class="text-secondary mb-0">Complete historical record of research activity, AI runs, and collaborative invitations.</p>
+        </div>
+        <a href="{% url 'dashboard:home' %}" class="btn btn-pill-white">
+            ➔ Back to Dashboard
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Activity Stream -->
+        <div class="col-lg-8">
+            <div class="retro-card">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                    <h3 class="preview-card-title mb-0">Scholarly Audit Trail</h3>
+                    <span class="preview-tag">{{ recent_activities|length }} Events Logged</span>
+                </div>
+                <div>
+                    {% for activity in recent_activities %}
+                        <div class="activity-item-retro">
+                            <div class="activity-retro-icon">
+                                {% if activity.activity_type == 'PAPER_UPLOAD' %}📄
+                                {% elif activity.activity_type == 'AI_ANALYSIS' %}🧠
+                                {% elif activity.activity_type == 'COLLABORATION' %}🤝
+                                {% elif activity.activity_type == 'PROJECT' %}📁
+                                {% else %}✨{% endif %}
+                            </div>
+                            <div class="activity-retro-content">
+                                <p class="activity-retro-text">{{ activity.description }}</p>
+                                <span class="activity-retro-time">{{ activity.created_at|date:"M d, Y &bull; H:i" }}</span>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="text-center py-5 text-secondary">
+                            <div style="font-size: 2.5rem;" class="mb-2">📭</div>
+                            <h4 class="fw-bold">No Activity Recorded</h4>
+                            <p class="small">Events will appear here as you upload papers, generate evaluations, and join projects.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Collaboration Requests -->
+        <div class="col-lg-4">
+            <div class="retro-card">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                    <h3 class="preview-card-title mb-0">Pending Requests</h3>
+                    <span class="preview-chip-status">{{ pending_requests|length }} New</span>
+                </div>
+                <div>
+                    {% for request in pending_requests %}
+                        <div class="p-3 mb-3" style="background: #FFFFFF; border: 2px solid var(--ink-black); border-radius: 12px; box-shadow: 2px 2px 0 var(--ink-black);">
+                            <p class="small fw-bold mb-1">
+                                <strong>{{ request.sender.get_full_name|default:request.sender.username }}</strong>
+                            </p>
+                            <p class="text-secondary small mb-3">
+                                Invited you to collaborate{% if request.project %} on <strong>{{ request.project.title|truncatechars:30 }}</strong>{% endif %}.
+                            </p>
+                            <a href="{% url 'collaboration:list' %}" class="btn btn-pill-yellow w-100 text-center" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;">
+                                Review Invitation ➔
+                            </a>
+                        </div>
+                    {% empty %}
+                        <div class="text-center py-4 text-secondary small">
+                            <p class="mb-0">No pending collaboration invitations at this time.</p>
+                            <a href="{% url 'researchers:list' %}" class="btn btn-pill-white mt-3" style="font-size: 0.8rem;">Explore Directory</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

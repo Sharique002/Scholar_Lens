@@ -1,0 +1,281 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Semantic &amp; Hybrid Literature Search - Scholar Lens{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- 1. TOP METRICS STRIP -->
+    <div class="module-metrics-strip">
+        <div class="metric-strip-item">
+            <div class="metric-strip-num">60% Semantic</div>
+            <div class="metric-strip-label">1,536-dim Embedding Vector Cosine Similarity</div>
+        </div>
+        <div class="metric-strip-item">
+            <div class="metric-strip-num">25% Lexical</div>
+            <div class="metric-strip-label">Full-Text BM25 Keyword &amp; Title Precision</div>
+        </div>
+        <div class="metric-strip-item">
+            <div class="metric-strip-num">10% Domain</div>
+            <div class="metric-strip-label">Academic Discipline &amp; Topic Affinity</div>
+        </div>
+        <div class="metric-strip-item">
+            <div class="metric-strip-num">5% Recency</div>
+            <div class="metric-strip-label">Publication Freshness Calibration</div>
+        </div>
+    </div>
+
+    <!-- 2. MINT SHOWCASE CONTAINER -->
+    <div class="module-showcase-box">
+        <div class="module-showcase-grid">
+            <!-- Left Hero Column -->
+            <div class="module-hero-left">
+                <div class="module-hero-pill">
+                    <span>🔍</span> MODULE 04 &bull; HYBRID SEMANTIC SEARCH
+                </div>
+                <h1 class="module-hero-title">Search Across Deep Semantic Embeddings!</h1>
+                <p class="module-hero-desc">
+                    Go beyond naive string matching. Our hybrid search engine blends 1,536-dimensional conceptual embeddings with lexical precision to discover deeply relevant scientific literature even when papers use different specialized terminology.
+                </p>
+                <div class="flex gap-2 align-center">
+                    <a href="#search-engine-form" class="module-hero-btn">
+                        Explore Search Engine ➔
+                    </a>
+                </div>
+
+                <!-- Interactive Visual Card -->
+                <div class="module-preview-card">
+                    <div class="preview-card-header">
+                        <span class="preview-tag">LIVE HYBRID QUERY SIMULATION</span>
+                        <span class="preview-chip-status">96.4% MATCH ⚡</span>
+                    </div>
+                    <h3 class="preview-card-title">Query: "neural attention mechanisms in sequence models"</h3>
+                    <p class="text-secondary small mb-2">
+                        Top match: <em>Attention Is All You Need</em> &bull; Identified through semantic chunk correlation.
+                    </p>
+                    <div class="preview-chips-row">
+                        <span class="preview-chip coral">Semantic: 0.941 Cosine</span>
+                        <span class="preview-chip yellow">Lexical: Exact Keyword Match</span>
+                        <span class="preview-chip">Domain: Computer Science</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right 5 Feature Cards Stack -->
+            <div class="module-feature-stack">
+                <div class="module-feature-item accent-coral">
+                    <div class="module-feature-icon">⚡</div>
+                    <div class="module-feature-info">
+                        <h4>Hybrid 4-Factor Ranking</h4>
+                        <p>Multi-factor scoring formula: 0.60 semantic + 0.25 lexical + 0.10 research area + 0.05 recency.</p>
+                    </div>
+                </div>
+
+                <div class="module-feature-item">
+                    <div class="module-feature-icon">🎯</div>
+                    <div class="module-feature-info">
+                        <h4>Dynamic Threshold Filtering</h4>
+                        <p>Adjust minimum match thresholds to fine-tune precision and eliminate low-confidence results.</p>
+                    </div>
+                </div>
+
+                <div class="module-feature-item">
+                    <div class="module-feature-icon">📚</div>
+                    <div class="module-feature-info">
+                        <h4>Multi-Faceted Filters</h4>
+                        <p>Narrow searches simultaneously across research domains, publication year, and specific authors.</p>
+                    </div>
+                </div>
+
+                <div class="module-feature-item">
+                    <div class="module-feature-icon">🔬</div>
+                    <div class="module-feature-info">
+                        <h4>Conceptual Search Expansion</h4>
+                        <p>Search by scientific hypotheses and questions without needing exact keyword overlap.</p>
+                    </div>
+                </div>
+
+                <div class="module-feature-item">
+                    <div class="module-feature-icon">📑</div>
+                    <div class="module-feature-info">
+                        <h4>Transparent Match Breakdowns</h4>
+                        <p>Every search result displays transparent contribution percentages from semantic and lexical signals.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. WORKING INTERFACE: SEARCH CONTROLS & RESULTS -->
+    <div class="module-work-header" id="search-engine-form">
+        <div>
+            <h2 class="module-work-title">Hybrid Literature Search Engine</h2>
+            <p class="text-secondary mb-0">Hybrid Ranking Formula: 60% Semantic Vectors &bull; 25% Lexical &bull; 10% Research Area &bull; 5% Recency</p>
+        </div>
+        <span class="badge-tag-pill" style="font-size: 0.8rem; padding: 0.35rem 0.9rem;">
+            Mode: {{ search_type|default:"Hybrid Multi-Factor" }}
+        </span>
+    </div>
+
+    <!-- Faceted Search Box -->
+    <div class="module-filter-bar">
+        <form method="GET" action="{% url 'search:search' %}" class="row g-3">
+            <div class="col-lg-5 col-md-12">
+                <label class="form-label small fw-bold text-muted">Keywords, Hypothesis or Topic</label>
+                {{ form.q }}
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label small fw-bold text-muted">Research Domain</label>
+                {{ form.research_area }}
+            </div>
+            <div class="col-lg-2 col-md-3">
+                <label class="form-label small fw-bold text-muted">Publication Year</label>
+                {{ form.year }}
+            </div>
+            <div class="col-lg-2 col-md-3">
+                <label class="form-label small fw-bold text-muted">Author</label>
+                {{ form.author }}
+            </div>
+
+            <div class="col-12 d-flex flex-wrap justify-content-between align-items-center pt-3 border-top mt-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="form-check form-switch m-0">
+                        {{ form.semantic }}
+                        <label class="form-check-label small fw-semibold" for="{{ form.semantic.id_for_label }}">Semantic Vector Ranking</label>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="small text-muted fw-bold">Min Match:</span>
+                        <div style="width: 120px;">
+                            {{ form.threshold }}
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 mt-2 mt-sm-0">
+                    <a href="{% url 'search:search' %}" class="btn btn-pill-white btn-sm" style="font-size: 0.85rem; padding: 0.4rem 1rem;">Reset</a>
+                    <button type="submit" class="btn btn-pill-yellow btn-sm" style="font-size: 0.85rem; padding: 0.4rem 1.4rem;">
+                        🔍 Search Literature
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 style="font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; margin: 0;">
+            {% if query %}
+                Results for "<span style="color: var(--color-teal);">{{ query }}</span>"
+            {% elif current_area or current_year or current_author %}
+                Filtered Literature
+            {% else %}
+                Indexed Research Literature
+            {% endif %}
+            <span class="preview-chip yellow ms-2" style="font-size: 0.75rem;">
+                {{ total_results|default:page_obj.paginator.count }} found
+            </span>
+        </h4>
+        <span class="text-secondary small fw-bold">Active Engine: {{ search_type }}</span>
+    </div>
+
+    <!-- Paper Cards Grid -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for item in page_obj %}
+            <div class="col">
+                <div class="retro-card">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge-tag-pill" style="font-size: 0.7rem; padding: 0.2rem 0.55rem;">
+                                {{ item.paper.get_research_area_display }}
+                            </span>
+                            {% if item.score is not None %}
+                                <span class="preview-chip {% if item.score >= 80 %}coral{% elif item.score >= 60 %}yellow{% else %}{% endif %}" style="font-size: 0.75rem; padding: 0.2rem 0.6rem;">
+                                    {{ item.score|floatformat:1 }}% Match
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <h4 style="font-family: var(--font-display); font-size: 1.1rem; font-weight: 800; line-height: 1.3; margin-bottom: 0.5rem;">
+                            <a href="{% url 'papers:detail' item.paper.pk %}" style="text-decoration: none; color: var(--ink-black);">
+                                {{ item.paper.title }}
+                            </a>
+                        </h4>
+
+                        <p style="font-size: 0.85rem; color: var(--ink-charcoal); line-height: 1.5; margin-bottom: 0.75rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                            {{ item.paper.abstract|truncatechars:140 }}
+                        </p>
+
+                        <!-- Score breakdown if present -->
+                        {% if item.score_breakdown %}
+                        <div style="background: #FFFFFF; border: 1.5px solid var(--ink-black); border-radius: 8px; padding: 0.4rem 0.6rem; font-size: 0.725rem; margin-bottom: 0.75rem;" class="d-flex justify-content-between text-muted fw-bold">
+                            <span>Semantic: <strong style="color: var(--ink-black);">{{ item.score_breakdown.semantic }}%</strong></span>
+                            <span>Lexical: <strong style="color: var(--ink-black);">{{ item.score_breakdown.lexical }}%</strong></span>
+                            <span>Area: <strong style="color: var(--ink-black);">{{ item.score_breakdown.area }}%</strong></span>
+                        </div>
+                        {% endif %}
+
+                        <div class="small text-muted fw-semibold">
+                            👥
+                            {% for author in item.paper.authors.all|slice:":2" %}
+                                {{ author.name }}{% if not forloop.last %}, {% endif %}
+                            {% empty %}
+                                <span>{{ item.paper.uploader.username }}</span>
+                            {% endfor %}
+                            {% if item.paper.authors.count > 2 %}
+                                <span>+{{ item.paper.authors.count|add:"-2" }} more</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div style="border-top: 1.5px dashed var(--border-light); padding-top: 0.85rem; margin-top: 0.75rem;" class="d-flex justify-content-between align-items-center">
+                        <span class="preview-chip-status" style="font-size: 0.7rem;">{{ item.paper.get_status_display }}</span>
+                        <a href="{% url 'papers:detail' item.paper.pk %}" class="btn btn-sm btn-pill-white" style="font-size: 0.8rem; padding: 0.3rem 0.8rem;">
+                            View Paper ➔
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center py-5">
+                <div class="module-filter-bar text-center py-5">
+                    <h3 style="font-family: var(--font-display); font-weight: 800;">No matching literature found</h3>
+                    <p class="text-secondary">Try broadening your search terms, lowering the match threshold, or selecting "All Research Areas".</p>
+                    <a href="{% url 'search:search' %}" class="btn btn-pill-yellow mt-2">Clear Filters</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav class="mt-5" aria-label="Search results pages">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if current_area %}&research_area={{ current_area }}{% endif %}{% if current_year %}&year={{ current_year }}{% endif %}{% if current_author %}&author={{ current_author }}{% endif %}{% if current_threshold %}&threshold={{ current_threshold }}{% endif %}">Previous</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if current_area %}&research_area={{ current_area }}{% endif %}{% if current_year %}&year={{ current_year }}{% endif %}{% if current_author %}&author={{ current_author }}{% endif %}{% if current_threshold %}&threshold={{ current_threshold }}{% endif %}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if current_area %}&research_area={{ current_area }}{% endif %}{% if current_year %}&year={{ current_year }}{% endif %}{% if current_author %}&author={{ current_author }}{% endif %}{% if current_threshold %}&threshold={{ current_threshold }}{% endif %}">Next</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Next</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

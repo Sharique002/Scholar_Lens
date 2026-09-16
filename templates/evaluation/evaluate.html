@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Evaluate Research: {{ paper.title }}</h2>
+
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    {% if not report %}
+    <div class="card mt-3">
+        <div class="card-body text-center py-5">
+            <h4 class="mb-4">No Evaluation Report Found</h4>
+            <p class="text-muted mb-4">Run an AI-powered evaluation to assess this paper's novelty, methodology, and contribution.</p>
+            {% if can_evaluate %}
+                <form method="post" action="{% url 'evaluation:evaluate' paper.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary btn-lg">Evaluate Research Novelty</button>
+                </form>
+            {% else %}
+                <div class="alert alert-info py-3 px-4 d-inline-block text-start">
+                    <strong><i class="bi bi-shield-lock me-1"></i>Faculty &amp; Admin Authorization Required:</strong>
+                    <p class="small text-secondary mb-0 mt-1">Novelty evaluations and peer reviews can only be initiated by verified Faculty or Admin accounts. Your report will be visible here once evaluated.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="card mt-3">
+        <div class="card-body">
+            <h4>Evaluation Report Available</h4>
+            <p>Overall Score: <strong>{{ report.overall_score }} / 100</strong></p>
+            <a href="{% url 'evaluation:report' report.id %}" class="btn btn-success">View Full Report</a>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="alert alert-warning mt-4 text-sm">
+        <small><strong>Disclaimer:</strong> This AI-generated assessment is an analytical aid and does not certify research originality, novelty, plagiarism status, patentability, or publication acceptance.</small>
+    </div>
+</div>
+{% endblock %}

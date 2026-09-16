@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Paper Summary: {{ paper.title }}</h2>
+
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    {% if not summary %}
+    <form method="post" action="{% url 'ai_engine:summary' paper.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Generate Summary</button>
+    </form>
+    {% else %}
+    <div class="card mt-3">
+        <div class="card-header bg-info text-white">Summary</div>
+        <div class="card-body">
+            <p>{{ summary.summary }}</p>
+            
+            <h5>Research Problem</h5>
+            <p>{{ summary.research_problem }}</p>
+            
+            <h5>Methodology</h5>
+            <p>{{ summary.methodology }}</p>
+
+            <h5>Datasets</h5>
+            <p>{{ summary.datasets }}</p>
+
+            <h5>Key Findings</h5>
+            <p>{{ summary.key_findings }}</p>
+
+            <h5>Limitations</h5>
+            <p>{{ summary.limitations }}</p>
+
+            <h5>Future Work</h5>
+            <p>{{ summary.future_work }}</p>
+
+            <h5>Keywords</h5>
+            <div>
+                {% for kw in summary.keywords %}
+                <span class="badge bg-secondary">{{ kw }}</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="alert alert-warning mt-4 text-sm">
+        <small><strong>Disclaimer:</strong> This content is AI-generated and may contain inaccuracies. Please verify important information.</small>
+    </div>
+</div>
+{% endblock %}
