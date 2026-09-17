@@ -104,6 +104,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'scholar_lens.middleware.ExceptionCaptureMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -216,6 +217,10 @@ LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 
 # Session settings
+SESSION_ENGINE = os.environ.get(
+    'SESSION_ENGINE',
+    'django.contrib.sessions.backends.signed_cookies' if (IS_SERVERLESS and not DATABASE_URL) else 'django.contrib.sessions.backends.db'
+)
 SESSION_COOKIE_AGE = 86400  # 24 hours
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SECURE = not DEBUG
