@@ -19,7 +19,7 @@ def ensure_database_ready():
         from django.db import connection
         from django.core.management import call_command
         tables = connection.introspection.table_names()
-        if 'django_session' not in tables or 'auth_user' not in tables:
+        if 'auth_user' not in tables:
             print("[Vercel Init] Required tables missing. Running migrate...")
             call_command('migrate', interactive=False, verbosity=0)
             print("[Vercel Init] Migrations applied.")

@@ -128,7 +128,7 @@ def error_500(request):
     """Custom 500 error page with error trace capture."""
     import sys, traceback
     exc_type, exc_value, tb = sys.exc_info()
-    error_trace = "".join(traceback.format_exception(exc_type, exc_value, tb)) if exc_type else ""
+    error_trace = "".join(traceback.format_exception(exc_type, exc_value, tb)) if exc_type else getattr(request, '_exception_trace', "")
     if error_trace:
         print("=== DJANGO 500 ERROR TRACEBACK ===")
         print(error_trace)
