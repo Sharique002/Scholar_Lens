@@ -184,15 +184,20 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
+# Serverless / Cloud detection (Vercel, AWS Lambda)
+IS_SERVERLESS = bool(os.environ.get('VERCEL') or os.environ.get('NOW_REGION') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME'))
+
 # Static files
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+# In serverless environments, allow WhiteNoise to serve directly from finders if collectstatic wasn't run
+WHITENOISE_USE_FINDERS = True
 
 # Media files
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = Path('/tmp/media') if IS_SERVERLESS else (BASE_DIR / 'media')
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -214,7 +219,10 @@ CSRF_COOKIE_SECURE = not DEBUG
 
 # Production SSL & Security Headers
 if not DEBUG:
-    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False').lower() in ('true', '1', 'yes')
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'True').lower() in ('true', '1', 'yes')
     if SECURE_SSL_REDIRECT:
         SECURE_HSTS_SECONDS = get_int_env('SECURE_HSTS_SECONDS', 31536000)
         SECURE_HSTS_INCLUDE_SUBDOMAINS = True
@@ -252,17 +260,31 @@ EVALUATION_WEIGHTS = {
     'clarity': 10,              # Clarity (10%)
 }
 
-# Security settings for production
-if not DEBUG:
-    SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    X_FRAME_OPTIONS = 'DENY'
-    SECURE_SSL_REDIRECT = True
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
+# Logging configuration
+# On serverless (e.g. Vercel) filesystem is read-only; stream to console for Vercel Function Logs
+LOG_HANDLERS = ['console']
+HANDLERS_CONFIG = {
+    'console': {
+        'class': 'logging.StreamHandler',
+        'formatter': 'verbose',
+    },
+}
 
-# Logging
+# Only attach file handler if local, in DEBUG, and directory is writable
+if not IS_SERVERLESS and DEBUG:
+    try:
+        log_file = BASE_DIR / 'debug.log'
+        with open(log_file, 'a'):
+            pass
+        HANDLERS_CONFIG['file'] = {
+            'class': 'logging.FileHandler',
+            'filename': log_file,
+            'formatter': 'verbose',
+        }
+        LOG_HANDLERS.append('file')
+    except (OSError, IOError, PermissionError):
+        pass
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -272,25 +294,16 @@ LOGGING = {
             'style': '{',
         },
     },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
-        },
-        'file': {
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'debug.log',
-            'formatter': 'verbose',
-        },
-    },
+    'handlers': HANDLERS_CONFIG,
     'loggers': {
         'django': {
             'handlers': ['console'],
             'level': 'WARNING',
         },
         'scholar_lens': {
-            'handlers': ['console', 'file'],
+            'handlers': LOG_HANDLERS,
             'level': 'DEBUG' if DEBUG else 'INFO',
         },
     },
 }
+
