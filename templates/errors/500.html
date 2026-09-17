@@ -6,6 +6,12 @@
         <div class="h1 text-danger mb-3 font-bold" style="font-size: 6rem;">500</div>
         <h2 class="mb-3">Server Error</h2>
         <p class="text-secondary mb-4">Something went wrong on our end. We're looking into it.</p>
+        {% if error_trace %}
+            <div class="text-start my-4 p-3 bg-dark text-light rounded font-mono" style="max-width: 900px; margin: 0 auto; overflow-x: auto; font-size: 0.85rem; border: 2px solid #ff5e9a;">
+                <div class="text-warning fw-bold mb-2">Diagnostic Traceback:</div>
+                <pre class="m-0" style="white-space: pre-wrap; word-break: break-word; color: #ff8fab;">{{ error_trace }}</pre>
+            </div>
+        {% endif %}
         <a href="{% url 'dashboard:landing' %}" class="btn btn-primary">Return to Home</a>
     </div>
 </div>

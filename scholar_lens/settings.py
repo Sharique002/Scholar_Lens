@@ -135,6 +135,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'scholar_lens.wsgi.application'
 
+# Serverless / Cloud detection (Vercel, AWS Lambda)
+IS_SERVERLESS = bool(
+    os.environ.get('VERCEL')
+    or os.environ.get('VERCEL_ENV')
+    or os.environ.get('VERCEL_REGION')
+    or os.environ.get('NOW_REGION')
+    or os.environ.get('AWS_LAMBDA_FUNCTION_NAME')
+    or not os.access(str(BASE_DIR), os.W_OK)
+)
+
 # Database
 import dj_database_url
 
@@ -162,7 +172,7 @@ elif USE_POSTGRES:
     }
 else:
     # On Vercel serverless, root filesystem is read-only; use /tmp
-    db_file = Path('/tmp/db.sqlite3') if ('VERCEL' in os.environ or os.environ.get('NOW_REGION')) else (BASE_DIR / 'db.sqlite3')
+    db_file = Path('/tmp/db.sqlite3') if IS_SERVERLESS else (BASE_DIR / 'db.sqlite3')
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -184,8 +194,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Serverless / Cloud detection (Vercel, AWS Lambda)
-IS_SERVERLESS = bool(os.environ.get('VERCEL') or os.environ.get('NOW_REGION') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME'))
 
 # Static files
 STATIC_URL = '/static/'

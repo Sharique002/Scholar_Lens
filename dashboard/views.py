@@ -125,5 +125,12 @@ def error_403(request, exception):
 
 
 def error_500(request):
-    """Custom 500 error page."""
-    return render(request, 'errors/500.html', status=500)
+    """Custom 500 error page with error trace capture."""
+    import sys, traceback
+    exc_type, exc_value, tb = sys.exc_info()
+    error_trace = "".join(traceback.format_exception(exc_type, exc_value, tb)) if exc_type else ""
+    if error_trace:
+        print("=== DJANGO 500 ERROR TRACEBACK ===")
+        print(error_trace)
+    return render(request, 'errors/500.html', {'error_trace': error_trace}, status=500)
+
