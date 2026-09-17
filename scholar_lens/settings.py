@@ -24,12 +24,20 @@ def get_int_env(key, default):
     except (ValueError, TypeError):
         return default
 
+# Helper to safely parse string environment variables with empty string safety
+def get_str_env(key, default):
+    val = os.environ.get(key, None)
+    if val is None or str(val).strip() == '':
+        return default
+    return str(val).strip()
+
 # Security
-SECRET_KEY = os.environ.get(
+SECRET_KEY = get_str_env(
     'SECRET_KEY',
     'django-insecure-dev-key-change-this-in-production-abc123xyz'
 )
 DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
+
 
 # Allowed Hosts
 raw_hosts = os.environ.get('ALLOWED_HOSTS', '*,localhost,127.0.0.1,.onrender.com,.vercel.app').split(',')
@@ -149,7 +157,7 @@ IS_SERVERLESS = bool(
 # Database
 import dj_database_url
 
-DATABASE_URL = os.environ.get('DATABASE_URL')
+DATABASE_URL = get_str_env('DATABASE_URL', None)
 USE_POSTGRES = os.environ.get('USE_POSTGRES', 'False').lower() in ('true', '1', 'yes')
 
 if DATABASE_URL:
@@ -249,18 +257,18 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = MAX_UPLOAD_SIZE
 
 # AI Configuration
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
-OPENAI_MODEL = os.environ.get('OPENAI_MODEL', 'gpt-4o-mini')
-OPENAI_EMBEDDING_MODEL = os.environ.get('OPENAI_EMBEDDING_MODEL', 'text-embedding-3-small')
+OPENAI_MODEL = get_str_env('OPENAI_MODEL', 'gpt-4o-mini')
+OPENAI_EMBEDDING_MODEL = get_str_env('OPENAI_EMBEDDING_MODEL', 'text-embedding-3-small')
 
 # Google Scholar Configuration
 SERPAPI_API_KEY = os.environ.get('SERPAPI_API_KEY', '')
-SCHOLAR_API_PROVIDER = os.environ.get('SCHOLAR_API_PROVIDER', 'serpapi')
+SCHOLAR_API_PROVIDER = get_str_env('SCHOLAR_API_PROVIDER', 'serpapi')
 SCHOLAR_API_TIMEOUT = get_int_env('SCHOLAR_API_TIMEOUT', 10)
 SCHOLAR_MAX_RESULTS = get_int_env('SCHOLAR_MAX_RESULTS', 5)
 
 # Site configuration
-SITE_NAME = os.environ.get('SITE_NAME', 'Scholar Lens')
-SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000')
+SITE_NAME = get_str_env('SITE_NAME', 'Scholar Lens')
+SITE_URL = get_str_env('SITE_URL', 'http://localhost:8000')
 
 # Canonical Scholar Lens Evaluation Framework Weights (must sum to 100)
 EVALUATION_WEIGHTS = {
