@@ -5,6 +5,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from django.http import HttpResponse
+from django.urls import re_path
+from django.views.static import serve
 
 urlpatterns = [
     path('favicon.ico', lambda r: HttpResponse(status=204)),
@@ -25,7 +27,11 @@ handler404 = 'dashboard.views.error_404'
 handler403 = 'dashboard.views.error_403'
 handler500 = 'dashboard.views.error_500'
 
-# Serve media and static files in development
+# Serve media files across environments
+urlpatterns += [
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+]
+
+# Serve static files in development (WhiteNoise handles static in production)
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])

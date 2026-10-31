@@ -3,6 +3,8 @@ Custom middleware for Scholar Lens.
 """
 import traceback
 from django.shortcuts import render
+from django.http import Http404
+from django.core.exceptions import PermissionDenied, SuspiciousOperation
 
 
 class ExceptionCaptureMiddleware:
@@ -16,6 +18,8 @@ class ExceptionCaptureMiddleware:
     def __call__(self, request):
         try:
             return self.get_response(request)
+        except (Http404, PermissionDenied, SuspiciousOperation):
+            raise
         except Exception:
             error_trace = traceback.format_exc()
             print("=" * 60)
@@ -30,6 +34,9 @@ class ExceptionCaptureMiddleware:
             )
 
     def process_exception(self, request, exception):
+        if isinstance(exception, (Http404, PermissionDenied, SuspiciousOperation)):
+            return None
+
         error_trace = traceback.format_exc()
         print("=" * 60)
         print("[VIEW EXCEPTION CAPTURED BY MIDDLEWARE]")

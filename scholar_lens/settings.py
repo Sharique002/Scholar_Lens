@@ -41,9 +41,16 @@ DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
 # Allowed Hosts
 raw_hosts = os.environ.get('ALLOWED_HOSTS', '*,localhost,127.0.0.1,.onrender.com,.vercel.app').split(',')
-ALLOWED_HOSTS = [h.strip() for h in raw_hosts if h.strip()]
-if not ALLOWED_HOSTS:
-    ALLOWED_HOSTS = ['*']
+clean_hosts = []
+for h in raw_hosts:
+    h = h.strip()
+    if not h:
+        continue
+    if h.startswith('*.'):
+        clean_hosts.append('.' + h[2:])
+    clean_hosts.append(h)
+
+ALLOWED_HOSTS = clean_hosts if clean_hosts else ['*']
 
 render_host = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if render_host and render_host not in ALLOWED_HOSTS:
@@ -53,38 +60,36 @@ vercel_host = os.environ.get('VERCEL_URL')
 if vercel_host and vercel_host not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(vercel_host)
 
-if '.onrender.com' not in ALLOWED_HOSTS and '*' not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append('.onrender.com')
-if 'scholar-lens.onrender.com' not in ALLOWED_HOSTS and '*' not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append('scholar-lens.onrender.com')
-if '.vercel.app' not in ALLOWED_HOSTS and '*' not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append('.vercel.app')
+# Ensure common deployment domains and wildcards are always permitted
+for default_host in ['.onrender.com', '.vercel.app', 'localhost', '127.0.0.1', 'scholar-lens.onrender.com']:
+    if default_host not in ALLOWED_HOSTS and '*' not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(default_host)
 
 # CSRF Trusted Origins (required for HTTPS in Django 4+)
 raw_csrf = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
 if raw_csrf:
     CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in raw_csrf.split(',') if origin.strip()]
 else:
-    CSRF_TRUSTED_ORIGINS = [
-        'https://*.onrender.com',
-        'https://scholar-lens.onrender.com',
-        'https://*.vercel.app',
-        'http://localhost:8000',
-        'http://127.0.0.1:8000',
-    ]
+    CSRF_TRUSTED_ORIGINS = []
 
-if 'https://*.onrender.com' not in CSRF_TRUSTED_ORIGINS:
-    CSRF_TRUSTED_ORIGINS.append('https://*.onrender.com')
-if 'https://scholar-lens.onrender.com' not in CSRF_TRUSTED_ORIGINS:
-    CSRF_TRUSTED_ORIGINS.append('https://scholar-lens.onrender.com')
-if 'https://*.vercel.app' not in CSRF_TRUSTED_ORIGINS:
-    CSRF_TRUSTED_ORIGINS.append('https://*.vercel.app')
+default_origins = [
+    'https://*.onrender.com',
+    'https://scholar-lens.onrender.com',
+    'https://*.vercel.app',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
+for origin in default_origins:
+    if origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(origin)
+
 if render_host:
-    rendered_origin = f"https://{render_host}"
+    rendered_origin = render_host if render_host.startswith(('http://', 'https://')) else f"https://{render_host}"
     if rendered_origin not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(rendered_origin)
+
 if vercel_host:
-    v_origin = f"https://{vercel_host}"
+    v_origin = vercel_host if vercel_host.startswith(('http://', 'https://')) else f"https://{vercel_host}"
     if v_origin not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(v_origin)
 

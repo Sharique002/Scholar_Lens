@@ -35,3 +35,16 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS("Successfully created faculty user 'faculty'"))
         else:
             self.stdout.write("Faculty user 'faculty' already exists.")
+
+        # Ensure a demo researcher account exists for immediate testing
+        if not User.objects.filter(username='demo_researcher').exists():
+            researcher_user = User.objects.create_user(
+                username='demo_researcher',
+                email='researcher@scholarlens.org',
+                password=os.environ.get('RESEARCHER_PASSWORD', 'Researcher@12345')
+            )
+            researcher_user.profile.role = 'RESEARCHER'
+            researcher_user.profile.save()
+            self.stdout.write(self.style.SUCCESS("Successfully created researcher user 'demo_researcher'"))
+        else:
+            self.stdout.write("Researcher user 'demo_researcher' already exists.")

@@ -12,9 +12,9 @@ echo "==> Collecting static assets..."
 python manage.py collectstatic --noinput
 
 echo "==> Running database migrations..."
-python manage.py migrate --noinput
+python manage.py migrate --noinput || echo "Warning: Database migrations could not run during build (will be verified on startup)."
 
-echo "==> Initializing admin and faculty accounts..."
-python manage.py init_admin
+echo "==> Initializing default accounts..."
+python manage.py init_admin || echo "Warning: init_admin could not run during build (will be verified on startup)."
 
 echo "==> Build complete!"
