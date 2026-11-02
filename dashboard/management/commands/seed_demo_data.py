@@ -1,21 +1,23 @@
 """Management command to create demo/seed data for Scholar Lens."""
 import random
-from datetime import time
+from datetime import time, date, timedelta
 from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
-from accounts.models import UserProfile
-from researchers.models import ResearcherProfile, ResearchInterest, Skill
-from papers.models import ResearchPaper
-from projects.models import ResearchProject, ProjectMember
-from facilities.models import Facility, FacilitySlot
-from funding.models import FundingCall
-from projects.models import Milestone
-from datetime import date, timedelta
+from django.contrib.auth.models import User, Group
 from django.utils import timezone
+
+from accounts.models import UserProfile
+from researchers.models import ResearcherProfile, ResearchInterest, Skill, Department
+from papers.models import ResearchPaper, PaperAuthor, DuplicateCandidate
+from projects.models import ResearchProject, ProjectMember, Milestone
+from facilities.models import Facility, FacilitySlot
+from funding.models import FundingCall, FundingApplication
+from opportunities.models import ResearchOpening, OpportunityApplication
+from researchers.search_index import refresh_search_document
+from collaboration.suggestions import compute_suggestions
 
 
 class Command(BaseCommand):
-    help = 'Seed the database with demo data for development and testing'
+    help = 'Seed the database with baseline demo data for development and testing'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -27,7 +29,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if options['clear']:
             self.stdout.write('Clearing existing demo data...')
+            FundingApplication.objects.filter(title__startswith='[DEMO]').delete()
             FundingCall.objects.filter(title__startswith='[DEMO]').delete()
+            OpportunityApplication.objects.filter(statement__startswith='[DEMO]').delete()
+            ResearchOpening.objects.filter(title__startswith='[DEMO]').delete()
             Milestone.objects.filter(title__startswith='[DEMO]').delete()
             Facility.objects.filter(name__in=[
                 'GPU Compute Cluster',
@@ -35,47 +40,57 @@ class Command(BaseCommand):
                 'Confocal Microscope',
                 'PCR Room'
             ]).delete()
+            DuplicateCandidate.objects.all().delete()
             ResearchPaper.objects.filter(title__startswith='[DEMO]').delete()
             ResearchProject.objects.filter(title__startswith='[DEMO]').delete()
             User.objects.filter(username__startswith='demo_').delete()
             ResearchInterest.objects.filter(name__startswith='[DEMO]').delete()
             Skill.objects.filter(name__startswith='[DEMO]').delete()
 
-        self.stdout.write('Creating demo data for Scholar Lens...')
-        self.stdout.write(self.style.WARNING(
-            'NOTE: All demo data is clearly labeled and is NOT real published research.'
-        ))
+        self.stdout.write('Creating institutional baseline demo data for Scholar Lens...')
 
-        # Create demo interests
+        # 1. Departments
+        dept_cse, _ = Department.objects.get_or_create(
+            code='CSE',
+            defaults={'name': 'Computer Science & Engineering'}
+        )
+        dept_btb, _ = Department.objects.get_or_create(
+            code='BTB',
+            defaults={'name': 'Biotechnology & Bioinformatics'}
+        )
+
+        # 2. Research Interests Taxonomy (with hierarchy)
+        cat_ai, _ = ResearchInterest.objects.get_or_create(name='[DEMO] Artificial Intelligence', defaults={'category': 'AI'})
+        cat_systems, _ = ResearchInterest.objects.get_or_create(name='[DEMO] Computer Systems', defaults={'category': 'SYSTEMS'})
+        cat_bio, _ = ResearchInterest.objects.get_or_create(name='[DEMO] Biological Sciences', defaults={'category': 'BIO'})
+
         interests_data = [
-            ('[DEMO] Machine Learning', 'Artificial Intelligence'),
-            ('[DEMO] Natural Language Processing', 'Artificial Intelligence'),
-            ('[DEMO] Computer Vision', 'Artificial Intelligence'),
-            ('[DEMO] Deep Learning', 'Artificial Intelligence'),
-            ('[DEMO] Data Mining', 'Data Science'),
-            ('[DEMO] Cybersecurity', 'Security'),
-            ('[DEMO] Cloud Computing', 'Systems'),
-            ('[DEMO] Blockchain', 'Distributed Systems'),
-            ('[DEMO] Quantum Computing', 'Emerging Tech'),
-            ('[DEMO] Bioinformatics', 'Interdisciplinary'),
+            ('[DEMO] Machine Learning', 'Artificial Intelligence', cat_ai),
+            ('[DEMO] Natural Language Processing', 'Artificial Intelligence', cat_ai),
+            ('[DEMO] Computer Vision', 'Artificial Intelligence', cat_ai),
+            ('[DEMO] Deep Learning', 'Artificial Intelligence', cat_ai),
+            ('[DEMO] Cloud Computing', 'Systems', cat_systems),
+            ('[DEMO] Distributed Systems', 'Systems', cat_systems),
+            ('[DEMO] Bioinformatics', 'Interdisciplinary', cat_bio),
+            ('[DEMO] Structural Biology', 'Biology', cat_bio),
+            ('[DEMO] Genomic Analysis', 'Interdisciplinary', cat_bio),
         ]
         interests = []
-        for name, category in interests_data:
+        for name, category, parent in interests_data:
             interest, _ = ResearchInterest.objects.get_or_create(
-                name=name, defaults={'category': category}
+                name=name, defaults={'category': category, 'parent': parent}
             )
             interests.append(interest)
 
-        # Create demo skills
+        # 3. Skills
         skills_data = [
             ('[DEMO] Python', 'PROGRAMMING'),
             ('[DEMO] TensorFlow', 'FRAMEWORK'),
             ('[DEMO] PyTorch', 'FRAMEWORK'),
-            ('[DEMO] SQL', 'PROGRAMMING'),
             ('[DEMO] Docker', 'TOOL'),
-            ('[DEMO] Statistics', 'METHOD'),
-            ('[DEMO] R', 'PROGRAMMING'),
-            ('[DEMO] MATLAB', 'TOOL'),
+            ('[DEMO] R Stats', 'PROGRAMMING'),
+            ('[DEMO] Cryo-EM', 'METHOD'),
+            ('[DEMO] Nextflow', 'TOOL'),
         ]
         skills = []
         for name, category in skills_data:
@@ -84,7 +99,9 @@ class Command(BaseCommand):
             )
             skills.append(skill)
 
-        # Create demo users
+        # 4. Demo Users & Roles
+        dean_grp, _ = Group.objects.get_or_create(name='Dean of Research')
+
         demo_users_data = [
             {
                 'username': 'demo_alice',
@@ -92,23 +109,27 @@ class Command(BaseCommand):
                 'first_name': 'Alice',
                 'last_name': 'Johnson',
                 'role': 'FACULTY',
-                'institution': 'Demo University',
-                'bio': '[DEMO USER] AI researcher focusing on NLP and deep learning.',
-                'department': 'Computer Science',
+                'department_obj': dept_cse,
+                'institution': 'LPU Research Division',
+                'bio': 'AI researcher focusing on NLP, foundation models, and deep learning architectures.',
                 'interests': [interests[0], interests[1], interests[3]],
                 'skills': [skills[0], skills[1], skills[2]],
+                'is_staff': False,
+                'verification_status': 'VERIFIED',
             },
             {
                 'username': 'demo_bob',
                 'email': 'bob@demo.scholarlens.test',
                 'first_name': 'Bob',
-                'last_name': 'Smith',
+                'last_name': 'Patel',
                 'role': 'FACULTY',
-                'institution': 'Demo University',
-                'bio': '[DEMO USER] Systems researcher focusing on cloud and distributed computing.',
-                'department': 'Computer Science',
-                'interests': [interests[6], interests[7]],
-                'skills': [skills[0], skills[3], skills[4]],
+                'department_obj': dept_btb,
+                'institution': 'LPU Biotechnology Division',
+                'bio': 'Biotechnology researcher focusing on genomic data pipelines, cryo-EM, and computational biology.',
+                'interests': [interests[4], interests[6], interests[7], interests[8]],
+                'skills': [skills[0], skills[3], skills[4], skills[5]],
+                'is_staff': False,
+                'verification_status': 'VERIFIED',
             },
             {
                 'username': 'demo_carol',
@@ -116,11 +137,13 @@ class Command(BaseCommand):
                 'first_name': 'Carol',
                 'last_name': 'Williams',
                 'role': 'STUDENT',
-                'institution': 'Demo University',
-                'bio': '[DEMO USER] Graduate student working on machine learning applications in bioinformatics.',
-                'department': 'Biotechnology',
-                'interests': [interests[0], interests[9]],
-                'skills': [skills[0], skills[5], skills[6]],
+                'department_obj': dept_cse,
+                'institution': 'LPU Postgraduate Studies',
+                'bio': 'Graduate student exploring machine learning applications in genomics.',
+                'interests': [interests[0], interests[6]],
+                'skills': [skills[0], skills[4]],
+                'is_staff': False,
+                'verification_status': 'PENDING',  # Generates 1 pending verification for review queue!
             },
             {
                 'username': 'demo_custodian',
@@ -128,12 +151,28 @@ class Command(BaseCommand):
                 'first_name': 'Facility',
                 'last_name': 'Custodian',
                 'role': 'FACULTY',
-                'institution': 'Demo University',
-                'bio': '[DEMO USER] Facility custodian and laboratory manager.',
-                'department': 'Research Operations',
-                'interests': [interests[0], interests[6]],
-                'skills': [skills[0], skills[4]],
+                'department_obj': dept_cse,
+                'institution': 'LPU Central Research Facility',
+                'bio': 'Central instrumentation custodian and research operations manager.',
+                'interests': [interests[0]],
+                'skills': [skills[0], skills[3]],
                 'is_staff': True,
+                'verification_status': 'VERIFIED',
+            },
+            {
+                'username': 'demo_dean',
+                'email': 'dean@demo.scholarlens.test',
+                'first_name': 'David',
+                'last_name': 'Dean',
+                'role': 'FACULTY',
+                'department_obj': dept_cse,
+                'institution': 'LPU Executive Office',
+                'bio': 'Dean of Research and Institutional Innovation.',
+                'interests': [interests[0], interests[4]],
+                'skills': [skills[0]],
+                'is_staff': True,
+                'is_dean': True,
+                'verification_status': 'VERIFIED',
             },
         ]
 
@@ -148,26 +187,40 @@ class Command(BaseCommand):
                     'is_staff': user_data.get('is_staff', False),
                 }
             )
-            if created:
+            if created or not user.has_usable_password():
                 user.set_password('demo_password_123')
                 user.save()
-                profile, _ = UserProfile.objects.get_or_create(user=user)
-                profile.role = user_data['role']
-                profile.institution = user_data['institution']
-                profile.bio = user_data['bio']
-                profile.save()
 
-                researcher_profile, _ = ResearcherProfile.objects.get_or_create(user=user)
-                researcher_profile.headline = f"{user_data['role'].capitalize()} in {user_data['department']}"
-                researcher_profile.expertise_summary = user_data['bio']
-                researcher_profile.save()
-                researcher_profile.interests.set(user_data['interests'])
-                researcher_profile.skills.set(user_data['skills'])
-                self.stdout.write(f'  Created demo user: {user.username}')
+            if user_data.get('is_dean'):
+                user.groups.add(dean_grp)
+
+            profile, _ = UserProfile.objects.get_or_create(user=user)
+            profile.role = user_data['role']
+            profile.institution = user_data['institution']
+            profile.bio = user_data['bio']
+            profile.save()
+
+            r_prof, _ = ResearcherProfile.objects.get_or_create(user=user)
+            r_prof.department = user_data['department_obj']
+            r_prof.verification_status = user_data['verification_status']
+            r_prof.headline = f"{user_data['role'].capitalize()} in {user_data['department_obj'].name}"
+            r_prof.expertise_summary = user_data['bio']
+            r_prof.is_available_for_collaboration = True
+            r_prof.save()
+            r_prof.interests.set(user_data['interests'])
+            r_prof.skills.set(user_data['skills'])
+
             created_users.append(user)
+            self.stdout.write(f'  Created user: {user.username} ({user_data["department_obj"].code})')
 
-        # Create demo facilities
+        # Refresh all search documents after papers and interests are assigned
+
+
+        alice_prof = created_users[0].researcher_profile
+        bob_prof = created_users[1].researcher_profile
         staff_custodian = created_users[3]
+
+        # 5. Facilities & Weekly Slots
         facilities_seed = [
             {
                 'name': 'GPU Compute Cluster',
@@ -188,7 +241,7 @@ class Command(BaseCommand):
             {
                 'name': 'Confocal Microscope',
                 'kind': 'EQUIPMENT',
-                'department': 'Biotechnology',
+                'department': 'Biotechnology & Bioinformatics',
                 'location': 'BioScience Block 102',
                 'description': 'High-resolution spectral confocal laser scanning microscope for cellular and tissue imaging.',
                 'capacity': 2,
@@ -196,7 +249,7 @@ class Command(BaseCommand):
             {
                 'name': 'PCR Room',
                 'kind': 'LAB',
-                'department': 'Biotechnology',
+                'department': 'Biotechnology & Bioinformatics',
                 'location': 'Genomics Wing 305',
                 'description': 'Sterile real-time quantitative PCR suite for gene expression analysis and nucleic acid amplification.',
                 'capacity': 6,
@@ -218,7 +271,6 @@ class Command(BaseCommand):
                 }
             )
             if created:
-                # Mon-Fri 09:00 - 17:00
                 for w in range(5):
                     FacilitySlot.objects.get_or_create(
                         facility=facility,
@@ -226,175 +278,149 @@ class Command(BaseCommand):
                         opens=time(9, 0),
                         closes=time(17, 0)
                     )
-                self.stdout.write(f'  Created facility: {facility.name} (Mon-Fri 09:00-17:00)')
 
-        # Create demo papers
-        papers_data = [
-            {
-                'title': '[DEMO] Attention-Based Neural Architectures for Scientific Text Mining',
-                'abstract': '[DEMO ABSTRACT] This paper explores novel attention mechanisms applied to extracting '
-                            'semantic relationships from scientific literature. Evaluated on benchmark NLP datasets. '
-                            'This is demonstration content for development and testing purposes only.',
-                'uploader': created_users[0],
-                'research_area': 'AI_ML',
-                'keywords': 'machine learning, nlp, attention, transformers',
-            },
-            {
-                'title': '[DEMO] Scalable Distributed Systems for Large-Scale Genomic Data Processing',
-                'abstract': '[DEMO ABSTRACT] We propose an architecture for distributing genomic sequence alignment '
-                            'across heterogeneous cloud compute nodes. Results demonstrate significant throughput '
-                            'improvements. Demonstration content only.',
-                'uploader': created_users[1],
-                'research_area': 'BIOINFORMATICS',
-                'keywords': 'distributed systems, genomics, cloud, bioinformatics',
-            },
+        # 6. Seed Publications (≥10 per Department)
+        cse_papers_data = [
+            ("Attention-Based Neural Architectures for Scientific Text Mining", "AI_ML", "attention, nlp, transformers", 2024),
+            ("Federated Learning on Edge Devices: Latency and Privacy Tradeoffs", "AI_ML", "federated learning, edge computing", 2025),
+            ("High-Throughput Approximate Nearest Neighbor Search on Sparse Vectors", "DATA_SCIENCE", "vector search, indexing", 2024),
+            ("Graph Neural Networks for Chemical Molecule Property Prediction", "AI_ML", "gnn, molecular biology", 2025),
+            ("Robust Distributed Consensus in Byzantine Fault-Tolerant Systems", "NETWORKING", "consensus, distributed systems", 2024),
+            ("Zero-Shot Domain Adaptation for Cross-Lingual Information Retrieval", "NLP", "zero-shot, cross-lingual", 2025),
+            ("Optimizing Compiler Pipelines for Heterogeneous Accelerated Hardware", "SOFTWARE_ENGINEERING", "compilers, gpu, llvm", 2024),
+            ("Provably Secure Multi-Party Computation over Untrusted Clouds", "CYBERSECURITY", "mpc, cryptography, security", 2025),
+            ("Autonomous Path Planning for Agile UAV Navigation in Obstacle Fields", "ROBOTICS", "robotics, slam, navigation", 2024),
+            ("Quantum Circuit Synthesis via Deep Reinforcement Learning", "QUANTUM_COMPUTING", "quantum, reinforcement learning", 2025),
         ]
 
-        for p_data in papers_data:
-            paper, created = ResearchPaper.objects.get_or_create(
-                title=p_data['title'],
+        btb_papers_data = [
+            ("Scalable Distributed Systems for Large-Scale Genomic Data Processing", "BIOINFORMATICS", "genomics, cloud, pipelines", 2024),
+            ("Cryo-EM Reconstruction of Ribosomal Subunits at Atomic Resolution", "BIOINFORMATICS", "cryo-em, structural biology", 2025),
+            ("Deep Structural Prediction of Novel Microbial Proteomes", "BIOINFORMATICS", "alphafold, proteome, prediction", 2025),
+            ("CRISPR-Cas12a Target Specificity and Off-Target Genome Dynamics", "BIOINFORMATICS", "crispr, cas12a, genome editing", 2024),
+            ("Single-Cell Transcriptomic Atlas of Immune Cell Subpopulations", "BIOINFORMATICS", "single-cell, rna-seq, immunology", 2025),
+            ("High-Throughput Metabolic Flux Analysis in Engineered Yeast Strains", "BIOINFORMATICS", "metabolic engineering, flux", 2024),
+            ("Metagenomic Profiling of Extremophilic Soil Microorganisms", "BIOINFORMATICS", "metagenomics, microbiomes", 2025),
+            ("Computational Design of De Novo Protein Binders for Viral Antigens", "BIOINFORMATICS", "protein design, de novo", 2024),
+            ("Epigenetic Modulations in Neurodegenerative Disease Progression", "BIOINFORMATICS", "epigenetics, methylation", 2025),
+            ("Nanopore Long-Read Sequencing for Variant Detection in Rare Diseases", "BIOINFORMATICS", "nanopore, long-read, variants", 2025),
+        ]
+
+        cse_papers = []
+        for i, (title, area, kw, year) in enumerate(cse_papers_data):
+            p, _ = ResearchPaper.objects.get_or_create(
+                title=f"[DEMO] {title}",
                 defaults={
-                    'abstract': p_data['abstract'],
-                    'uploader': p_data['uploader'],
-                    'research_area': p_data['research_area'],
-                    'keywords': p_data['keywords'],
-                    'status': 'INDEXED',
+                    'abstract': f"[DEMO ABSTRACT] Research on {title} exploring computational efficiency and institutional impact.",
+                    'uploader': created_users[0],
+                    'research_area': area,
+                    'keywords': kw,
+                    'year': year,
+                    'publication_date': date(year, 3 + (i % 8), 15),
+                    'status': 'PROCESSED',
                 }
             )
-            if created:
-                self.stdout.write(f'  Created paper: {paper.title}')
+            PaperAuthor.objects.get_or_create(
+                paper=p,
+                order=1,
+                defaults={
+                    'name': 'Alice Johnson',
+                    'researcher': alice_prof,
+                    'match_status': 'CONFIRMED',
+                    'match_score': 100.0,
+                }
+            )
+            cse_papers.append(p)
 
-        # Create demo projects
-        projects_data = [
-            {
-                'title': '[DEMO] AI-Powered Academic Research Assistant',
-                'description': '[DEMO PROJECT] Developing an intelligent assistant to help researchers identify '
-                              'relevant literature, summarize papers, and find collaborators across disciplines. '
-                              'This is demo content for development purposes.',
+        btb_papers = []
+        for i, (title, area, kw, year) in enumerate(btb_papers_data):
+            p, _ = ResearchPaper.objects.get_or_create(
+                title=f"[DEMO] {title}",
+                defaults={
+                    'abstract': f"[DEMO ABSTRACT] Research on {title} applying advanced biotechnological pipelines.",
+                    'uploader': created_users[1],
+                    'research_area': area,
+                    'keywords': kw,
+                    'year': year,
+                    'publication_date': date(year, 2 + (i % 9), 10),
+                    'status': 'PROCESSED',
+                }
+            )
+            PaperAuthor.objects.get_or_create(
+                paper=p,
+                order=1,
+                defaults={
+                    'name': 'Bob Patel',
+                    'researcher': bob_prof,
+                    'match_status': 'CONFIRMED',
+                    'match_score': 100.0,
+                }
+            )
+            btb_papers.append(p)
+
+        self.stdout.write(f'  Created {len(cse_papers)} CSE publications and {len(btb_papers)} BTB publications.')
+
+        # 7. Seed Sample Duplicate Candidate for Review Queue
+        dup_copy, _ = ResearchPaper.objects.get_or_create(
+            title="[DEMO] Attention Based Neural Architectures for Scientific Literature Mining",
+            defaults={
+                'abstract': "Duplicate variant of the paper for deduplication queue benchmark.",
+                'uploader': created_users[2],
+                'research_area': 'AI_ML',
+                'year': 2024,
+                'status': 'INDEXED',
+            }
+        )
+        DuplicateCandidate.objects.get_or_create(
+            incoming_paper=dup_copy,
+            existing_paper=cse_papers[0],
+            defaults={
+                'similarity_score': 91.5,
+                'status': DuplicateCandidate.Status.PENDING,
+            }
+        )
+
+        # 8. Seed Sample Ambiguous Author Match for Author Review Queue
+        PaperAuthor.objects.get_or_create(
+            paper=btb_papers[0],
+            name='R. Patel',
+            defaults={
+                'researcher': bob_prof,
+                'match_status': PaperAuthor.MatchStatus.PENDING_REVIEW,
+                'match_score': 84.0,
+                'order': 2,
+            }
+        )
+
+        # 9. Seed Projects & Milestones
+        proj_cse, _ = ResearchProject.objects.get_or_create(
+            title='[DEMO] AI-Powered Academic Research Assistant',
+            defaults={
+                'description': 'Developing an intelligent assistant to help researchers identify literature and collaborate.',
                 'leader': created_users[0],
                 'research_area': 'AI',
                 'status': 'ACTIVE',
                 'is_public': True,
-            },
-            {
-                'title': '[DEMO] Genomic Analysis at Scale',
-                'description': '[DEMO PROJECT] Building computational infrastructure for high-throughput genomic data. '
-                              'This is demo content for development purposes.',
+            }
+        )
+        ProjectMember.objects.get_or_create(project=proj_cse, user=created_users[0], defaults={'role': 'LEADER'})
+        ProjectMember.objects.get_or_create(project=proj_cse, user=created_users[2], defaults={'role': 'RESEARCHER'})
+
+        proj_btb, _ = ResearchProject.objects.get_or_create(
+            title='[DEMO] High-Throughput Genomic Sequence Assembly',
+            defaults={
+                'description': 'Building next-generation distributed sequencing analysis pipelines.',
                 'leader': created_users[1],
                 'research_area': 'BIO',
                 'status': 'ACTIVE',
                 'is_public': True,
-            },
-        ]
+            }
+        )
+        ProjectMember.objects.get_or_create(project=proj_btb, user=created_users[1], defaults={'role': 'LEADER'})
 
-        for proj_data in projects_data:
-            project, created = ResearchProject.objects.get_or_create(
-                title=proj_data['title'],
-                defaults={
-                    'description': proj_data['description'],
-                    'leader': proj_data['leader'],
-                    'research_area': proj_data['research_area'],
-                    'status': proj_data['status'],
-                    'is_public': proj_data['is_public'],
-                }
-            )
-            if created:
-                ProjectMember.objects.get_or_create(
-                    project=project,
-                    user=proj_data['leader'],
-                    defaults={'role': 'LEADER'}
-                )
-                if len(created_users) > 1:
-                    ProjectMember.objects.get_or_create(
-                        project=project,
-                        user=created_users[1],
-                        defaults={'role': 'RESEARCHER'}
-                    )
-                self.stdout.write(f'  Created project: {project.title}')
-
-        # Create demo funding calls (M6)
-        now_dt = timezone.now()
-        funding_data = [
-            {
-                'title': '[DEMO] SERB Early Career Research Award',
-                'sponsor': 'Science and Engineering Research Board (SERB)',
-                'description': '[DEMO] Competitive research grant for young faculty and researchers in artificial intelligence and computing.',
-                'eligibility': 'Faculty within 5 years of PhD award from accredited institutions.',
-                'research_area': 'AI',
-                'amount': 'Up to ₹30 Lakhs',
-                'url': 'https://serb.gov.in',
-                'opens_on': (now_dt - timedelta(days=20)).date(),
-                'deadline': now_dt + timedelta(days=3),
-                'is_published': True,
-            },
-            {
-                'title': '[DEMO] Biotechnology Industry Research Partnership',
-                'sponsor': 'Biotechnology Industry Research Assistance Council (BIRAC)',
-                'description': '[DEMO] Translational research funding linking academia and healthcare industry partners.',
-                'eligibility': 'Universities and research labs partnering with Indian biotechnology startups.',
-                'research_area': 'BIO',
-                'amount': 'Up to ₹50 Lakhs',
-                'url': 'https://birac.nic.in',
-                'opens_on': (now_dt - timedelta(days=15)).date(),
-                'deadline': now_dt + timedelta(days=10),
-                'is_published': True,
-            },
-            {
-                'title': '[DEMO] National Quantum Mission Challenge',
-                'sponsor': 'Department of Science and Technology (DST)',
-                'description': '[DEMO] Long-horizon grant for foundational quantum algorithms and hardware simulation.',
-                'eligibility': 'Institutes of National Importance and recognized research universities.',
-                'research_area': 'OTHER',
-                'amount': 'Up to ₹1 Crore',
-                'url': 'https://dst.gov.in',
-                'opens_on': (now_dt - timedelta(days=5)).date(),
-                'deadline': now_dt + timedelta(days=25),
-                'is_published': True,
-            },
-            {
-                'title': '[DEMO] Clean Energy Innovation Fellowship',
-                'sponsor': 'Ministry of New & Renewable Energy',
-                'description': '[DEMO] Closed grant cycle for grid intelligence and energy software architectures.',
-                'eligibility': 'All researchers.',
-                'research_area': 'SE',
-                'amount': '₹15 Lakhs',
-                'url': 'https://mnre.gov.in',
-                'opens_on': (now_dt - timedelta(days=60)).date(),
-                'deadline': now_dt - timedelta(days=5),
-                'is_published': True,
-            },
-        ]
-
-        student_carol = created_users[2]
-        for f_data in funding_data:
-            call, created = FundingCall.objects.get_or_create(
-                title=f_data['title'],
-                defaults={
-                    'sponsor': f_data['sponsor'],
-                    'description': f_data['description'],
-                    'eligibility': f_data['eligibility'],
-                    'research_area': f_data['research_area'],
-                    'amount': f_data['amount'],
-                    'url': f_data['url'],
-                    'opens_on': f_data['opens_on'],
-                    'deadline': f_data['deadline'],
-                    'is_published': f_data['is_published'],
-                    'created_by': staff_custodian,
-                }
-            )
-            if created:
-                self.stdout.write(f'  Created funding call: {call.title}')
-            if 'SERB' in call.title or 'Biotechnology' in call.title:
-                call.watchers.add(student_carol)
-
-        # Create demo milestones (M7)
         today = timezone.localdate()
-        p1 = ResearchProject.objects.get(title='[DEMO] AI-Powered Academic Research Assistant')
-        p2 = ResearchProject.objects.get(title='[DEMO] Genomic Analysis at Scale')
-
-        # Project 1 milestones
-        m1, _ = Milestone.objects.get_or_create(
-            project=p1,
+        Milestone.objects.get_or_create(
+            project=proj_cse,
             title='[DEMO] Literature Corpus Assembly',
             defaults={
                 'is_deliverable': True,
@@ -403,78 +429,78 @@ class Command(BaseCommand):
                 'due_date': today - timedelta(days=12),
                 'status': 'DONE',
                 'progress': 100,
-                'completed_on': today - timedelta(days=10),
                 'risk': 'ON_TRACK',
             }
         )
-
-        m2, _ = Milestone.objects.get_or_create(
-            project=p1,
-            title='[DEMO] Model Fine-Tuning & Evaluation',
+        Milestone.objects.get_or_create(
+            project=proj_cse,
+            title='[DEMO] Fine-Tuning Multi-Task Evaluator',
             defaults={
                 'is_deliverable': True,
-                'owner': created_users[1],
-                'start_date': today - timedelta(days=14),
-                'due_date': today + timedelta(days=3),
-                'status': 'IN_PROGRESS',
-                'progress': 30,
-                'risk': 'AT_RISK',
-                'risk_reason': 'Due in 3 days, only 30% done',
-            }
-        )
-
-        m3, _ = Milestone.objects.get_or_create(
-            project=p1,
-            title='[DEMO] User Feedback & Validation',
-            defaults={
-                'is_deliverable': False,
                 'owner': created_users[2],
-                'start_date': today + timedelta(days=4),
-                'due_date': today + timedelta(days=20),
-                'status': 'PLANNED',
-                'progress': 0,
-                'risk': 'AT_RISK',
-                'risk_reason': f'Waiting on "{m2.title}"',
-            }
-        )
-        m3.depends_on.set([m2])
-
-        # Project 2 milestones
-        m4, _ = Milestone.objects.get_or_create(
-            project=p2,
-            title='[DEMO] Distributed Pipeline Deployment',
-            defaults={
-                'is_deliverable': True,
-                'owner': created_users[1],
-                'start_date': today - timedelta(days=20),
-                'due_date': today - timedelta(days=2),
-                'status': 'IN_PROGRESS',
-                'progress': 40,
-                'risk': 'OVERDUE',
-                'risk_reason': f'Was due {(today - timedelta(days=2)).strftime("%d %b")}',
-            }
-        )
-
-        m5, _ = Milestone.objects.get_or_create(
-            project=p2,
-            title='[DEMO] Benchmark Dataset Sequencing',
-            defaults={
-                'is_deliverable': False,
-                'owner': created_users[1],
                 'start_date': today - timedelta(days=10),
-                'due_date': today + timedelta(days=15),
+                'due_date': today + timedelta(days=2),
                 'status': 'IN_PROGRESS',
-                'progress': 80,
-                'risk': 'ON_TRACK',
+                'progress': 25,
+                'risk': 'AT_RISK',
+                'risk_reason': 'Behind schedule; only 25% completed with 2 days remaining.',
             }
         )
-        self.stdout.write('  Created 5 demo milestones across seeded projects.')
 
-        self.stdout.write(self.style.SUCCESS('\nDemo data seeded successfully!'))
+        # 10. Seed Funding Calls & Proposals
+        call, _ = FundingCall.objects.get_or_create(
+            title='[DEMO] SERB Core Research Grant in AI',
+            defaults={
+                'sponsor': 'Science & Engineering Research Board',
+                'description': 'Competitive grant for faculty researching foundation models.',
+                'eligibility': 'Faculty researchers.',
+                'research_area': 'AI',
+                'amount': 'Up to ₹40 Lakhs',
+                'deadline': timezone.now() + timedelta(days=20),
+                'is_published': True,
+                'created_by': staff_custodian,
+            }
+        )
+        FundingApplication.objects.get_or_create(
+            call=call,
+            applicant=created_users[0],
+            title='[DEMO] Scalable Text Intelligence System',
+            defaults={
+                'project': proj_cse,
+                'amount_requested': 3000000.00,
+                'amount_awarded': 2800000.00,
+                'status': 'AWARDED',
+                'decision_date': today - timedelta(days=10),
+            }
+        )
+
+        # 11. Seed Opportunities Board
+        opening, _ = ResearchOpening.objects.get_or_create(
+            title='[DEMO] Research Assistant in Deep NLP',
+            defaults={
+                'project': proj_cse,
+                'department': dept_cse,
+                'description': 'Graduate assistantship focusing on transformer fine-tuning.',
+                'spots_available': 2,
+                'deadline': today + timedelta(days=28),
+                'status': 'OPEN',
+                'created_by': created_users[0],
+            }
+        )
+        opening.required_skills.set([skills[0], skills[2]])
+
+        # 12. Refresh Search Document Index & Pre-compute Suggestions
+        refresh_search_document()
+        self.stdout.write('  Refreshed full-text expertise search index.')
+        compute_suggestions(top_k=5)
+        self.stdout.write('  Pre-computed explainable collaboration suggestions.')
+
+        self.stdout.write(self.style.SUCCESS('\nInstitutional baseline demo data seeded successfully!'))
         self.stdout.write(self.style.WARNING(
-            '\nDemo user credentials:\n'
-            '  Username: demo_alice     | Password: demo_password_123\n'
-            '  Username: demo_bob       | Password: demo_password_123\n'
-            '  Username: demo_carol     | Password: demo_password_123\n'
-            '  Username: demo_custodian | Password: demo_password_123 (Staff/Custodian)\n'
+            '\nDemo accounts:\n'
+            '  demo_alice     / demo_password_123 (CSE Faculty)\n'
+            '  demo_bob       / demo_password_123 (BTB Faculty)\n'
+            '  demo_carol     / demo_password_123 (CSE Student - Pending Verification)\n'
+            '  demo_custodian / demo_password_123 (Staff / Facility Custodian)\n'
+            '  demo_dean      / demo_password_123 (Dean of Research / Executive)\n'
         ))

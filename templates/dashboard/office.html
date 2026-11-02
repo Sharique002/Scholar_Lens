@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Research Office Governance Hub | Scholar Lens{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h1 class="h3 fw-bold mb-1" style="color: var(--ums-maroon, #9B2335);">
+                <i class="bi bi-shield-check me-2"></i>Research Office Governance Hub
+            </h1>
+            <p class="text-muted mb-0">Unified administration for verification queues, deduplication reviews, milestone tracking, and institutional audits.</p>
+        </div>
+        <div class="d-flex gap-2 mt-2 mt-md-0">
+            <a href="{% url 'analytics:research' %}" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-graph-up me-1"></i> Research Reports
+            </a>
+            <a href="{% url 'admin:index' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-gear me-1"></i> Django Admin
+            </a>
+        </div>
+    </div>
+
+    <!-- Administrative Action Queues -->
+    <h2 class="h5 fw-bold mb-3" style="color: var(--ums-maroon, #9B2335);">
+        <i class="bi bi-inbox me-1"></i> Pending Institutional Action Queues
+    </h2>
+    <div class="row g-3 mb-4">
+        <!-- Profile Verifications -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm bg-white">
+                <div class="card-body p-3 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted small fw-semibold text-uppercase">Profile Verifications</span>
+                            <span class="badge {% if pending_verifications_count > 0 %}bg-danger{% else %}bg-secondary{% endif %} rounded-pill">
+                                {{ pending_verifications_count }}
+                            </span>
+                        </div>
+                        <h3 class="h4 fw-bold mb-1">{{ pending_verifications_count }}</h3>
+                        <p class="text-muted small mb-0">Researcher profiles requesting institutional verification badge.</p>
+                    </div>
+                    <div class="mt-3 pt-2 border-top">
+                        <a href="{% url 'researchers:verification_queue' %}" class="btn btn-sm btn-outline-primary w-100">
+                            Review Verifications &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Duplicate Publications -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm bg-white">
+                <div class="card-body p-3 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted small fw-semibold text-uppercase">Duplicate Publications</span>
+                            <span class="badge {% if pending_duplicates_count > 0 %}bg-warning text-dark{% else %}bg-secondary{% endif %} rounded-pill">
+                                {{ pending_duplicates_count }}
+                            </span>
+                        </div>
+                        <h3 class="h4 fw-bold mb-1">{{ pending_duplicates_count }}</h3>
+                        <p class="text-muted small mb-0">Flagged pairs requiring merge or distinction decisions.</p>
+                    </div>
+                    <div class="mt-3 pt-2 border-top">
+                        <a href="{% url 'papers:dedup_queue' %}" class="btn btn-sm btn-outline-primary w-100">
+                            Open Dedup Queue &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Author Disambiguation -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm bg-white">
+                <div class="card-body p-3 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted small fw-semibold text-uppercase">Author Matches</span>
+                            <span class="badge {% if pending_authors_count > 0 %}bg-info text-dark{% else %}bg-secondary{% endif %} rounded-pill">
+                                {{ pending_authors_count }}
+                            </span>
+                        </div>
+                        <h3 class="h4 fw-bold mb-1">{{ pending_authors_count }}</h3>
+                        <p class="text-muted small mb-0">Ambiguous paper author attributions requiring confirmation.</p>
+                    </div>
+                    <div class="mt-3 pt-2 border-top">
+                        <a href="{% url 'papers:author_queue' %}" class="btn btn-sm btn-outline-primary w-100">
+                            Match Authors &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- At-Risk Project Milestones -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm bg-white">
+                <div class="card-body p-3 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted small fw-semibold text-uppercase">At-Risk Milestones</span>
+                            <span class="badge {% if at_risk_milestones_count > 0 %}bg-danger{% else %}bg-secondary{% endif %} rounded-pill">
+                                {{ at_risk_milestones_count }}
+                            </span>
+                        </div>
+                        <h3 class="h4 fw-bold mb-1">{{ at_risk_milestones_count }}</h3>
+                        <p class="text-muted small mb-0">Project milestones flagged as overdue or delayed.</p>
+                    </div>
+                    <div class="mt-3 pt-2 border-top">
+                        <a href="{% url 'projects:at_risk' %}" class="btn btn-sm btn-outline-primary w-100">
+                            View At-Risk Projects &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Facility Bookings -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm bg-white">
+                <div class="card-body p-3 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted small fw-semibold text-uppercase">Facility Bookings</span>
+                            <span class="badge {% if pending_bookings_count > 0 %}bg-primary{% else %}bg-secondary{% endif %} rounded-pill">
+                                {{ pending_bookings_count }}
+                            </span>
+                        </div>
+                        <h3 class="h4 fw-bold mb-1">{{ pending_bookings_count }}</h3>
+                        <p class="text-muted small mb-0">Lab, GPU cluster, and instrument slot requests awaiting custodian sign-off.</p>
+                    </div>
+                    <div class="mt-3 pt-2 border-top">
+                        <a href="{% url 'facilities:manage' %}" class="btn btn-sm btn-outline-primary w-100">
+                            Custodian Approvals &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions Card -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm bg-light">
+                <div class="card-body p-3">
+                    <span class="text-muted small fw-semibold text-uppercase d-block mb-2">Institutional Actions</span>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'funding:create' %}" class="btn btn-sm btn-outline-secondary text-start">
+                            <i class="bi bi-cash-stack me-1"></i> Post Funding Call
+                        </a>
+                        <a href="{% url 'opportunities:create' %}" class="btn btn-sm btn-outline-secondary text-start">
+                            <i class="bi bi-briefcase me-1"></i> Post Research Opening
+                        </a>
+                        <a href="{% url 'papers:import_publications' %}" class="btn btn-sm btn-outline-secondary text-start">
+                            <i class="bi bi-cloud-arrow-down me-1"></i> ORCID / Crossref Ingestion
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Institutional Audit Trail -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="h5 fw-bold mb-0">Institutional Audit Trail</h2>
+                <small class="text-muted">Immutable log of verifications, deduplications, matches, and governance decisions.</small>
+            </div>
+            <span class="badge bg-light text-muted border">Security Monitored</span>
+        </div>
+        <div class="card-body p-0 table-responsive">
+            <table class="table table-hover table-striped mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Actor</th>
+                        <th>Action</th>
+                        <th>Target</th>
+                        <th>Audit Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for audit in recent_audits %}
+                    <tr>
+                        <td class="small text-muted">{{ audit.created_at|date:"M d, Y H:i:s" }}</td>
+                        <td>
+                            <strong>{{ audit.actor.username|default:"System Engine" }}</strong>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary-subtle text-dark border">
+                                {{ audit.action }}
+                            </span>
+                        </td>
+                        <td>
+                            <code>{{ audit.target_type }} #{{ audit.target_id }}</code>
+                        </td>
+                        <td class="small text-muted" style="max-width: 300px;">
+                            <div class="text-truncate" title="{{ audit.data }}">
+                                {{ audit.data }}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">No audit entries logged yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

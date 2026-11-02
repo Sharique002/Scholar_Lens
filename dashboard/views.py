@@ -114,6 +114,38 @@ def settings_view(request):
     return render(request, 'dashboard/settings.html')
 
 
+@login_required
+def office_hub(request):
+    """Unified Research Office administrative and governance hub."""
+    from analytics.metrics import is_dean
+    if not (request.user.is_staff or is_dean(request.user)):
+        from django.core.exceptions import PermissionDenied
+        raise PermissionDenied("Only Research Office staff and institutional executives can access this hub.")
+
+    from researchers.models import ResearcherProfile
+    from papers.models import DuplicateCandidate, PaperAuthor
+    from projects.models import Milestone
+    from facilities.models import Booking
+    from dashboard.models import AuditEntry
+
+    pending_verifications_count = ResearcherProfile.objects.filter(verification_status='PENDING').count()
+    pending_duplicates_count = DuplicateCandidate.objects.filter(status='PENDING').count()
+    pending_authors_count = PaperAuthor.objects.filter(match_status='PENDING_REVIEW').count()
+    at_risk_milestones_count = Milestone.objects.filter(risk__in=['AT_RISK', 'OVERDUE'], status__in=['PLANNED', 'IN_PROGRESS']).count()
+    pending_bookings_count = Booking.objects.filter(status='PENDING').count()
+
+    recent_audits = AuditEntry.objects.select_related('actor').order_by('-created_at')[:15]
+
+    return render(request, 'dashboard/office.html', {
+        'pending_verifications_count': pending_verifications_count,
+        'pending_duplicates_count': pending_duplicates_count,
+        'pending_authors_count': pending_authors_count,
+        'at_risk_milestones_count': at_risk_milestones_count,
+        'pending_bookings_count': pending_bookings_count,
+        'recent_audits': recent_audits,
+    })
+
+
 def error_404(request, exception):
     """Custom 404 error page."""
     return render(request, 'errors/404.html', status=404)
