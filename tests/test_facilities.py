@@ -1,7 +1,8 @@
-from datetime import datetime, time, timedelta
+from datetime import datetime, time, timedelta, date
 from django.test import TestCase
 from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction
+from django.urls import reverse
 from django.utils import timezone
 from psycopg2.extras import DateTimeTZRange
 
@@ -146,3 +147,104 @@ class FacilitiesModelTest(TestCase):
         )
         self.assertIsNotNone(b1.pk)
         self.assertIsNotNone(b2.pk)
+
+
+class FacilityViewsTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='fac_user',
+            password='Password123!',
+            email='fac_user@example.com'
+        )
+        self.custodian = User.objects.create_user(
+            username='custodian2',
+            password='Password123!',
+            email='custodian2@example.com'
+        )
+        self.active_lab = Facility.objects.create(
+            name='Advanced Robotics Laboratory',
+            kind='LAB',
+            department='CSE',
+            location='Block 34, Room 101',
+            custodian=self.custodian,
+            is_active=True
+        )
+        self.inactive_facility = Facility.objects.create(
+            name='Decommissioned Server Room',
+            kind='ROOM',
+            department='CSE',
+            location='Basement',
+            custodian=self.custodian,
+            is_active=False
+        )
+        self.biotech_equip = Facility.objects.create(
+            name='Mass Spectrometer Core',
+            kind='EQUIPMENT',
+            department='Biotech',
+            location='Block 28, Lab 3',
+            custodian=self.custodian,
+            is_active=True
+        )
+        # Create slots for active lab (Monday 09:00 - 17:00)
+        FacilitySlot.objects.create(
+            facility=self.active_lab,
+            weekday=0,
+            opens=time(9, 0),
+            closes=time(17, 0)
+        )
+
+    def test_list_shows_active_only(self):
+        self.client.force_login(self.user)
+        r = self.client.get(reverse('facilities:list'))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Advanced Robotics Laboratory')
+        self.assertNotContains(r, 'Decommissioned Server Room')
+
+    def test_list_filters_by_kind_and_department(self):
+        self.client.force_login(self.user)
+        r = self.client.get(reverse('facilities:list'), {'kind': 'LAB', 'department': 'CSE'})
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Advanced Robotics Laboratory')
+        self.assertNotContains(r, 'Mass Spectrometer Core')
+
+    def test_detail_shows_week_calendar(self):
+        self.client.force_login(self.user)
+        # Use next Monday
+        today = timezone.localdate()
+        days_ahead = (0 - today.weekday()) % 7
+        if days_ahead == 0:
+            days_ahead = 7
+        target_monday = today + timedelta(days=days_ahead)
+        start_dt = timezone.make_aware(datetime.combine(target_monday, time(10, 0)))
+        end_dt = timezone.make_aware(datetime.combine(target_monday, time(12, 0)))
+
+        Booking.objects.create(
+            facility=self.active_lab,
+            user=self.user,
+            during=DateTimeTZRange(start_dt, end_dt, bounds='[)'),
+            purpose='Autonomous Rover Calibration',
+            status='APPROVED'
+        )
+        Booking.objects.create(
+            facility=self.active_lab,
+            user=self.user,
+            during=DateTimeTZRange(start_dt + timedelta(hours=2), end_dt + timedelta(hours=2), bounds='[)'),
+            purpose='Secret Cancelled Meeting',
+            status='REJECTED'
+        )
+
+        r = self.client.get(reverse('facilities:detail', args=[self.active_lab.pk]), {'week': target_monday.strftime('%Y-%m-%d')})
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, '09:00')
+        self.assertContains(r, '17:00')
+        self.assertContains(r, 'Autonomous Rover Calibration')
+        self.assertNotContains(r, 'Secret Cancelled Meeting')
+
+    def test_detail_week_param(self):
+        self.client.force_login(self.user)
+        # Valid week
+        r = self.client.get(reverse('facilities:detail', args=[self.active_lab.pk]), {'week': '2026-11-02'})
+        self.assertEqual(r.status_code, 200)
+        # Bad week fallback without 500
+        r_bad = self.client.get(reverse('facilities:detail', args=[self.active_lab.pk]), {'week': 'not-a-date'})
+        self.assertEqual(r_bad.status_code, 200)

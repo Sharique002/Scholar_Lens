@@ -103,9 +103,9 @@ Files: Create `facilities/` (`__init__.py`, `apps.py`, `models.py`, `admin.py`, 
 
 Task 5: Catalogue and weekly calendar (read-only pages)
 Files: `facilities/views.py`, `facilities/urls.py`, `templates/facilities/list.html`, `templates/facilities/detail.html`.
-- [ ] Step 1: Write failing tests.
-- [ ] Step 2: Implement `facility_list` and `facility_detail`.
-- [ ] Step 3: Confirm tests pass, then commit with `feat(facilities): catalogue and weekly availability view`.
+- [x] Step 1: Write failing tests.
+- [x] Step 2: Implement `facility_list` and `facility_detail`.
+- [x] Step 3: Confirm tests pass, then commit with `feat(facilities): catalogue and weekly availability view`.
 
 Task 6: Booking form and concurrency proof
 Files: `facilities/forms.py`, `facilities/views.py`, `templates/facilities/book.html`, `templates/facilities/my_bookings.html`.

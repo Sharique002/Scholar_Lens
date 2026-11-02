@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ facility.name }} | Facilities | Scholar Lens{% endblock %}
+
+{% block breadcrumb %}
+<nav class="ums-breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'dashboard:home' %}">Home</a>
+    <span class="ums-breadcrumb-sep">›</span>
+    <a href="{% url 'facilities:list' %}">Facilities</a>
+    <span class="ums-breadcrumb-sep">›</span>
+    <span class="ums-breadcrumb-current">{{ facility.name }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Facility Overview Card -->
+    <div class="card border rounded-3 shadow-sm mb-4 bg-white">
+        <div class="card-body p-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge" style="background-color: var(--ums-maroon-tint); color: var(--ums-maroon); font-weight: 600;">
+                            {{ facility.get_kind_display }}
+                        </span>
+                        <span class="badge bg-light text-secondary border">Capacity: {{ facility.capacity }}</span>
+                        {% if facility.requires_approval %}
+                        <span class="badge bg-light text-warning border">Requires Custodian Approval</span>
+                        {% else %}
+                        <span class="badge bg-light text-success border">Instant Booking</span>
+                        {% endif %}
+                    </div>
+                    <h1 class="h3 fw-bold mb-2" style="color: var(--ums-maroon);">{{ facility.name }}</h1>
+                    <p class="text-secondary mb-2">
+                        <span>🏢 Department: <strong>{{ facility.department }}</strong></span> &bull;
+                        <span>📍 Location: <strong>{{ facility.location }}</strong></span> &bull;
+                        <span>👤 Custodian: <strong>{{ facility.custodian.get_full_name|default:facility.custodian.username }}</strong></span>
+                    </p>
+                    {% if facility.description %}
+                    <p class="text-secondary small mb-0">{{ facility.description }}</p>
+                    {% endif %}
+                </div>
+                <div class="d-flex flex-column gap-2 align-items-end">
+                    <a href="{% url 'facilities:book' facility.pk %}" class="btn btn-pill-orange">Book this facility</a>
+                    {% if can_manage %}
+                    <a href="{% url 'facilities:manage' %}" class="btn btn-sm btn-outline-dark">Manage Facility</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Weekly Availability Calendar -->
+    <div class="card border rounded-3 shadow-sm bg-white">
+        <div class="card-header bg-white border-bottom py-3 d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <h2 class="h5 fw-bold mb-0" style="color: var(--ums-maroon);">📅 Weekly Availability &amp; Schedule</h2>
+                <span class="text-muted small">Week of Monday, {{ week_start|date:"F d, Y" }}</span>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+                <a href="?week={{ prev_week }}" class="btn btn-sm btn-outline-secondary">‹ Previous week</a>
+                <a href="{% url 'facilities:detail' facility.pk %}" class="btn btn-sm btn-light border">Current Week</a>
+                <a href="?week={{ next_week }}" class="btn btn-sm btn-outline-secondary">Next week ›</a>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 25%;">Day &amp; Date</th>
+                            <th style="width: 30%;">Open Hours</th>
+                            <th style="width: 45%;">Booked / Reserved Times</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for day in days %}
+                        <tr>
+                            <td>
+                                <strong>{{ day.weekday_name }}</strong><br>
+                                <span class="text-muted small">{{ day.date|date:"M d, Y" }}</span>
+                            </td>
+                            <td>
+                                {% if day.slots %}
+                                    {% for slot in day.slots %}
+                                    <span class="badge bg-light text-dark border me-1">
+                                        🕒 {{ slot.opens|time:"H:i" }} – {{ slot.closes|time:"H:i" }}
+                                    </span>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="badge bg-light text-secondary border">Closed</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if day.bookings %}
+                                    <div class="d-flex flex-column gap-1">
+                                        {% for b in day.bookings %}
+                                        <div class="p-2 rounded bg-light border-start border-3 d-flex justify-content-between align-items-center"
+                                             style="border-left-color: {% if b.status == 'APPROVED' %}var(--ums-maroon){% else %}#f59e0b{% endif %} !important;">
+                                            <div>
+                                                <span class="fw-bold small">{{ b.start|time:"H:i" }} – {{ b.end|time:"H:i" }}</span>:
+                                                <span class="small text-secondary">{{ b.purpose }}</span>
+                                                <span class="text-muted small">({{ b.user.get_full_name|default:b.user.username }})</span>
+                                            </div>
+                                            <span class="badge {% if b.status == 'APPROVED' %}bg-success{% else %}bg-warning text-dark{% endif %}" style="font-size: 0.7rem;">
+                                                {{ b.get_status_display }}
+                                            </span>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted small">No active bookings for this day.</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
