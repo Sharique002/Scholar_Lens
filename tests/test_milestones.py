@@ -168,3 +168,43 @@ class MilestoneTests(TestCase):
         self.assertRedirects(res, reverse('projects:list'))
         messages_list = [m.message for m in res.context['messages']]
         self.assertTrue(any("You don't have access" in m for m in messages_list))
+
+    def test_timeline_bar_positions(self):
+        # Project 1 Jan to 31 Jan (30-day span)
+        proj = ResearchProject.objects.create(
+            title="Gantt Timeline Project",
+            description="Testing bar calculations.",
+            leader=self.leader,
+            research_area="AI",
+            status="ACTIVE",
+            start_date=date(2026, 1, 1),
+            end_date=date(2026, 1, 31),
+            is_public=True
+        )
+        # Milestone from 1 Jan to 16 Jan (15 days / 30 days = 50.0%)
+        Milestone.objects.create(
+            project=proj,
+            title="Halfway Milestone",
+            start_date=date(2026, 1, 1),
+            due_date=date(2026, 1, 16),
+            status="PLANNED"
+        )
+        self.client.force_login(self.leader)
+        res = self.client.get(reverse('projects:milestones', args=[proj.pk]))
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, 'style="left:0.0%;width:50.0%"')
+
+    def test_timeline_empty_state(self):
+        empty_proj = ResearchProject.objects.create(
+            title="Empty Milestones Project",
+            description="No milestones.",
+            leader=self.leader,
+            research_area="AI",
+            status="ACTIVE",
+            is_public=True
+        )
+        self.client.force_login(self.leader)
+        res = self.client.get(reverse('projects:milestones', args=[empty_proj.pk]))
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, "No milestones yet.")
+        self.assertContains(res, "Add the first milestone")

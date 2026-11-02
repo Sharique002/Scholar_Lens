@@ -108,7 +108,7 @@
             {% if today_pct is not None %}
             <div class="ums-today-marker" style="position: absolute; left: {{ today_pct }}%; top: 0; bottom: 0; width: 2px; background: #0052CC; z-index: 3;" title="Today"></div>
             {% endif %}
-            <div class="ums-timeline-bar ums-risk-{{ m.risk|lower }}" style="left:{{ item.left }}%;width:{{ item.width }}%;" title="{{ m.title }}: {{ m.get_risk_display }}">
+            <div class="ums-timeline-bar ums-risk-{{ m.risk|lower }}" style="left:{{ item.left }}%;width:{{ item.width }}%" title="{{ m.title }}: {{ m.get_risk_display }}">
               <span style="font-size: 10px; font-weight: 600; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{ m.get_risk_display }}</span>
             </div>
           </div>

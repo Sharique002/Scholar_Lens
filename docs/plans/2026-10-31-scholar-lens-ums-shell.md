@@ -150,8 +150,8 @@ Files: Modify `projects/`, add `Milestone` model and form with cycle check.
 Task 12: Timeline (Gantt-style) view
 Files: `projects/views.py`, `templates/projects/milestones.html`, `ums.css`.
 - [ ] Step 1: Write failing test (`test_timeline_bar_positions`).
-- [ ] Step 2: Implement timeline view with status badges and today marker.
-- [ ] Step 3: Confirm test passes, then commit with `feat(projects): milestone timeline view`.
+- [x] Step 2: Implement timeline view with status badges and today marker.
+- [x] Step 3: Confirm test passes, then commit with `feat(projects): milestone timeline view`.
 
 Task 13: Scheduled at-risk detection and board
 Files: Create `projects/risk.py` and `check_milestone_risk` management command. Modify `projects/views.py` (`at_risk_board`).
