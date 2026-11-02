@@ -66,10 +66,10 @@ Interfaces:
 - Produces these hooks: `body.ums-body`, `.ums-header`, `.ums-brand`, `.ums-header-search`, `.ums-bell`, `#mobileMenuBtn.mobile-menu-btn > .hamburger`, `#sidebarCollapse`, `.ums-layout`, `aside.ums-sidebar#navLinks`, `a.ums-nav-link` (+ `.is-active`) containing `.ums-nav-icon` and `.ums-nav-label`, `.ums-main` (+ `.ums-main--full` for guests), `.ums-breadcrumb`, `.ums-footer`.
 - Produces the template block `{% block breadcrumb %}`.
 - [ ] Step 1: Write failing tests (`tests/test_ums_shell.py`).
-- [ ] Step 2: Run the tests and confirm they fail.
+- [x] Step 2: Run the tests and confirm they fail.
 - [ ] Step 3: Rewrite `base.html`.
 - [ ] Step 4: Add the collapse handler to `static/js/main.js`.
-- [ ] Step 5: Run the tests and confirm they pass. Run full suite.
+- [x] Step 5: Run the tests and confirm they pass. Run full suite.
 - [ ] Step 6: Commit. `feat(ui): simple UMS header + 7-item sidebar shell`
 
 Task 2: Theme in ums.css

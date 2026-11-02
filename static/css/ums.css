@@ -1,0 +1,34 @@
+/* Scholar Lens — LPU UMS-Inspired Design System & Layout */
+:root {
+    --primary: #9B2335;
+    --primary-dark: #7A1B29;
+    --primary-light: #FBEFF1;
+    --color-orange: #F37021;
+    --color-orange-dark: #E0601A;
+    --color-text-dark: #1F2328;
+    --color-muted: #5B6270;
+    --border-color: #E2E4E8;
+    --bg-page: #F5F5F7;
+    --bg-card: #FFFFFF;
+}
+
+.top-marquee-strip {
+    background-color: var(--primary);
+    color: #FFFFFF;
+    font-size: 13px;
+    height: 32px;
+    line-height: 32px;
+    overflow: hidden;
+    position: relative;
+    border-bottom: 1px solid var(--primary-dark);
+}
+
+.marquee-track {
+    animation-duration: 75s !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .marquee-track {
+        animation: none !important;
+    }
+}

@@ -157,6 +157,31 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // 11. Desktop Sidebar Collapse (LPU UMS Shell)
+    const sidebarCollapseBtn = document.getElementById('sidebarCollapse');
+    if (sidebarCollapseBtn) {
+        try {
+            const savedState = localStorage.getItem('ums-sidebar');
+            if (savedState === '1') {
+                document.body.classList.add('sidebar-collapsed');
+                sidebarCollapseBtn.setAttribute('aria-expanded', 'false');
+                sidebarCollapseBtn.textContent = '»';
+            } else {
+                sidebarCollapseBtn.setAttribute('aria-expanded', 'true');
+                sidebarCollapseBtn.textContent = '«';
+            }
+        } catch (e) {}
+
+        sidebarCollapseBtn.addEventListener('click', () => {
+            const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
+            sidebarCollapseBtn.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+            sidebarCollapseBtn.textContent = isCollapsed ? '»' : '«';
+            try {
+                localStorage.setItem('ums-sidebar', isCollapsed ? '1' : '0');
+            } catch (e) {}
+        });
+    }
 });
 
 // CSRF Token Helper for AJAX
