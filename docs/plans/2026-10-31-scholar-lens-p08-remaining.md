@@ -130,42 +130,42 @@ Task 7: Suggestion engine (expertise adjacency + co-authorship gap)
 Files:
 - Create: `collaboration/suggestions.py`, `compute_collaboration_suggestions` command, `tests/test_suggestions.py`.
 - Modify: `collaboration/models.py`, `collaboration/views.py`.
-- [ ] Step 1: Write failing tests.
-- [ ] Step 2: Implement it.
-- [ ] Step 3: Commit. `feat(collaboration): stored suggestions with adjacency and co-authorship gap`
+- [x] Step 1: Write failing tests.
+- [x] Step 2: Implement it.
+- [x] Step 3: Commit. `feat(collaboration): stored suggestions with adjacency and co-authorship gap`
 
 Task 8: Collaboration graph
 Files: `collaboration/views.py` (`graph`, `graph_data`), `collaboration/urls.py`, `templates/collaboration/graph.html`, `tests/test_suggestions.py`.
-- [ ] Step 1: Write failing tests.
-- [ ] Step 2: Implement Cytoscape.js 3.28.1 graph view with accessible table.
-- [ ] Step 3: Commit. `feat(collaboration): collaboration network graph`
+- [x] Step 1: Write failing tests.
+- [x] Step 2: Implement Cytoscape.js 3.28.1 graph view with accessible table.
+- [x] Step 3: Commit. `feat(collaboration): collaboration network graph`
 
 Part I — M4 Research opportunities
 
 Task 9: opportunities app — openings board and applications
 Files: Create `opportunities/` app, views, models, forms, templates, `tests/test_opportunities.py`.
-- [ ] Step 1: Write failing tests.
-- [ ] Step 2: Implement it.
-- [ ] Step 3: Commit. `feat(opportunities): research openings board and application workflow`
+- [x] Step 1: Write failing tests.
+- [x] Step 2: Implement it.
+- [x] Step 3: Commit. `feat(opportunities): research openings board and application workflow`
 
 Task 10: Funding applications (needed for the M9 success rate)
 Files: `funding/models.py` (`FundingApplication`), `funding/views.py`, `funding/urls.py`, `templates/funding/detail.html`, `tests/test_funding.py`.
-- [ ] Step 1: Write failing test, implement and commit.
-- [ ] Step 2: Commit. `feat(funding): track funding applications`
+- [x] Step 1: Write failing test, implement and commit.
+- [x] Step 2: Commit. `feat(funding): track funding applications`
 
 Part J — M9 Reporting & analytics
 
 Task 11: analytics app — academic-year research report
 Files: Create `analytics/` app, metrics, views, templates, `tests/test_analytics.py`.
-- [ ] Step 1: Write failing tests (`test_full_year_report_exports`, `test_productivity_dean_only`).
-- [ ] Step 2: Implement metrics, Dean-only productivity checks, CSV exports.
-- [ ] Step 3: Commit. `feat(analytics): academic-year research report with CSV export`
+- [x] Step 1: Write failing tests (`test_full_year_report_exports`, `test_productivity_dean_only`).
+- [x] Step 2: Implement metrics, Dean-only productivity checks, CSV exports.
+- [x] Step 3: Commit. `feat(analytics): academic-year research report with CSV export`
 
 Task 12: Research Office hub, seed baseline, docs, final check
 Files: Create `templates/dashboard/office.html`, `docs/deduplication.md`, `docs/p08-modules.md`. Modify `dashboard/views.py`, `seed_demo_data`.
-- [ ] Build Research Office hub.
-- [ ] Seed baseline with publications.
-- [ ] Author `docs/deduplication.md`.
-- [ ] Author `docs/p08-modules.md`.
-- [ ] Browser check at 1366px and 375px.
-- [ ] Commit. `feat(dashboard): research office hub; docs and seeded baseline`
+- [x] Build Research Office hub.
+- [x] Seed baseline with publications.
+- [x] Author `docs/deduplication.md`.
+- [x] Author `docs/p08-modules.md`.
+- [x] Browser check at 1366px and 375px.
+- [x] Commit. `feat(dashboard): research office hub; docs and seeded baseline`
