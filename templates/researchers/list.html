@@ -120,14 +120,22 @@
     <!-- Filter Bar -->
     <div class="module-filter-bar">
         <form method="GET" action="{% url 'researchers:list' %}" class="row g-3 align-items-center">
-            <div class="col-md-7">
-                <input type="text" name="q" value="{{ query }}" class="form-control retro-input w-100" placeholder="Search researchers by name, headline, institution, or keyword...">
+            <div class="col-md-5">
+                <input type="text" name="q" value="{{ query }}" class="form-control retro-input w-100" placeholder="Search researchers...">
             </div>
             <div class="col-md-3">
+                <select name="department" class="form-select retro-input w-100">
+                    <option value="">All Departments</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept.code }}" {% if selected_dept == dept.code or selected_dept == dept.pk|stringformat:'s' %}selected{% endif %}>{{ dept.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
                 <select name="availability" class="form-select retro-input w-100">
-                    <option value="">All Availability Statuses</option>
-                    <option value="true" {% if availability == 'true' %}selected{% endif %}>🟢 Available for Collaboration</option>
-                    <option value="false" {% if availability == 'false' %}selected{% endif %}>⚪ Not Currently Available</option>
+                    <option value="">All Statuses</option>
+                    <option value="true" {% if availability == 'true' %}selected{% endif %}>🟢 Available</option>
+                    <option value="false" {% if availability == 'false' %}selected{% endif %}>⚪ Busy</option>
                 </select>
             </div>
             <div class="col-md-2">
@@ -152,8 +160,13 @@
                                     <a href="{% url 'researchers:detail' profile.pk %}" style="text-decoration: none; color: var(--ink-black);">
                                         {{ profile.user.get_full_name|default:profile.user.username }}
                                     </a>
+                                    {% if profile.verification_status == 'VERIFIED' %}
+                                    <span class="badge bg-success" style="font-size: 0.65rem; vertical-align: middle;">✓ Verified</span>
+                                    {% endif %}
                                 </h4>
-                                {% if profile.user.profile.institution %}
+                                {% if profile.department %}
+                                <small class="text-muted fw-semibold">{{ profile.department.code }} &bull; {{ profile.department.name }}</small>
+                                {% elif profile.user.profile.institution %}
                                 <small class="text-muted fw-semibold">{{ profile.user.profile.institution }}</small>
                                 {% endif %}
                             </div>

@@ -73,9 +73,9 @@ Files:
 - Modify: `researchers/models.py`, `researchers/forms.py`, `researchers/views.py`, `researchers/urls.py`, `researchers/admin.py`, `dashboard/models.py`, `dashboard/admin.py`, `templates/researchers/edit_profile.html` and `templates/researchers/detail.html`.
 - Create: `dashboard/permissions.py`, `dashboard/audit.py`, `templates/researchers/verification_queue.html` and the migrations.
 - Test: `tests/test_profiles.py`.
-- [ ] Step 1: Write failing tests.
-- [ ] Step 2: Implement it, then run makemigrations researchers dashboard. Confirm tests pass, then run full suite.
-- [ ] Step 3: Commit. `feat(researchers): departments, taxonomy parent, profile verification, audit log`
+- [x] Step 1: Write failing tests.
+- [x] Step 2: Implement it, then run makemigrations researchers dashboard. Confirm tests pass, then run full suite.
+- [x] Step 3: Commit. `feat(researchers): departments, taxonomy parent, profile verification, audit log`
 
 Part F — M2 Publication register
 

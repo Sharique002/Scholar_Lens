@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile Verification Queue — Scholar Lens{% endblock %}
+
+{% block breadcrumb %}
+<nav class="ums-breadcrumb" aria-label="Breadcrumb">
+  <a href="{% url 'dashboard:home' %}">Home</a> &rsaquo;
+  <a href="{% url 'researchers:list' %}">Researchers</a> &rsaquo;
+  <span aria-current="page">Verification Queue</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="ums-page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+  <div>
+    <h1 style="font-size: 24px; font-weight: 700; color: var(--color-ink); margin: 0 0 4px 0;">Researcher Verification Queue</h1>
+    <p style="margin: 0; color: var(--color-muted); font-size: 14px;">Review and authenticate institutional faculty & researcher credentials, ORCID iDs, and department affiliations.</p>
+  </div>
+  <div>
+    <span style="background: var(--primary-light); color: var(--primary); font-weight: 700; padding: 6px 14px; border-radius: 20px; font-size: 13px;">
+      {{ pending_count }} pending
+    </span>
+  </div>
+</div>
+
+{% if not pending_profiles %}
+<div class="ums-card" style="background: #fff; border: 1px solid var(--border-dark); border-radius: 8px; padding: 48px; text-align: center;">
+  <div style="font-size: 40px; margin-bottom: 12px;">✅</div>
+  <h3 style="font-size: 18px; font-weight: 600; margin: 0 0 8px 0;">No profiles awaiting verification</h3>
+  <p style="color: var(--color-muted); font-size: 14px; margin: 0;">All submitted researcher verification requests have been audited.</p>
+</div>
+{% else %}
+
+<div style="display: flex; flex-direction: column; gap: 16px;">
+  {% for profile in pending_profiles %}
+  <div class="ums-card" style="background: #fff; border: 1px solid var(--border-dark); border-radius: 8px; padding: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
+      <div>
+        <h3 style="font-size: 17px; font-weight: 700; margin: 0 0 4px 0;">
+          <a href="{% url 'researchers:detail' profile.pk %}" style="color: var(--primary); text-decoration: none;">
+            {{ profile.user.get_full_name|default:profile.user.username }}
+          </a>
+          <span style="color: var(--color-muted); font-size: 13px; font-weight: normal;">(@{{ profile.user.username }})</span>
+        </h3>
+        <div style="font-size: 13px; color: var(--color-ink); margin-bottom: 8px;">
+          <strong>Department:</strong> {{ profile.department.name|default:"Unassigned" }} ({{ profile.department.code|default:"&mdash;" }}) &bull;
+          <strong>ORCID:</strong> {% if profile.orcid_id %}<a href="https://orcid.org/{{ profile.orcid_id }}" target="_blank" rel="noopener" style="color: #A6CE39; font-weight: 600;">{{ profile.orcid_id }} &nearr;</a>{% else %}<span style="color: var(--color-muted);">None</span>{% endif %}
+        </div>
+        <div style="font-size: 13px; color: var(--color-muted); line-height: 1.4;">
+          {{ profile.expertise_summary|truncatewords:30|default:"No expertise summary provided." }}
+        </div>
+      </div>
+
+      <!-- Approve / Reject Decision Controls -->
+      <div style="display: flex; flex-direction: column; gap: 8px; min-width: 260px;">
+        <form method="post" action="{% url 'researchers:verify' profile.pk %}" style="margin: 0;">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="approve">
+          <button type="submit" class="btn-primary" style="width: 100%; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer;">
+            ✓ Approve Verification
+          </button>
+        </form>
+
+        <details style="font-size: 12px;">
+          <summary style="cursor: pointer; color: var(--color-danger); font-weight: 600; text-align: center;">✕ Reject with note...</summary>
+          <form method="post" action="{% url 'researchers:verify' profile.pk %}" style="margin-top: 8px; background: #FFF5F5; padding: 12px; border-radius: 6px; border: 1px solid #FFD6D6;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="reject">
+            <label style="display: block; font-weight: 600; margin-bottom: 4px; font-size: 11px;">Rejection Note:</label>
+            <input type="text" name="note" placeholder="Reason (e.g. invalid affiliation)..." class="form-input" style="width: 100%; font-size: 12px; padding: 6px; margin-bottom: 8px;" required>
+            <button type="submit" style="width: 100%; background: var(--color-danger); color: #fff; border: none; padding: 6px; border-radius: 4px; font-weight: 600; cursor: pointer;">
+              Confirm Rejection
+            </button>
+          </form>
+        </details>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
