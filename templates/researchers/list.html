@@ -112,9 +112,14 @@
             <h2 class="module-work-title">Scholarly Researchers Directory</h2>
             <p class="text-secondary mb-0">Discover potential research partners, co-authors, and mentors across academic disciplines.</p>
         </div>
-        <a href="{% url 'collaboration:recommendations' %}" class="btn btn-pill-dark">
-            ⚡ View AI Recommendations
-        </a>
+        <div class="d-flex gap-2">
+            <a href="{% url 'search:expertise' %}" class="btn btn-pill-white">
+                🔍 Faceted Expertise Search
+            </a>
+            <a href="{% url 'collaboration:recommendations' %}" class="btn btn-pill-dark">
+                ⚡ View AI Recommendations
+            </a>
+        </div>
     </div>
 
     <!-- Filter Bar -->

@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Expertise Discovery &amp; Search - Scholar Lens{% endblock %}
+
+{% block breadcrumbs %}
+<div class="ums-breadcrumbs mb-3">
+    <a href="{% url 'dashboard:index' %}">Dashboard</a> &rsaquo;
+    <a href="{% url 'researchers:list' %}">Researchers</a> &rsaquo;
+    <span>Expertise Search</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 fw-bold mb-1" style="color: var(--ums-maroon-dark, #7A1B29);">Expertise Discovery &amp; Search</h1>
+            <p class="text-muted mb-0">Faceted full-text exploration across researchers, departmental expertise, skills, and publications.</p>
+        </div>
+        <a href="{% url 'collaboration:recommendations' %}" class="btn btn-outline-primary">
+            ⚡ AI Recommendations
+        </a>
+    </div>
+
+    <!-- Search Form Bar -->
+    <div class="card shadow-sm border mb-4">
+        <div class="card-body">
+            <form method="GET" action="{% url 'search:expertise' %}" class="row g-2 align-items-center">
+                {% if selected_dept %}
+                <input type="hidden" name="department" value="{{ selected_dept }}">
+                {% endif %}
+                {% if selected_avail %}
+                <input type="hidden" name="availability" value="{{ selected_avail }}">
+                {% endif %}
+                {% if selected_interest %}
+                <input type="hidden" name="interest" value="{{ selected_interest }}">
+                {% endif %}
+                <div class="col-md-10">
+                    <input type="text" name="q" value="{{ query }}" class="form-control form-control-lg" placeholder="Search by research domain, technique, programming skill, or keyword (e.g. Robotics, Diffusion Models, NLP)...">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary btn-lg w-100">Search</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left Facet Filters Sidebar -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border mb-3">
+                <div class="card-header bg-light fw-bold text-uppercase small">
+                    Department
+                </div>
+                <div class="list-group list-group-flush small">
+                    <a href="?{% if query %}q={{ query }}&{% endif %}{% if selected_avail %}availability={{ selected_avail }}&{% endif %}{% if selected_interest %}interest={{ selected_interest }}{% endif %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if not selected_dept %}active{% endif %}">
+                        All Departments
+                    </a>
+                    {% for dept in dept_facets %}
+                    <a href="?department={{ dept.code }}{% if query %}&q={{ query }}{% endif %}{% if selected_avail %}&availability={{ selected_avail }}{% endif %}{% if selected_interest %}&interest={{ selected_interest }}{% endif %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if selected_dept == dept.code %}active{% endif %}">
+                        <span>{{ dept.name }}</span>
+                        <span class="badge bg-secondary rounded-pill">{{ dept.profile_count }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="card shadow-sm border mb-3">
+                <div class="card-header bg-light fw-bold text-uppercase small">
+                    Collaboration Availability
+                </div>
+                <div class="list-group list-group-flush small">
+                    <a href="?{% if query %}q={{ query }}&{% endif %}{% if selected_dept %}department={{ selected_dept }}&{% endif %}{% if selected_interest %}interest={{ selected_interest }}{% endif %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if not selected_avail %}active{% endif %}">
+                        All Statuses
+                    </a>
+                    <a href="?availability=true{% if query %}&q={{ query }}{% endif %}{% if selected_dept %}&department={{ selected_dept }}{% endif %}{% if selected_interest %}&interest={{ selected_interest }}{% endif %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if selected_avail == 'true' %}active{% endif %}">
+                        <span>🟢 Available</span>
+                        <span class="badge bg-success rounded-pill">{{ available_count }}</span>
+                    </a>
+                    <a href="?availability=false{% if query %}&q={{ query }}{% endif %}{% if selected_dept %}&department={{ selected_dept }}{% endif %}{% if selected_interest %}&interest={{ selected_interest }}{% endif %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if selected_avail == 'false' %}active{% endif %}">
+                        <span>⚪ Busy</span>
+                        <span class="badge bg-secondary rounded-pill">{{ busy_count }}</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border">
+                <div class="card-header bg-light fw-bold text-uppercase small">
+                    Top Research Domains
+                </div>
+                <div class="list-group list-group-flush small">
+                    {% for interest in interest_facets %}
+                    <a href="?interest={{ interest.name }}{% if query %}&q={{ query }}{% endif %}{% if selected_dept %}&department={{ selected_dept }}{% endif %}{% if selected_avail %}&availability={{ selected_avail }}{% endif %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if selected_interest == interest.name %}active{% endif %}">
+                        <span>{{ interest.name }}</span>
+                        <span class="badge bg-light text-dark border rounded-pill">{{ interest.profile_count }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if query or selected_dept or selected_avail or selected_interest %}
+            <div class="mt-3">
+                <a href="{% url 'search:expertise' %}" class="btn btn-outline-secondary w-100 btn-sm">Clear All Filters</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Results Column -->
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted small fw-bold">Showing {{ page_obj.paginator.count }} researcher{{ page_obj.paginator.count|pluralize }}</span>
+                {% if query %}
+                <span class="badge bg-light text-dark border">Query: "{{ query }}"</span>
+                {% endif %}
+            </div>
+
+            <div class="row row-cols-1 row-cols-md-2 g-3">
+                {% for profile in page_obj %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm border">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h5 class="fw-bold mb-1">
+                                        <a href="{% url 'researchers:detail' profile.pk %}" class="text-decoration-none text-dark">
+                                            {{ profile.user.get_full_name|default:profile.user.username }}
+                                        </a>
+                                        {% if profile.verification_status == 'VERIFIED' %}
+                                        <span class="badge bg-success small">✓ Verified</span>
+                                        {% endif %}
+                                    </h5>
+                                    {% if profile.department %}
+                                    <span class="badge bg-light text-dark border">{{ profile.department.code }} &bull; {{ profile.department.name }}</span>
+                                    {% endif %}
+                                </div>
+                                {% if profile.is_available_for_collaboration %}
+                                <span class="badge bg-success">🟢 Available</span>
+                                {% else %}
+                                <span class="badge bg-light text-muted border">⚪ Busy</span>
+                                {% endif %}
+                            </div>
+
+                            <p class="text-muted small mb-2 fw-semibold">{{ profile.headline|default:"Academic Researcher" }}</p>
+
+                            {% if profile.expertise_summary %}
+                            <p class="small text-secondary mb-3">{{ profile.expertise_summary|truncatewords:20 }}</p>
+                            {% endif %}
+
+                            <!-- Interests -->
+                            <div class="d-flex flex-wrap gap-1 mb-3">
+                                {% for interest in profile.interests.all|slice:":3" %}
+                                <span class="badge bg-light text-dark border">{{ interest.name }}</span>
+                                {% endfor %}
+                                {% for skill in profile.skills.all|slice:":2" %}
+                                <span class="badge bg-secondary">{{ skill.name }}</span>
+                                {% endfor %}
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center border-top pt-2">
+                                <small class="text-muted">
+                                    {% if profile.years_experience %}{{ profile.years_experience }} yr{{ profile.years_experience|pluralize }} exp{% endif %}
+                                </small>
+                                <a href="{% url 'researchers:detail' profile.pk %}" class="btn btn-sm btn-outline-primary">
+                                    View Profile &rsaquo;
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-5">
+                    <div class="card p-5">
+                        <h4 class="fw-bold text-muted mb-2">No matching researchers found</h4>
+                        <p class="text-muted mb-3">Try adjusting your keywords or clearing selected department and domain filters.</p>
+                        <a href="{% url 'search:expertise' %}" class="btn btn-outline-primary">Reset Filters</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav class="mt-4" aria-label="Expertise pagination">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_dept %}&department={{ selected_dept }}{% endif %}{% if selected_avail %}&availability={{ selected_avail }}{% endif %}{% if selected_interest %}&interest={{ selected_interest }}{% endif %}">Previous</a></li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item"><a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if selected_dept %}&department={{ selected_dept }}{% endif %}{% if selected_avail %}&availability={{ selected_avail }}{% endif %}{% if selected_interest %}&interest={{ selected_interest }}{% endif %}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_dept %}&department={{ selected_dept }}{% endif %}{% if selected_avail %}&availability={{ selected_avail }}{% endif %}{% if selected_interest %}&interest={{ selected_interest }}{% endif %}">Next</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

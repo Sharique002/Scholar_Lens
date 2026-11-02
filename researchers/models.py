@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.postgres.search import SearchVectorField
+from django.contrib.postgres.indexes import GinIndex
 
 
 class Department(models.Model):
@@ -90,6 +92,7 @@ class ResearcherProfile(models.Model):
     )
     verified_at = models.DateTimeField(null=True, blank=True)
     verification_note = models.CharField(max_length=255, blank=True)
+    search_document = SearchVectorField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -98,6 +101,7 @@ class ResearcherProfile(models.Model):
             models.Index(fields=['user']),
             models.Index(fields=['department']),
             models.Index(fields=['verification_status']),
+            GinIndex(fields=['search_document'], name='researcher_search_doc_idx'),
         ]
 
     def __str__(self):

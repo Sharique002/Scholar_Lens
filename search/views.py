@@ -63,3 +63,78 @@ def search_view(request):
 
     return render(request, 'search/search.html', context)
 
+
+
+from django.contrib.postgres.search import SearchQuery, SearchRank
+from django.db import models
+from django.db.models import Count
+from researchers.models import ResearcherProfile, Department, ResearchInterest
+
+
+@login_required
+def expertise_search(request):
+    """Faceted full-text expertise search across researcher profiles."""
+    query = request.GET.get('q', '').strip()
+    selected_dept = request.GET.get('department', '').strip()
+    selected_avail = request.GET.get('availability', '').strip()
+    selected_interest = request.GET.get('interest', '').strip()
+
+    profiles = (
+        ResearcherProfile.objects
+        .select_related('user', 'department')
+        .prefetch_related('interests', 'skills')
+    )
+
+    if query:
+        search_query = SearchQuery(query)
+        profiles = (
+            profiles
+            .filter(search_document=search_query)
+            .annotate(rank=SearchRank(models.F('search_document'), search_query))
+            .order_by('-rank', '-created_at')
+        )
+    else:
+        profiles = profiles.order_by('-created_at')
+
+    # Apply faceted filters
+    if selected_dept:
+        if selected_dept.isdigit():
+            profiles = profiles.filter(department_id=int(selected_dept))
+        else:
+            profiles = profiles.filter(department__code__iexact=selected_dept)
+
+    if selected_avail == 'true':
+        profiles = profiles.filter(is_available_for_collaboration=True)
+    elif selected_avail == 'false':
+        profiles = profiles.filter(is_available_for_collaboration=False)
+
+    if selected_interest:
+        profiles = profiles.filter(interests__name__iexact=selected_interest)
+
+    dept_facets = Department.objects.annotate(
+        profile_count=Count('researchers')
+    ).filter(profile_count__gt=0).order_by('-profile_count')
+
+    interest_facets = ResearchInterest.objects.annotate(
+        profile_count=Count('researchers')
+    ).filter(profile_count__gt=0).order_by('-profile_count')[:15]
+
+    available_count = ResearcherProfile.objects.filter(is_available_for_collaboration=True).count()
+    busy_count = ResearcherProfile.objects.filter(is_available_for_collaboration=False).count()
+
+    paginator = Paginator(profiles, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'query': query,
+        'selected_dept': selected_dept,
+        'selected_avail': selected_avail,
+        'selected_interest': selected_interest,
+        'dept_facets': dept_facets,
+        'interest_facets': interest_facets,
+        'available_count': available_count,
+        'busy_count': busy_count,
+    }
+    return render(request, 'search/expertise.html', context)

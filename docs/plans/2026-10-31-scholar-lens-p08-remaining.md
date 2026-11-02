@@ -120,9 +120,9 @@ Task 6: Stored search document and faceted expertise search
 Files:
 - Modify: `researchers/models.py`, `search/views.py`, `search/urls.py`, `templates/researchers/list.html`.
 - Create: `researchers/search_index.py`, `rebuild_expertise_index` command, `templates/search/expertise.html`, `tests/test_expertise_search.py`.
-- [ ] Step 1: Write failing tests (`test_under_one_second`).
-- [ ] Step 2: Implement it.
-- [ ] Step 3: Commit. `feat(search): faceted full-text expertise search across departments`
+- [x] Step 1: Write failing tests (`test_under_one_second`).
+- [x] Step 2: Implement it.
+- [x] Step 3: Commit. `feat(search): faceted full-text expertise search across departments`
 
 Part H — M5 Collaboration identification
 
