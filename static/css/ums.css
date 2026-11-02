@@ -517,3 +517,65 @@ main.ums-main--full {
         max-width: 100% !important;
     }
 }
+
+/* 8. Dashboard Quick Actions */
+.ums-quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.ums-quick-action {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: #FFFFFF;
+    border: 1px solid var(--border-dark);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    text-decoration: none;
+    color: var(--text-primary);
+    box-shadow: var(--shadow-pop);
+    transition: border-color 0.15s ease, transform 0.1s ease;
+}
+
+.ums-quick-action:hover {
+    border-color: var(--primary);
+    transform: translateY(-1px);
+}
+
+.ums-quick-action:hover .ums-qa-title {
+    color: var(--primary);
+}
+
+.ums-qa-icon {
+    font-size: 1.5rem;
+    min-width: 32px;
+    display: flex;
+    justify-content: center;
+}
+
+.ums-qa-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.ums-qa-title {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.2;
+    transition: color 0.15s ease;
+}
+
+.ums-qa-hint {
+    font-size: 12px;
+    color: var(--ink-muted);
+    margin-top: 2px;
+}
+
+@media (max-width: 600px) {
+    .ums-quick-actions {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

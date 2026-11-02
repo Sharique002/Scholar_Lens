@@ -84,11 +84,11 @@ Files: Create `static/css/ums.css`.
 
 Task 3: Dashboard quick actions
 Files: Modify `templates/dashboard/home.html`. Test: add to `tests/test_ums_shell.py`.
-- [ ] Step 1: Write a failing test.
-- [ ] Step 2: Confirm the test fails.
-- [ ] Step 3: Add the quick actions at top of `{% block content %}`.
-- [ ] Step 4: Style quick actions in `ums.css`.
-- [ ] Step 5: Confirm test passes, then commit with `feat(ui): dashboard quick actions`.
+- [x] Step 1: Write a failing test.
+- [x] Step 2: Confirm the test fails.
+- [x] Step 3: Add the quick actions at top of `{% block content %}`.
+- [x] Step 4: Style quick actions in `ums.css`.
+- [x] Step 5: Confirm test passes, then commit with `feat(ui): dashboard quick actions`.
 
 Part B — M8 Facility & Asset Management
 

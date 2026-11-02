@@ -57,3 +57,16 @@ class UmsShellTest(TestCase):
 
     def test_fake_ratings_footer_removed(self):
         self.assertNotContains(self.client.get(reverse('dashboard:landing')), 'PUBLIC RATINGS')
+
+    def test_dashboard_quick_actions(self):
+        self.client.force_login(self.student)
+        r = self.client.get(reverse('dashboard:home'))
+        self.assertContains(r, 'class="ums-quick-actions"')
+        for name in [
+            'papers:upload',
+            'projects:create',
+            'collaboration:recommendations',
+            'search:search',
+        ]:  # Task 4 adds 'facilities:list'
+            self.assertContains(r, f'href="{reverse(name)}" class="ums-quick-action"')
+        self.assertContains(r, 'Latest Research &amp; Emerging Technologies')
