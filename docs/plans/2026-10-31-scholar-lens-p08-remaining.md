@@ -101,10 +101,10 @@ Task 4: ORCID + Crossref import
 Files:
 - Create: `papers/importers.py`, `ImportRun` model, `papers/management/commands/import_publications.py`, `templates/papers/import.html`, fixtures, `tests/test_import.py`.
 - Modify: `papers/views.py`, `papers/urls.py`.
-- [ ] Step 1: Record fixtures.
-- [ ] Step 2: Write failing tests (`test_import_resilient_to_malformed`).
-- [ ] Step 3: Implement it.
-- [ ] Step 4: Commit. `feat(papers): ORCID and Crossref import resilient to malformed records`
+- [x] Step 1: Record fixtures.
+- [x] Step 2: Write failing tests (`test_import_resilient_to_malformed`).
+- [x] Step 3: Implement it.
+- [x] Step 4: Commit. `feat(papers): ORCID and Crossref import resilient to malformed records`
 
 Task 5: Author disambiguation and match queue
 Files:

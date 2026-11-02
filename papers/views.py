@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 
-from .models import ResearchPaper, DuplicateCandidate
+from .models import ResearchPaper, DuplicateCandidate, ImportRun
 from .forms import PaperUploadForm, PaperEditForm, PaperAuthorFormSet
 from dashboard.permissions import is_office
 
@@ -276,3 +276,44 @@ def unmerge_paper(request, paper_id):
         messages.success(request, f"Restored '{paper.title}' as an active paper.")
         return redirect('papers:detail', pk=paper.pk)
     return redirect('papers:detail', pk=paper.pk)
+
+
+@login_required
+def import_publications_view(request):
+    """View to search and import publications from ORCID and Crossref."""
+    if not is_office(request.user):
+        raise PermissionDenied("Only Research Office staff can import external publication batches.")
+
+    recent_runs = ImportRun.objects.select_related('initiated_by').all()[:20]
+
+    if request.method == 'POST':
+        source = request.POST.get('source', '').lower()
+        query_val = request.POST.get('query', '').strip()
+        from .importers import fetch_orcid_works, fetch_crossref, import_records
+
+        try:
+            if source == 'orcid':
+                raw_items = fetch_orcid_works(query_val)
+            elif source == 'crossref':
+                raw_items = fetch_crossref(query_val, rows=int(request.POST.get('rows', 20)))
+            else:
+                messages.error(request, "Invalid import source specified.")
+                return redirect('papers:import_publications')
+
+            run = ImportRun.objects.create(
+                source=source.upper(),
+                query=query_val,
+                initiated_by=request.user
+            )
+
+            res = import_records(raw_items, source=source.upper(), import_run=run, actor=request.user)
+            messages.success(
+                request,
+                f"Import completed: {res['imported']} imported, {res['duplicates']} duplicates skipped, {res['skipped']} malformed."
+            )
+        except Exception as e:
+            messages.error(request, f"Import failed: {str(e)}")
+
+        return redirect('papers:import_publications')
+
+    return render(request, 'papers/import.html', {'recent_runs': recent_runs})

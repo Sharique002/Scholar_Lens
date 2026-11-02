@@ -312,3 +312,37 @@ class DuplicateCandidate(models.Model):
 
     def __str__(self):
         return f"DuplicateCandidate: #{self.incoming_paper_id} -> #{self.existing_paper_id} ({self.similarity_score:.1f}%)"
+
+
+class ImportRun(models.Model):
+    class Source(models.TextChoices):
+        ORCID = 'ORCID', _('ORCID')
+        CROSSREF = 'CROSSREF', _('Crossref')
+
+    class Status(models.TextChoices):
+        STARTED = 'STARTED', _('Started')
+        SUCCESS = 'SUCCESS', _('Success')
+        FAILED = 'FAILED', _('Failed')
+
+    source = models.CharField(max_length=50, choices=Source.choices)
+    query = models.CharField(max_length=255)
+    total_fetched = models.PositiveIntegerField(default=0)
+    imported_count = models.PositiveIntegerField(default=0)
+    duplicate_count = models.PositiveIntegerField(default=0)
+    skipped_malformed = models.PositiveIntegerField(default=0)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.STARTED)
+    error_message = models.TextField(blank=True, default='')
+    initiated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='import_runs'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"ImportRun {self.source} '{self.query}' ({self.status}) - {self.imported_count} imported"

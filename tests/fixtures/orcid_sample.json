@@ -1,0 +1,110 @@
+{
+  "group": [
+    {
+      "work-summary": [
+        {
+          "put-code": 1001,
+          "title": {
+            "title": {
+              "value": "High-Throughput Genomic Sequencing Analysis"
+            }
+          },
+          "journal-title": {
+            "value": "Bioinformatics Journal"
+          },
+          "type": "journal-article",
+          "publication-date": {
+            "year": {
+              "value": "2023"
+            }
+          },
+          "external-ids": {
+            "external-id": [
+              {
+                "external-id-type": "doi",
+                "external-id-value": "10.1093/bioinformatics/btad001"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "work-summary": [
+        {
+          "put-code": 1002,
+          "title": null,
+          "type": "journal-article",
+          "publication-date": {
+            "year": {
+              "value": "2022"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "work-summary": [
+        {
+          "put-code": 1003,
+          "title": {
+            "title": {
+              "value": "Neural Machine Translation with Latent Variables"
+            }
+          },
+          "type": "conference-paper",
+          "publication-date": {
+            "year": {
+              "value": "2021a"
+            }
+          },
+          "external-ids": {
+            "external-id": [
+              {
+                "external-id-type": "doi",
+                "external-id-value": "10.18653/v1/2021.acl-long.999"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "work-summary": [
+        {
+          "put-code": 1004,
+          "title": {
+            "title": {
+              "value": "<i>Quantum</i> <b>Error Correction</b> Protocols"
+            }
+          },
+          "type": "journal-article",
+          "publication-date": {
+            "year": {
+              "value": "2024"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "work-summary": [
+        {
+          "put-code": 1005,
+          "title": {
+            "title": {
+              "value": "Large-Scale Graph Processing Benchmarks"
+            }
+          },
+          "short-description": "GIANT_ABSTRACT_PLACEHOLDER",
+          "type": "journal-article",
+          "publication-date": {
+            "year": {
+              "value": "2022"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ResearchPaper, PaperAuthor, PaperChunk, PaperEmbedding, DuplicateCandidate
+from .models import ResearchPaper, PaperAuthor, PaperChunk, PaperEmbedding, DuplicateCandidate, ImportRun
 
 
 class PaperAuthorInline(admin.TabularInline):
@@ -30,3 +30,10 @@ class PaperChunkAdmin(admin.ModelAdmin):
 
 
 admin.site.register(PaperEmbedding)
+
+
+@admin.register(ImportRun)
+class ImportRunAdmin(admin.ModelAdmin):
+    list_display = ('id', 'source', 'query', 'imported_count', 'duplicate_count', 'skipped_malformed', 'status', 'created_at')
+    list_filter = ('source', 'status')
+    search_fields = ('query',)

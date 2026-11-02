@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Import Publications - Research Office - Scholar Lens{% endblock %}
+
+{% block breadcrumbs %}
+<div class="ums-breadcrumbs mb-3">
+    <a href="{% url 'dashboard:index' %}">Dashboard</a> &rsaquo;
+    <span>Research Office</span> &rsaquo;
+    <span>Import Publications</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 fw-bold mb-1" style="color: var(--ums-maroon-dark, #7A1B29);">Import Publications</h1>
+            <p class="text-muted mb-0">Batch import research metadata directly from ORCID Record API and Crossref REST API.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- ORCID Import Form -->
+        <div class="col-md-6">
+            <div class="card shadow-sm border h-100">
+                <div class="card-header bg-light">
+                    <h5 class="fw-bold mb-0">Import by Researcher ORCID</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="source" value="orcid">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-uppercase">ORCID iD</label>
+                            <input type="text" name="query" class="form-control" placeholder="0000-0002-1825-0097" required>
+                            <div class="form-text">Imports all public works recorded under the given ORCID iD.</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Fetch &amp; Import Works</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Crossref Import Form -->
+        <div class="col-md-6">
+            <div class="card shadow-sm border h-100">
+                <div class="card-header bg-light">
+                    <h5 class="fw-bold mb-0">Import from Crossref</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="source" value="crossref">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-uppercase">Search Query / Title / Topic</label>
+                            <input type="text" name="query" class="form-control" placeholder="e.g. Graph Neural Networks" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-uppercase">Maximum Records</label>
+                            <select name="rows" class="form-select">
+                                <option value="10">10 records</option>
+                                <option value="20" selected>20 records</option>
+                                <option value="50">50 records</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Search &amp; Import</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Import Runs -->
+    <div class="card shadow-sm border mt-4">
+        <div class="card-header bg-light">
+            <h5 class="fw-bold mb-0">Recent Import Runs</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light small text-uppercase">
+                    <tr>
+                        <th>Date</th>
+                        <th>Source</th>
+                        <th>Query</th>
+                        <th>Total Fetched</th>
+                        <th>Imported</th>
+                        <th>Duplicates</th>
+                        <th>Skipped</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for run in recent_runs %}
+                    <tr>
+                        <td>{{ run.created_at|date:"d M Y, H:i" }}</td>
+                        <td><span class="badge bg-secondary">{{ run.get_source_display }}</span></td>
+                        <td class="fw-bold">{{ run.query }}</td>
+                        <td>{{ run.total_fetched }}</td>
+                        <td><span class="text-success fw-bold">{{ run.imported_count }}</span></td>
+                        <td><span class="text-warning fw-bold">{{ run.duplicate_count }}</span></td>
+                        <td><span class="text-muted">{{ run.skipped_malformed }}</span></td>
+                        <td>
+                            {% if run.status == 'SUCCESS' %}
+                                <span class="badge bg-success">Success</span>
+                            {% elif run.status == 'STARTED' %}
+                                <span class="badge bg-info">In Progress</span>
+                            {% else %}
+                                <span class="badge bg-danger">Failed</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">No external imports have been run yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
