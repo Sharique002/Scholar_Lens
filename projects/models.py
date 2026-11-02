@@ -110,7 +110,8 @@ class Milestone(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.project.title}: {self.title}"
+        project_title = self.project.title if hasattr(self, "project") and self.project_id else "No Project"
+        return f"{project_title}: {self.title}"
 
     def save(self, *args, **kwargs):
         if self.status == 'DONE':

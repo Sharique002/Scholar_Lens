@@ -156,8 +156,8 @@ Files: `projects/views.py`, `templates/projects/milestones.html`, `ums.css`.
 Task 13: Scheduled at-risk detection and board
 Files: Create `projects/risk.py` and `check_milestone_risk` management command. Modify `projects/views.py` (`at_risk_board`).
 - [ ] Step 1: Write failing tests.
-- [ ] Step 2: Implement risk checking logic, command, and board view.
-- [ ] Step 3: Confirm tests pass, then commit with `feat(projects): scheduled milestone at-risk detection and board`.
+- [x] Step 2: Implement risk checking logic, command, and board view.
+- [x] Step 3: Confirm tests pass, then commit with `feat(projects): scheduled milestone at-risk detection and board`.
 
 Task 14: Seed, docs, scheduling, browser check (all parts)
 - [ ] Extend `seed_demo_data` with funding calls and milestones.

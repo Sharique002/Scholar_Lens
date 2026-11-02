@@ -1,11 +1,15 @@
 """Tests for M7 Project Milestones and Dependency Rules."""
+from io import StringIO
 from datetime import date, timedelta
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.core.management import call_command
 from projects.models import ResearchProject, ProjectMember, Milestone
 from projects.forms import MilestoneForm
+from projects.risk import compute_risk, run_risk_check
+from dashboard.models import ResearchActivity
 
 
 class MilestoneTests(TestCase):
@@ -208,3 +212,168 @@ class MilestoneTests(TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertContains(res, "No milestones yet.")
         self.assertContains(res, "Add the first milestone")
+
+
+class MilestoneRiskTests(TestCase):
+    def setUp(self):
+        self.staff = User.objects.create_user('staff_lead', password='password123', is_staff=True)
+        self.leader = User.objects.create_user('risk_leader', password='password123')
+        self.owner = User.objects.create_user('risk_owner', password='password123')
+        self.today = date(2026, 11, 2)
+
+        self.project = ResearchProject.objects.create(
+            title="Autonomic Vehicles",
+            description="LIDAR and sensor fusion.",
+            leader=self.leader,
+            research_area="AI",
+            status="ACTIVE",
+            is_public=True
+        )
+
+    def test_rule_1_done_is_on_track(self):
+        m = Milestone(status='DONE', due_date=self.today - timedelta(days=5), progress=100)
+        risk, reason = compute_risk(m, today=self.today, days=7, min_progress=50)
+        self.assertEqual(risk, 'ON_TRACK')
+        self.assertEqual(reason, '')
+
+    def test_rule_2_past_due_is_overdue(self):
+        m = Milestone(status='IN_PROGRESS', due_date=self.today - timedelta(days=3), progress=80)
+        risk, reason = compute_risk(m, today=self.today, days=7, min_progress=50)
+        self.assertEqual(risk, 'OVERDUE')
+        self.assertIn('Was due', reason)
+
+    def test_rule_3_near_due_low_progress_is_at_risk(self):
+        m = Milestone(status='IN_PROGRESS', due_date=self.today + timedelta(days=4), progress=20)
+        risk, reason = compute_risk(m, today=self.today, days=7, min_progress=50)
+        self.assertEqual(risk, 'AT_RISK')
+        self.assertIn('Due in 4 days, only 20% done', reason)
+
+    def test_rule_4_dependency_blocked_is_at_risk(self):
+        m_dep = Milestone.objects.create(
+            project=self.project,
+            title="Hardware Setup",
+            due_date=self.today + timedelta(days=12),
+            status='IN_PROGRESS',
+            risk='OVERDUE'
+        )
+        m = Milestone.objects.create(
+            project=self.project,
+            title="Software Benchmark",
+            due_date=self.today + timedelta(days=15),
+            status='PLANNED',
+            progress=0
+        )
+        m.depends_on.add(m_dep)
+        risk, reason = compute_risk(m, today=self.today, days=7, min_progress=50)
+        self.assertEqual(risk, 'AT_RISK')
+        self.assertEqual(reason, 'Waiting on "Hardware Setup"')
+
+    def test_rule_5_otherwise_is_on_track(self):
+        m = Milestone(project=self.project, status='IN_PROGRESS', due_date=self.today + timedelta(days=20), progress=10)
+        risk, reason = compute_risk(m, today=self.today, days=7, min_progress=50)
+        self.assertEqual(risk, 'ON_TRACK')
+        self.assertEqual(reason, '')
+
+    def test_thresholds_configurable(self):
+        m = Milestone.objects.create(
+            project=self.project,
+            title="Threshold Test Milestone",
+            due_date=self.today + timedelta(days=6),
+            progress=20,
+            status='IN_PROGRESS'
+        )
+        # With days=3, 6 days left is ON_TRACK
+        res3 = run_risk_check(today=self.today, days=3, min_progress=50)
+        m.refresh_from_db()
+        self.assertEqual(m.risk, 'ON_TRACK')
+
+        # With days=10, 6 days left is AT_RISK
+        res10 = run_risk_check(today=self.today, days=10, min_progress=50)
+        m.refresh_from_db()
+        self.assertEqual(m.risk, 'AT_RISK')
+
+    def test_notifies_only_on_change(self):
+        m = Milestone.objects.create(
+            project=self.project,
+            title="Notification Test",
+            owner=self.owner,
+            due_date=self.today - timedelta(days=1),
+            status='IN_PROGRESS'
+        )
+        # First run: changes risk from ON_TRACK to OVERDUE -> sends notification
+        run_risk_check(today=self.today, days=7, min_progress=50)
+        notif_count = ResearchActivity.objects.filter(activity_type='MILESTONE').count()
+        self.assertGreaterEqual(notif_count, 1)
+
+        # Second run: risk is already OVERDUE -> no new notification
+        run_risk_check(today=self.today, days=7, min_progress=50)
+        self.assertEqual(ResearchActivity.objects.filter(activity_type='MILESTONE').count(), notif_count)
+
+    def test_due_notice_once(self):
+        m = Milestone.objects.create(
+            project=self.project,
+            title="Due Notice Test",
+            owner=self.owner,
+            due_date=self.today + timedelta(days=5),
+            progress=60,
+            status='IN_PROGRESS'
+        )
+        run_risk_check(today=self.today, days=7, min_progress=50)
+        m.refresh_from_db()
+        self.assertTrue(m.due_notified)
+        initial_notifs = ResearchActivity.objects.filter(description__contains="is due on").count()
+        self.assertEqual(initial_notifs, 2)  # owner + leader
+
+        # Run again: should not resend
+        run_risk_check(today=self.today, days=7, min_progress=50)
+        self.assertEqual(ResearchActivity.objects.filter(description__contains="is due on").count(), initial_notifs)
+
+    def test_dependency_overdue_propagates_same_run(self):
+        dep = Milestone.objects.create(
+            project=self.project,
+            title="Dependency 1",
+            due_date=self.today - timedelta(days=2),
+            status='IN_PROGRESS'
+        )
+        main_m = Milestone.objects.create(
+            project=self.project,
+            title="Main Milestone",
+            due_date=self.today + timedelta(days=20),
+            status='PLANNED',
+            progress=10
+        )
+        main_m.depends_on.add(dep)
+
+        # In pass 1, dep becomes OVERDUE. In pass 2, main_m detects dep is OVERDUE and becomes AT_RISK!
+        run_risk_check(today=self.today, days=7, min_progress=50)
+        dep.refresh_from_db()
+        main_m.refresh_from_db()
+        self.assertEqual(dep.risk, 'OVERDUE')
+        self.assertEqual(main_m.risk, 'AT_RISK')
+        self.assertIn("Waiting on", main_m.risk_reason)
+
+    def test_board_staff_only(self):
+        Milestone.objects.create(
+            project=self.project,
+            title="Overdue Flagged",
+            due_date=self.today - timedelta(days=4),
+            status='IN_PROGRESS',
+            risk='OVERDUE'
+        )
+        # Non-staff gets 403
+        self.client.force_login(self.leader)
+        res_non = self.client.get(reverse('projects:at_risk'))
+        self.assertEqual(res_non.status_code, 403)
+
+        # Staff gets 200
+        self.client.force_login(self.staff)
+        res_staff = self.client.get(reverse('projects:at_risk'))
+        self.assertEqual(res_staff.status_code, 200)
+        self.assertContains(res_staff, "Autonomic Vehicles")
+        self.assertContains(res_staff, "Overdue Flagged")
+
+    def test_command_output(self):
+        out = StringIO()
+        call_command('check_milestone_risk', stdout=out)
+        self.assertIn("Checked", out.getvalue())
+        self.assertIn("milestones:", out.getvalue())

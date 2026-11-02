@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}At-Risk Projects Board — Scholar Lens{% endblock %}
+
+{% block breadcrumb %}
+<nav class="ums-breadcrumb" aria-label="Breadcrumb">
+  <a href="{% url 'dashboard:home' %}">Home</a> &rsaquo;
+  <span aria-current="page">At-Risk Projects</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="ums-page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+  <div>
+    <h1 style="font-size: 24px; font-weight: 700; color: var(--color-ink); margin: 0 0 4px 0;">At-Risk & Overdue Projects</h1>
+    <p style="margin: 0; color: var(--color-muted); font-size: 14px;">Institutional oversight of lagging deliverables, overdue milestones, and blocked dependencies.</p>
+  </div>
+</div>
+
+<!-- Metrics summary strip -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+  <div class="ums-card" style="background: #fff; border: 1px solid var(--border-dark); border-radius: 8px; padding: 18px;">
+    <div style="font-size: 12px; font-weight: 600; color: var(--color-muted); text-transform: uppercase;">Overdue Milestones</div>
+    <div style="font-size: 28px; font-weight: 800; color: var(--color-danger); margin-top: 4px;">{{ total_overdue }}</div>
+  </div>
+  <div class="ums-card" style="background: #fff; border: 1px solid var(--border-dark); border-radius: 8px; padding: 18px;">
+    <div style="font-size: 12px; font-weight: 600; color: var(--color-muted); text-transform: uppercase;">At-Risk Milestones</div>
+    <div style="font-size: 28px; font-weight: 800; color: #E0601A; margin-top: 4px;">{{ total_at_risk }}</div>
+  </div>
+</div>
+
+{% if not grouped_projects %}
+<div class="ums-card" style="background: #fff; border: 1px solid var(--border-dark); border-radius: 8px; padding: 48px; text-align: center;">
+  <div style="font-size: 40px; margin-bottom: 12px;">✅</div>
+  <h3 style="font-size: 18px; font-weight: 600; margin: 0 0 8px 0; color: var(--color-ink);">All milestones are on track!</h3>
+  <p style="color: var(--color-muted); font-size: 14px; margin: 0;">No active projects currently exceed at-risk thresholds or have overdue deliverables.</p>
+</div>
+{% else %}
+
+<div style="display: flex; flex-direction: column; gap: 24px;">
+  {% for group in grouped_projects %}
+  {% with project=group.project %}
+  <div class="ums-card" style="background: #fff; border: 1px solid var(--border-dark); border-radius: 8px; overflow: hidden;">
+    <div style="background: #F9FAFB; padding: 16px 20px; border-bottom: 1px solid var(--border-dark); display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h2 style="font-size: 16px; font-weight: 700; margin: 0;">
+          <a href="{% url 'projects:detail' project.pk %}" style="color: var(--primary); text-decoration: none;">
+            {{ project.title }}
+          </a>
+        </h2>
+        <div style="font-size: 12px; color: var(--color-muted); margin-top: 2px;">
+          Leader: <strong>{{ project.leader.username }}</strong> &bull; Area: {{ project.get_research_area_display }}
+        </div>
+      </div>
+      <div>
+        <a href="{% url 'projects:milestones' project.pk %}" class="btn-primary" style="text-decoration: none; padding: 6px 14px; border-radius: 4px; font-size: 13px; font-weight: 600;">
+          View Timeline &rsaquo;
+        </a>
+      </div>
+    </div>
+
+    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+      <thead>
+        <tr style="border-bottom: 1px solid var(--border-dark); color: var(--color-muted); font-size: 11px; text-transform: uppercase;">
+          <th style="padding: 10px 16px;">Milestone</th>
+          <th style="padding: 10px 16px;">Status</th>
+          <th style="padding: 10px 16px;">Risk Reason</th>
+          <th style="padding: 10px 16px;">Owner</th>
+          <th style="padding: 10px 16px;">Due Date</th>
+          <th style="padding: 10px 16px;">Days Late</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in group.milestones %}
+        <tr style="border-bottom: 1px solid var(--border-dark);">
+          <td style="padding: 12px 16px; font-weight: 600; color: var(--color-ink);">
+            {{ m.title }}
+            {% if m.is_deliverable %}<span style="background: #EBF5FF; color: #0052CC; padding: 1px 6px; border-radius: 3px; font-size: 11px; margin-left: 6px;">Deliverable</span>{% endif %}
+          </td>
+          <td style="padding: 12px 16px;">
+            {% if m.risk == 'OVERDUE' %}
+              <span style="background: #FFEBE6; color: var(--color-danger); padding: 2px 8px; border-radius: 4px; font-weight: 600;">Overdue</span>
+            {% else %}
+              <span style="background: #FFF0B3; color: #172B4D; padding: 2px 8px; border-radius: 4px; font-weight: 600;">At Risk</span>
+            {% endif %}
+          </td>
+          <td style="padding: 12px 16px; color: var(--color-danger); font-weight: 500;">
+            {{ m.risk_reason }}
+          </td>
+          <td style="padding: 12px 16px; color: var(--color-ink);">
+            {{ m.owner.username|default:"Unassigned" }}
+          </td>
+          <td style="padding: 12px 16px; color: var(--color-ink); white-space: nowrap;">
+            {{ m.due_date|date:"d M Y" }}
+          </td>
+          <td style="padding: 12px 16px; font-weight: 700; color: {% if m.days_late > 0 %}var(--color-danger){% else %}var(--color-muted){% endif %};">
+            {% if m.days_late > 0 %}{{ m.days_late }} days{% else %}&mdash;{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endwith %}
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
