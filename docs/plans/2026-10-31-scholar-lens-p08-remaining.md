@@ -92,10 +92,10 @@ Task 3: Duplicate detection, review queue, reversible merges
 Files:
 - Create: `papers/dedup.py`, `DuplicateCandidate` model, `templates/papers/dedup_queue.html`, `tests/fixtures/dedup_pairs.json`, `tests/test_dedup.py`.
 - Modify: `papers/scholar_service.py:deduplicate_and_store`, `papers/views.py`, `papers/urls.py`.
-- [ ] Step 1: Build `tests/fixtures/dedup_pairs.json` (at least 120 labelled pairs).
-- [ ] Step 2: Write failing tests (`test_fixture_accuracy_at_least_95`).
-- [ ] Step 3: Implement and tune thresholds until accuracy ≥ 95%.
-- [ ] Step 4: Commit. `feat(papers): fuzzy deduplication with review queue and reversible merges`
+- [x] Step 1: Build `tests/fixtures/dedup_pairs.json` (at least 120 labelled pairs).
+- [x] Step 2: Write failing tests (`test_fixture_accuracy_at_least_95`).
+- [x] Step 3: Implement and tune thresholds until accuracy ≥ 95%.
+- [x] Step 4: Commit. `feat(papers): fuzzy deduplication with review queue and reversible merges`
 
 Task 4: ORCID + Crossref import
 Files:

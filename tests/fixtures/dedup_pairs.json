@@ -1,0 +1,1402 @@
+[
+  {
+    "title_a": "Machine Learning in Healthcare",
+    "year_a": 2020,
+    "doi_a": "10.1145/1234567.1234568",
+    "title_b": "Machine learning in healthcare: A review",
+    "year_b": 2020,
+    "doi_b": "10.1145/1234567.1234568",
+    "is_duplicate": true,
+    "note": "Matching DOI"
+  },
+  {
+    "title_a": "Deep Residual Networks for Image Recognition",
+    "year_a": 2019,
+    "doi_a": "10.1016/j.neucom.2019.01.001",
+    "title_b": "Deep Residual Learning for Image Recognition",
+    "year_b": 2019,
+    "doi_b": "10.1016/j.neucom.2019.01.001",
+    "is_duplicate": true,
+    "note": "Matching DOI"
+  },
+  {
+    "title_a": "You Only Look Once: Unified, Real-Time Object Detection",
+    "year_a": 2016,
+    "doi_a": "10.1109/CVPR.2016.90",
+    "title_b": "You only look once: unified real-time object detection",
+    "year_b": 2016,
+    "doi_b": "10.1109/CVPR.2016.90",
+    "is_duplicate": true,
+    "note": "Matching DOI"
+  },
+  {
+    "title_a": "Deep learning",
+    "year_a": 2015,
+    "doi_a": "10.1038/nature14539",
+    "title_b": "Deep Learning: Nature Review",
+    "year_b": 2015,
+    "doi_b": "10.1038/nature14539",
+    "is_duplicate": true,
+    "note": "Matching DOI"
+  },
+  {
+    "title_a": "Quantum Supremacy Using a Programmable Superconducting Processor",
+    "year_a": 2019,
+    "doi_a": "10.1126/science.1243212",
+    "title_b": "Quantum supremacy using a programmable superconducting processor",
+    "year_b": 2019,
+    "doi_b": "10.1126/science.1243212",
+    "is_duplicate": true,
+    "note": "Matching DOI"
+  },
+  {
+    "title_a": "Vision Transformers: A Survey",
+    "year_a": 2021,
+    "doi_a": "10.1109/TPAMI.2021.3060000",
+    "title_b": "A Survey of Vision Transformers",
+    "year_b": 2021,
+    "doi_b": "10.1109/TPAMI.2021.3060000",
+    "is_duplicate": true,
+    "note": "Matching DOI"
+  },
+  {
+    "title_a": "Contrastive Learning of Visual Representations",
+    "year_a": 2020,
+    "doi_a": "10.1007/s11263-020-01300-w",
+    "title_b": "A Simple Framework for Contrastive Learning of Visual Representations",
+    "year_b": 2020,
+    "doi_b": "10.1007/s11263-020-01300-w",
+    "is_duplicate": true,
+    "note": "Matching DOI"
+  },
+  {
+    "title_a": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+    "year_a": 2019,
+    "doi_a": "10.1145/3318464.3389700",
+    "title_b": "BERT Pre-training of Deep Bidirectional Transformers",
+    "year_b": 2019,
+    "doi_b": "10.1145/3318464.3389700",
+    "is_duplicate": true,
+    "note": "Matching DOI"
+  },
+  {
+    "title_a": "Graph Convolutional Networks for Semi-Supervised Classification",
+    "year_a": 2017,
+    "doi_a": "10.1609/aaai.v34i05.6200",
+    "title_b": "Semi-Supervised Classification with Graph Convolutional Networks",
+    "year_b": 2017,
+    "doi_b": "10.1609/aaai.v34i05.6200",
+    "is_duplicate": true,
+    "note": "Matching DOI"
+  },
+  {
+    "title_a": "Automated Program Repair: A Survey",
+    "year_a": 2018,
+    "doi_a": "10.1109/ICSE.2018.0001",
+    "title_b": "Automated program repair survey",
+    "year_b": 2018,
+    "doi_b": "10.1109/ICSE.2018.0001",
+    "is_duplicate": true,
+    "note": "Matching DOI"
+  },
+  {
+    "title_a": "Code Summarization with Large Language Models",
+    "year_a": 2022,
+    "doi_a": "10.1109/TSE.2022.3150000",
+    "title_b": "Summarizing Code Using Large Language Models",
+    "year_b": 2022,
+    "doi_b": "10.1109/TSE.2022.3150000",
+    "is_duplicate": true,
+    "note": "Matching DOI"
+  },
+  {
+    "title_a": "Explainable Artificial Intelligence: Concepts and Metrics",
+    "year_a": 2021,
+    "doi_a": "10.1016/j.artint.2021.103500",
+    "title_b": "Explainable AI: Concepts, Taxonomies and Metrics",
+    "year_b": 2021,
+    "doi_b": "10.1016/j.artint.2021.103500",
+    "is_duplicate": true,
+    "note": "Matching DOI"
+  },
+  {
+    "title_a": "Fairness and Abstraction in Sociotechnical Systems",
+    "year_a": 2021,
+    "doi_a": "10.1145/3442188.3445922",
+    "title_b": "Fairness and abstraction in sociotechnical systems",
+    "year_b": 2021,
+    "doi_b": "10.1145/3442188.3445922",
+    "is_duplicate": true,
+    "note": "Matching DOI"
+  },
+  {
+    "title_a": "Highly accurate protein structure prediction with AlphaFold",
+    "year_a": 2021,
+    "doi_a": "10.1038/s41586-021-03819-2",
+    "title_b": "Accurate Protein Structure Prediction with AlphaFold",
+    "year_b": 2021,
+    "doi_b": "10.1038/s41586-021-03819-2",
+    "is_duplicate": true,
+    "note": "Matching DOI"
+  },
+  {
+    "title_a": "Structure determination of macromolecular complexes",
+    "year_a": 2021,
+    "doi_a": "10.1126/science.abj8754",
+    "title_b": "Macromolecular complex structure determination",
+    "year_b": 2021,
+    "doi_b": "10.1126/science.abj8754",
+    "is_duplicate": true,
+    "note": "Matching DOI"
+  },
+  {
+    "title_a": "Attention Is All You Need",
+    "year_a": 2017,
+    "doi_a": null,
+    "title_b": "Attention is all you need",
+    "year_b": 2017,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Near exact duplicate"
+  },
+  {
+    "title_a": "Deep Learning & Robotics: A Review",
+    "year_a": 2021,
+    "doi_a": null,
+    "title_b": "Deep Learning and Robotics: A Review",
+    "year_b": 2021,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Near exact duplicate"
+  },
+  {
+    "title_a": "Scalable Multi-Agent Reinforcement Learning",
+    "year_a": 2022,
+    "doi_a": null,
+    "title_b": "Scalable Multi Agent Reinforcement Learning",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Near exact duplicate"
+  },
+  {
+    "title_a": "<i>Generative</i> Adversarial Networks",
+    "year_a": 2014,
+    "doi_a": null,
+    "title_b": "Generative Adversarial Networks",
+    "year_b": 2014,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Near exact duplicate"
+  },
+  {
+    "title_a": "Language Models are Few-Shot Learners",
+    "year_a": 2020,
+    "doi_a": null,
+    "title_b": "Language Models Are Few-Shot Learners",
+    "year_b": 2020,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Near exact duplicate"
+  },
+  {
+    "title_a": "LoRA: Low-Rank Adaptation of Large Language Models",
+    "year_a": 2022,
+    "doi_a": null,
+    "title_b": "LoRA - Low-Rank Adaptation of Large Language Models",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Near exact duplicate"
+  },
+  {
+    "title_a": "Adam: A Method for Stochastic Optimization",
+    "year_a": 2015,
+    "doi_a": null,
+    "title_b": "Adam - A Method for Stochastic Optimization",
+    "year_b": 2015,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Near exact duplicate"
+  },
+  {
+    "title_a": "Dropout: A Simple Way to Prevent Neural Networks from Overfitting",
+    "year_a": 2014,
+    "doi_a": null,
+    "title_b": "Dropout: A simple way to prevent neural networks from overfitting",
+    "year_b": 2014,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Near exact duplicate"
+  },
+  {
+    "title_a": "Mastering the Game of Go with Deep Neural Networks and Tree Search",
+    "year_a": 2016,
+    "doi_a": null,
+    "title_b": "Mastering the game of Go with deep neural networks and tree search",
+    "year_b": 2016,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Near exact duplicate"
+  },
+  {
+    "title_a": "Mastering Chess and Shogi by Self-Play with a General Reinforcement Learning Algorithm",
+    "year_a": 2018,
+    "doi_a": null,
+    "title_b": "Mastering chess and shogi by self-play with a general reinforcement learning algorithm",
+    "year_b": 2018,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Near exact duplicate"
+  },
+  {
+    "title_a": "NeRF: Representing Scenes as Neural Radiance Fields for View Synthesis",
+    "year_a": 2020,
+    "doi_a": null,
+    "title_b": "NeRF Representing Scenes as Neural Radiance Fields for View Synthesis",
+    "year_b": 2020,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Near exact duplicate"
+  },
+  {
+    "title_a": "CLIP: Connecting Text and Images with Multi-Modal Contrastive Pre-training",
+    "year_a": 2021,
+    "doi_a": null,
+    "title_b": "Connecting text and images with multi-modal contrastive pre-training",
+    "year_b": 2021,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Near exact duplicate"
+  },
+  {
+    "title_a": "High-Resolution Image Synthesis with Latent Diffusion Models",
+    "year_a": 2022,
+    "doi_a": null,
+    "title_b": "High Resolution Image Synthesis with Latent Diffusion Models",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Near exact duplicate"
+  },
+  {
+    "title_a": "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale",
+    "year_a": 2021,
+    "doi_a": null,
+    "title_b": "An Image is Worth 16x16 Words - Transformers for Image Recognition at Scale",
+    "year_b": 2021,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Near exact duplicate"
+  },
+  {
+    "title_a": "Segment Anything: Fast Interactive Object Segmentation",
+    "year_a": 2023,
+    "doi_a": null,
+    "title_b": "Segment Anything Fast Interactive Object Segmentation",
+    "year_b": 2023,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Near exact duplicate"
+  },
+  {
+    "title_a": "Denoising Diffusion Probabilistic Models",
+    "year_a": 2020,
+    "doi_a": null,
+    "title_b": "Denoising diffusion probabilistic models",
+    "year_b": 2020,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Near exact duplicate"
+  },
+  {
+    "title_a": "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness",
+    "year_a": 2022,
+    "doi_a": null,
+    "title_b": "FlashAttention - Fast and Memory-Efficient Exact Attention with IO-Awareness",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Near exact duplicate"
+  },
+  {
+    "title_a": "Constitutional AI: Harmlessness from AI Feedback",
+    "year_a": 2022,
+    "doi_a": null,
+    "title_b": "Constitutional AI Harmlessness from AI Feedback",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Near exact duplicate"
+  },
+  {
+    "title_a": "InstructGPT: Training language models to follow instructions with human feedback",
+    "year_a": 2022,
+    "doi_a": null,
+    "title_b": "Training Language Models to Follow Instructions with Human Feedback",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Near exact duplicate"
+  },
+  {
+    "title_a": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+    "year_a": 2020,
+    "doi_a": null,
+    "title_b": "Retrieval-Augmented Generation for Knowledge Intensive NLP Tasks",
+    "year_b": 2020,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Near exact duplicate"
+  },
+  {
+    "title_a": "Dense Passage Retrieval for Open-Domain Question Answering",
+    "year_a": 2020,
+    "doi_a": null,
+    "title_b": "Dense passage retrieval for open domain question answering",
+    "year_b": 2020,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Near exact duplicate"
+  },
+  {
+    "title_a": "Emergent Abilities of Large Language Models",
+    "year_a": 2022,
+    "doi_a": null,
+    "title_b": "Emergent abilities of large language models",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Near exact duplicate"
+  },
+  {
+    "title_a": "Sparks of Artificial General Intelligence: Early experiments with GPT-4",
+    "year_a": 2023,
+    "doi_a": null,
+    "title_b": "Sparks of Artificial General Intelligence Early experiments with GPT-4",
+    "year_b": 2023,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Near exact duplicate"
+  },
+  {
+    "title_a": "LLaMA: Open and Efficient Foundation Language Models",
+    "year_a": 2023,
+    "doi_a": null,
+    "title_b": "LLaMA Open and Efficient Foundation Language Models",
+    "year_b": 2023,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Near exact duplicate"
+  },
+  {
+    "title_a": "Mistral 7B: A High-Performance Open Language Model",
+    "year_a": 2023,
+    "doi_a": null,
+    "title_b": "Mistral 7B A High Performance Open Language Model",
+    "year_b": 2023,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Near exact duplicate"
+  },
+  {
+    "title_a": "Attention Is All You Need",
+    "year_a": 2017,
+    "doi_a": null,
+    "title_b": "Attention Is All You Need",
+    "year_b": 2018,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "arXiv 2017 to NeurIPS 2018"
+  },
+  {
+    "title_a": "BERT: Pre-training of Deep Bidirectional Transformers",
+    "year_a": 2018,
+    "doi_a": null,
+    "title_b": "BERT: Pre-training of Deep Bidirectional Transformers",
+    "year_b": 2019,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "arXiv 2018 to NAACL 2019"
+  },
+  {
+    "title_a": "Deep Residual Learning for Image Recognition",
+    "year_a": 2015,
+    "doi_a": null,
+    "title_b": "Deep Residual Learning for Image Recognition",
+    "year_b": 2016,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "arXiv 2015 to CVPR 2016"
+  },
+  {
+    "title_a": "Generative Adversarial Nets",
+    "year_a": 2014,
+    "doi_a": null,
+    "title_b": "Generative Adversarial Networks",
+    "year_b": 2015,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "NIPS 2014 to journal 2015"
+  },
+  {
+    "title_a": "Neural Machine Translation by Jointly Learning to Align and Translate",
+    "year_a": 2014,
+    "doi_a": null,
+    "title_b": "Neural Machine Translation by Jointly Learning to Align and Translate",
+    "year_b": 2015,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "2014 to 2015"
+  },
+  {
+    "title_a": "Semi-Supervised Classification with Graph Convolution Networks",
+    "year_a": 2016,
+    "doi_a": null,
+    "title_b": "Semi-Supervised Classification with Graph Convolutional Networks",
+    "year_b": 2017,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "ICLR 2017 / arXiv 2016"
+  },
+  {
+    "title_a": "Mastering the game of Go without human knowledge",
+    "year_a": 2017,
+    "doi_a": null,
+    "title_b": "Mastering the Game of Go without Human Knowledge",
+    "year_b": 2017,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Nature 2017"
+  },
+  {
+    "title_a": "Skin cancer classification using deep neural networks",
+    "year_a": 2017,
+    "doi_a": null,
+    "title_b": "Dermatologist-level classification of skin cancer using deep neural networks",
+    "year_b": 2017,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "Skin cancer 2017"
+  },
+  {
+    "title_a": "Learning Transferable Visual Models From Natural Language Supervision",
+    "year_a": 2021,
+    "doi_a": null,
+    "title_b": "Learning Transferable Visual Models from Natural Language Supervision",
+    "year_b": 2021,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "CLIP 2021"
+  },
+  {
+    "title_a": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+    "year_a": 2023,
+    "doi_a": null,
+    "title_b": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+    "year_b": 2024,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "2023 to 2024"
+  },
+  {
+    "title_a": "QLoRA: Efficient Finetuning of Quantized LLMs",
+    "year_a": 2023,
+    "doi_a": null,
+    "title_b": "QLoRA: Efficient Finetuning of Quantized LLMs",
+    "year_b": 2023,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "NeurIPS 2023"
+  },
+  {
+    "title_a": "Tree of Thoughts: Deliberate Problem Solving with Large Language Models",
+    "year_a": 2023,
+    "doi_a": null,
+    "title_b": "Tree of Thoughts: Deliberate Problem Solving with Large Language Models",
+    "year_b": 2024,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "2023 to 2024"
+  },
+  {
+    "title_a": "Self-Instruct: Aligning Language Models with Self-Generated Instructions",
+    "year_a": 2022,
+    "doi_a": null,
+    "title_b": "Self-Instruct: Aligning Language Models with Self-Generated Instructions",
+    "year_b": 2023,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "ACL 2023"
+  },
+  {
+    "title_a": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+    "year_a": 2023,
+    "doi_a": null,
+    "title_b": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+    "year_b": 2023,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "NeurIPS 2023"
+  },
+  {
+    "title_a": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+    "year_a": 2022,
+    "doi_a": null,
+    "title_b": "Chain of Thought Prompting Elicits Reasoning in Large Language Models",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "NeurIPS 2022"
+  },
+  {
+    "title_a": "ReAct: Synergizing Reasoning and Acting in Language Models",
+    "year_a": 2022,
+    "doi_a": null,
+    "title_b": "ReAct: Synergizing Reasoning and Acting in Language Models",
+    "year_b": 2023,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "ICLR 2023"
+  },
+  {
+    "title_a": "Zephyr: Direct Distillation of LM Alignment",
+    "year_a": 2023,
+    "doi_a": null,
+    "title_b": "Zephyr: Direct Distillation of LM Alignment",
+    "year_b": 2024,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "2023 to 2024"
+  },
+  {
+    "title_a": "Decoupled Neural Interfaces using Synthetic Gradients",
+    "year_a": 2016,
+    "doi_a": null,
+    "title_b": "Decoupled Neural Interfaces Using Synthetic Gradients",
+    "year_b": 2017,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "ICML 2017"
+  },
+  {
+    "title_a": "Understanding deep learning requires rethinking generalization",
+    "year_a": 2016,
+    "doi_a": null,
+    "title_b": "Understanding Deep Learning Requires Rethinking Generalization",
+    "year_b": 2017,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "ICLR 2017"
+  },
+  {
+    "title_a": "A Neural Algorithm of Artistic Style",
+    "year_a": 2015,
+    "doi_a": null,
+    "title_b": "A Neural Algorithm of Artistic Style",
+    "year_b": 2016,
+    "doi_b": null,
+    "is_duplicate": true,
+    "note": "2015 to 2016"
+  },
+  {
+    "title_a": "Annual Report on Machine Learning Progress",
+    "year_a": 2018,
+    "doi_a": null,
+    "title_b": "Annual Report on Machine Learning Progress",
+    "year_b": 2021,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Diff year 3"
+  },
+  {
+    "title_a": "State of the Art in Natural Language Processing",
+    "year_a": 2017,
+    "doi_a": null,
+    "title_b": "State of the Art in Natural Language Processing",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Diff year 5"
+  },
+  {
+    "title_a": "Advances in Robotics and Automation",
+    "year_a": 2015,
+    "doi_a": null,
+    "title_b": "Advances in Robotics and Automation",
+    "year_b": 2020,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Diff year 5"
+  },
+  {
+    "title_a": "Overview of Cryptographic Protocols",
+    "year_a": 2012,
+    "doi_a": null,
+    "title_b": "Overview of Cryptographic Protocols",
+    "year_b": 2018,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Diff year 6"
+  },
+  {
+    "title_a": "Proceedings of the International Conference on Machine Learning",
+    "year_a": 2019,
+    "doi_a": null,
+    "title_b": "Proceedings of the International Conference on Machine Learning",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Diff year 3"
+  },
+  {
+    "title_a": "Database Management Systems: A Practical Course",
+    "year_a": 2014,
+    "doi_a": null,
+    "title_b": "Database Management Systems: A Practical Course",
+    "year_b": 2020,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Diff year 6"
+  },
+  {
+    "title_a": "Progress in Quantum Computing Architectures",
+    "year_a": 2016,
+    "doi_a": null,
+    "title_b": "Progress in Quantum Computing Architectures",
+    "year_b": 2021,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Diff year 5"
+  },
+  {
+    "title_a": "Computer Vision and Pattern Recognition Workshop",
+    "year_a": 2018,
+    "doi_a": null,
+    "title_b": "Computer Vision and Pattern Recognition Workshop",
+    "year_b": 2023,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Diff year 5"
+  },
+  {
+    "title_a": "Frontiers in Bioinformatics Research",
+    "year_a": 2015,
+    "doi_a": null,
+    "title_b": "Frontiers in Bioinformatics Research",
+    "year_b": 2021,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Diff year 6"
+  },
+  {
+    "title_a": "Cloud Computing Security Challenges and Solutions",
+    "year_a": 2016,
+    "doi_a": null,
+    "title_b": "Cloud Computing Security Challenges and Solutions",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Diff year 6"
+  },
+  {
+    "title_a": "Distributed Systems: Principles and Paradigms",
+    "year_a": 2010,
+    "doi_a": null,
+    "title_b": "Distributed Systems: Principles and Paradigms",
+    "year_b": 2017,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Diff year 7"
+  },
+  {
+    "title_a": "Internet of Things Applications in Healthcare",
+    "year_a": 2018,
+    "doi_a": null,
+    "title_b": "Internet of Things Applications in Healthcare",
+    "year_b": 2023,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Diff year 5"
+  },
+  {
+    "title_a": "Software Engineering Best Practices and Trends",
+    "year_a": 2015,
+    "doi_a": null,
+    "title_b": "Software Engineering Best Practices and Trends",
+    "year_b": 2021,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Diff year 6"
+  },
+  {
+    "title_a": "Artificial Intelligence: A Modern Approach",
+    "year_a": 2010,
+    "doi_a": null,
+    "title_b": "Artificial Intelligence: A Modern Approach",
+    "year_b": 2020,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Diff edition/year 10"
+  },
+  {
+    "title_a": "Compiler Design and Optimization Techniques",
+    "year_a": 2014,
+    "doi_a": null,
+    "title_b": "Compiler Design and Optimization Techniques",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Diff year 8"
+  },
+  {
+    "title_a": "Introduction to Machine Learning",
+    "year_a": 2020,
+    "doi_a": null,
+    "title_b": "Introduction to Robotics",
+    "year_b": 2020,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "ML vs Robotics"
+  },
+  {
+    "title_a": "Preface to Calculus",
+    "year_a": 2019,
+    "doi_a": null,
+    "title_b": "Preface to Linear Algebra",
+    "year_b": 2019,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Calculus vs Algebra"
+  },
+  {
+    "title_a": "Editorial: Health AI Applications",
+    "year_a": 2021,
+    "doi_a": null,
+    "title_b": "Editorial: Climate AI Systems",
+    "year_b": 2021,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Health vs Climate"
+  },
+  {
+    "title_a": "Review of Deep Learning",
+    "year_a": 2022,
+    "doi_a": null,
+    "title_b": "Review of Quantum Computing",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Deep Learning vs Quantum"
+  },
+  {
+    "title_a": "Handbook of Graph Algorithms",
+    "year_a": 2018,
+    "doi_a": null,
+    "title_b": "Handbook of Network Routing",
+    "year_b": 2018,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Graph vs Routing"
+  },
+  {
+    "title_a": "Guide to Software Testing",
+    "year_a": 2021,
+    "doi_a": null,
+    "title_b": "Guide to Software Deployment",
+    "year_b": 2021,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Testing vs Deployment"
+  },
+  {
+    "title_a": "Elements of Information Theory",
+    "year_a": 2019,
+    "doi_a": null,
+    "title_b": "Elements of Statistical Learning",
+    "year_b": 2019,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Info Theory vs Stats"
+  },
+  {
+    "title_a": "Foundations of Cryptography",
+    "year_a": 2020,
+    "doi_a": null,
+    "title_b": "Foundations of Cyber Defense",
+    "year_b": 2020,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Crypto vs Defense"
+  },
+  {
+    "title_a": "Survey of Cloud Storage",
+    "year_a": 2021,
+    "doi_a": null,
+    "title_b": "Survey of Cloud Security",
+    "year_b": 2021,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Storage vs Security"
+  },
+  {
+    "title_a": "Principles of Modern Compiler",
+    "year_a": 2017,
+    "doi_a": null,
+    "title_b": "Principles of Operating Systems",
+    "year_b": 2017,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Compiler vs OS"
+  },
+  {
+    "title_a": "Topics in Discrete Mathematics",
+    "year_a": 2020,
+    "doi_a": null,
+    "title_b": "Topics in Continuous Optimization",
+    "year_b": 2020,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Discrete vs Continuous"
+  },
+  {
+    "title_a": "Basics of Digital Electronics",
+    "year_a": 2018,
+    "doi_a": null,
+    "title_b": "Basics of Analog Circuits",
+    "year_b": 2018,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Digital vs Analog"
+  },
+  {
+    "title_a": "Concepts of Object-Oriented Design",
+    "year_a": 2021,
+    "doi_a": null,
+    "title_b": "Concepts of Functional Programming",
+    "year_b": 2021,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "OO vs Functional"
+  },
+  {
+    "title_a": "Notes on Abstract Algebra",
+    "year_a": 2019,
+    "doi_a": null,
+    "title_b": "Notes on Real Analysis",
+    "year_b": 2019,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Algebra vs Analysis"
+  },
+  {
+    "title_a": "Advances in Speech Recognition",
+    "year_a": 2022,
+    "doi_a": null,
+    "title_b": "Advances in Video Processing",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Speech vs Video"
+  },
+  {
+    "title_a": "Attention Is All You Need",
+    "year_a": 2017,
+    "doi_a": null,
+    "title_b": "Deep Residual Learning for Image Recognition",
+    "year_b": 2016,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Distinct famous papers"
+  },
+  {
+    "title_a": "BERT: Pre-training of Deep Bidirectional Transformers",
+    "year_a": 2019,
+    "doi_a": null,
+    "title_b": "Generative Adversarial Nets",
+    "year_b": 2014,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Distinct"
+  },
+  {
+    "title_a": "An Analysis of B-Tree Indexes in PostgreSQL",
+    "year_a": 2020,
+    "doi_a": null,
+    "title_b": "CRISPR-Cas9 Genome Editing in Human Cells",
+    "year_b": 2020,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "CS vs Biology"
+  },
+  {
+    "title_a": "Quantum Supremacy with Superconducting Qubits",
+    "year_a": 2019,
+    "doi_a": null,
+    "title_b": "Microbiome Diversity in Tropical Rainforests",
+    "year_b": 2019,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Physics vs Bio"
+  },
+  {
+    "title_a": "Fast Fourier Transform on GPU Architectures",
+    "year_a": 2021,
+    "doi_a": null,
+    "title_b": "Macroeconomic Effects of Inflationary Shocks",
+    "year_b": 2021,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "CS vs Econ"
+  },
+  {
+    "title_a": "Reinforcement Learning from Human Feedback",
+    "year_a": 2022,
+    "doi_a": null,
+    "title_b": "Catalytic Properties of Gold Nanoparticles",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "AI vs Chem"
+  },
+  {
+    "title_a": "Automated Testing of Android Mobile Apps",
+    "year_a": 2020,
+    "doi_a": null,
+    "title_b": "Plate Tectonics in the Mariana Trench",
+    "year_b": 2020,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Software vs Geology"
+  },
+  {
+    "title_a": "Cybersecurity in Smart Grid Infrastructures",
+    "year_a": 2021,
+    "doi_a": null,
+    "title_b": "Cognitive Development in Early Childhood",
+    "year_b": 2021,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Security vs Psych"
+  },
+  {
+    "title_a": "Blockchain Protocols for Supply Chain Tracking",
+    "year_a": 2022,
+    "doi_a": null,
+    "title_b": "Linguistic Evolution of Proto-Indo-European",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "CS vs Linguistics"
+  },
+  {
+    "title_a": "Zero-Knowledge Proofs in Distributed Ledgers",
+    "year_a": 2020,
+    "doi_a": null,
+    "title_b": "High-Energy Laser Fusion Experiments",
+    "year_b": 2020,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Crypto vs Physics"
+  },
+  {
+    "title_a": "Graph Neural Networks for Drug Discovery",
+    "year_a": 2021,
+    "doi_a": null,
+    "title_b": "Urban Planning and Traffic Congestion Mitigation",
+    "year_b": 2021,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Biotech vs Civil"
+  },
+  {
+    "title_a": "Self-Supervised Speech Representation Learning",
+    "year_a": 2022,
+    "doi_a": null,
+    "title_b": "Renaissance Art History in Florence",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Speech vs Art"
+  },
+  {
+    "title_a": "Transformer Architectures in Genomic Sequencing",
+    "year_a": 2023,
+    "doi_a": null,
+    "title_b": "Deep-Sea Hydrothermal Vent Ecosystems",
+    "year_b": 2023,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Genomics vs Oceanography"
+  },
+  {
+    "title_a": "Federated Learning with Differential Privacy",
+    "year_a": 2021,
+    "doi_a": null,
+    "title_b": "Sedimentary Rock Formations in Utah",
+    "year_b": 2021,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "AI vs Geology"
+  },
+  {
+    "title_a": "Low-Power Wireless Sensor Networks",
+    "year_a": 2019,
+    "doi_a": null,
+    "title_b": "Behavioral Economics of Consumer Savings",
+    "year_b": 2019,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Networks vs Econ"
+  },
+  {
+    "title_a": "Autonomous Drone Navigation in GPS-Denied Environments",
+    "year_a": 2022,
+    "doi_a": null,
+    "title_b": "Ancient Roman Architectural Techniques",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Robotics vs History"
+  },
+  {
+    "title_a": "Real-Time Ray Tracing on Vulkan API",
+    "year_a": 2020,
+    "doi_a": null,
+    "title_b": "Immunotherapy for Pediatric Leukemia",
+    "year_b": 2020,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Graphics vs Medicine"
+  },
+  {
+    "title_a": "Automated Proof Assistants in Mathematical Logic",
+    "year_a": 2021,
+    "doi_a": null,
+    "title_b": "Coral Reef Bleaching under Ocean Acidification",
+    "year_b": 2021,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Logic vs Ecology"
+  },
+  {
+    "title_a": "Cache Invalidation Strategies in Web Architecture",
+    "year_a": 2018,
+    "doi_a": null,
+    "title_b": "Shakespearean Tragedy Rhetorical Structures",
+    "year_b": 2018,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Web vs Lit"
+  },
+  {
+    "title_a": "Memory Safety in Rust Systems Programming",
+    "year_a": 2022,
+    "doi_a": null,
+    "title_b": "Atmospheric Composition of Exoplanet WASP-96b",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "PL vs Astro"
+  },
+  {
+    "title_a": "Container Orchestration with Kubernetes",
+    "year_a": 2021,
+    "doi_a": null,
+    "title_b": "Neural Mechanisms of Songbird Vocal Learning",
+    "year_b": 2021,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "DevOps vs Neuro"
+  },
+  {
+    "title_a": "Efficient Sparse Matrix Multiplications",
+    "year_a": 2020,
+    "doi_a": null,
+    "title_b": "Archaeological Survey of Mayan Pyramids",
+    "year_b": 2020,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Math vs Archaeology"
+  },
+  {
+    "title_a": "Serverless Computing Performance Benchmarks",
+    "year_a": 2021,
+    "doi_a": null,
+    "title_b": "Cell Division Regulation in Yeast",
+    "year_b": 2021,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Cloud vs Biology"
+  },
+  {
+    "title_a": "Neural Architecture Search for Edge Devices",
+    "year_a": 2022,
+    "doi_a": null,
+    "title_b": "Paleolithic Cave Paintings in Spain",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "AI vs Anthropology"
+  },
+  {
+    "title_a": "Fault-Tolerant Distributed Consensus Algorithms",
+    "year_a": 2019,
+    "doi_a": null,
+    "title_b": "Volcanic Eruptions in the Pacific Ring of Fire",
+    "year_b": 2019,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "CS vs Earth Sci"
+  },
+  {
+    "title_a": "High-Performance Graph Processing Frameworks",
+    "year_a": 2020,
+    "doi_a": null,
+    "title_b": "Marine Biodiversity in the Great Barrier Reef",
+    "year_b": 2020,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "CS vs Marine"
+  },
+  {
+    "title_a": "Differential Privacy in Deep Neural Networks",
+    "year_a": 2021,
+    "doi_a": null,
+    "title_b": "Medieval European Feudalism and Agrarian Economy",
+    "year_b": 2021,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "AI vs History"
+  },
+  {
+    "title_a": "Scalable Vector Graphics Rendering on GPUs",
+    "year_a": 2019,
+    "doi_a": null,
+    "title_b": "Geothermal Energy Production in Iceland",
+    "year_b": 2019,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Graphics vs Energy"
+  },
+  {
+    "title_a": "Zero-Shot Image Classification with Prompts",
+    "year_a": 2022,
+    "doi_a": null,
+    "title_b": "Cellular Senescence and Aging Biomarkers",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "AI vs Gerontology"
+  },
+  {
+    "title_a": "Static Program Analysis for Buffer Overflows",
+    "year_a": 2018,
+    "doi_a": null,
+    "title_b": "Agricultural Yield Prediction using Satellite Imagery",
+    "year_b": 2018,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Security vs Agriculture"
+  },
+  {
+    "title_a": "Consensus Protocols for Proof-of-Stake Blockchains",
+    "year_a": 2021,
+    "doi_a": null,
+    "title_b": "Behavioral Ecology of Honeybee Communication",
+    "year_b": 2021,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Crypto vs Entomology"
+  },
+  {
+    "title_a": "Optimal Routing in Software-Defined Networks",
+    "year_a": 2020,
+    "doi_a": null,
+    "title_b": "Atmospheric Aerosol Scattering and Climate",
+    "year_b": 2020,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Networks vs Climate"
+  },
+  {
+    "title_a": "Hyperparameter Optimization using Bayesian Methods",
+    "year_a": 2019,
+    "doi_a": null,
+    "title_b": "Social Stratification in the Industrial Revolution",
+    "year_b": 2019,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "AI vs Sociology"
+  },
+  {
+    "title_a": "Deep Learning for Audio Source Separation",
+    "year_a": 2022,
+    "doi_a": null,
+    "title_b": "Deep-Crustal Seismic Imaging in Subduction Zones",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Audio vs Seismology"
+  },
+  {
+    "title_a": "Automated Theorem Proving with First-Order Logic",
+    "year_a": 2020,
+    "doi_a": null,
+    "title_b": "Enzymatic Synthesis of Biodegradable Polymers",
+    "year_b": 2020,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Logic vs Polymer"
+  },
+  {
+    "title_a": "Low-Latency Microservices Architecture Patterns",
+    "year_a": 2021,
+    "doi_a": null,
+    "title_b": "Neurobiology of Memory Consolidation in Sleep",
+    "year_b": 2021,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Software vs Neuroscience"
+  },
+  {
+    "title_a": "Model Pruning for Edge Artificial Intelligence",
+    "year_a": 2022,
+    "doi_a": null,
+    "title_b": "Glacial Retreat Rates in the Patagonian Icefield",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "AI vs Glaciology"
+  },
+  {
+    "title_a": "Symbolic Execution for Security Vulnerability Discovery",
+    "year_a": 2019,
+    "doi_a": null,
+    "title_b": "Evolutionary Genetics of Darwin Finches",
+    "year_b": 2019,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Security vs Evolution"
+  },
+  {
+    "title_a": "Multi-Objective Genetic Algorithms for Scheduling",
+    "year_a": 2020,
+    "doi_a": null,
+    "title_b": "Antibiotic Resistance Mechanisms in Bacteria",
+    "year_b": 2020,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Optimization vs Microbiology"
+  },
+  {
+    "title_a": "Natural Language Understanding for Legal Contracts",
+    "year_a": 2022,
+    "doi_a": null,
+    "title_b": "Pulsar Timing Arrays and Gravitational Waves",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "NLP vs Astrophysics"
+  },
+  {
+    "title_a": "Hardware-Software Co-Design for Machine Learning",
+    "year_a": 2021,
+    "doi_a": null,
+    "title_b": "Paleo-Climate Reconstruction from Ice Cores",
+    "year_b": 2021,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Hardware vs Climate"
+  },
+  {
+    "title_a": "Graph Coloring Algorithms on Massive Networks",
+    "year_a": 2018,
+    "doi_a": null,
+    "title_b": "Immunological Response to Viral Pathogens",
+    "year_b": 2018,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Graph vs Immunology"
+  },
+  {
+    "title_a": "Dynamic Binary Instrumentation for Performance Profiling",
+    "year_a": 2020,
+    "doi_a": null,
+    "title_b": "Urban Heat Islands and Microclimate Adaptation",
+    "year_b": 2020,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Systems vs Urban"
+  },
+  {
+    "title_a": "Contrastive Self-Supervised Learning in Speech",
+    "year_a": 2022,
+    "doi_a": null,
+    "title_b": "Hydrodynamics of Superfluid Helium-4",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Speech vs Physics"
+  },
+  {
+    "title_a": "Formal Methods in Avionics Software Safety",
+    "year_a": 2019,
+    "doi_a": null,
+    "title_b": "Ecological Impacts of Deforestation in Amazonia",
+    "year_b": 2019,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Software vs Ecology"
+  },
+  {
+    "title_a": "Parallel Sparse Matrix Solvers on Supercomputers",
+    "year_a": 2021,
+    "doi_a": null,
+    "title_b": "Cognitive Decline and Neurodegenerative Diseases",
+    "year_b": 2021,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "HPC vs Medicine"
+  },
+  {
+    "title_a": "Unsupervised Domain Adaptation for Semantic Segmentation",
+    "year_a": 2020,
+    "doi_a": null,
+    "title_b": "Sediment Transport in Alluvial River Basins",
+    "year_b": 2020,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Vision vs Hydrology"
+  },
+  {
+    "title_a": "Reinforcement Learning in Continuous Control Robotics",
+    "year_a": 2022,
+    "doi_a": null,
+    "title_b": "Photosynthetic Efficiency in C4 Plants",
+    "year_b": 2022,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Robotics vs Botany"
+  },
+  {
+    "title_a": "Zero-Trust Architecture for Cloud Enterprise Security",
+    "year_a": 2021,
+    "doi_a": null,
+    "title_b": "Prehistoric Trade Networks in the Mediterranean",
+    "year_b": 2021,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Security vs Archaeology"
+  },
+  {
+    "title_a": "End-to-End Neural Speech Synthesis with Transformers",
+    "year_a": 2020,
+    "doi_a": null,
+    "title_b": "Cosmic Microwave Background Polarization Signals",
+    "year_b": 2020,
+    "doi_b": null,
+    "is_duplicate": false,
+    "note": "Audio vs Cosmology"
+  }
+]

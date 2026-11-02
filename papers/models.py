@@ -269,3 +269,46 @@ class PaperEmbedding(models.Model):
 
     def __str__(self):
         return f"Embedding for chunk {self.chunk.id}"
+
+
+class DuplicateCandidate(models.Model):
+    class Status(models.TextChoices):
+        PENDING = 'PENDING', _('Pending')
+        MERGED = 'MERGED', _('Merged')
+        DISMISSED = 'DISMISSED', _('Dismissed')
+
+    incoming_paper = models.ForeignKey(
+        ResearchPaper,
+        on_delete=models.CASCADE,
+        related_name='duplicate_candidates_as_incoming'
+    )
+    existing_paper = models.ForeignKey(
+        ResearchPaper,
+        on_delete=models.CASCADE,
+        related_name='duplicate_candidates_as_existing'
+    )
+    similarity_score = models.FloatField(help_text=_("Fuzzy matching score (0-100)."))
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+        db_index=True
+    )
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+'
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status', '-created_at']),
+        ]
+
+    def __str__(self):
+        return f"DuplicateCandidate: #{self.incoming_paper_id} -> #{self.existing_paper_id} ({self.similarity_score:.1f}%)"
