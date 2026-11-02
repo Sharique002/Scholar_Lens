@@ -17,6 +17,7 @@ urlpatterns = [
     path('papers/', include('papers.urls')),
     path('projects/', include('projects.urls')),
     path('collaboration/', include('collaboration.urls')),
+    path('facilities/', include('facilities.urls')),
     path('ai/', include('ai_engine.urls')),
     path('evaluation/', include('evaluation.urls')),
     path('search/', include('search.urls')),

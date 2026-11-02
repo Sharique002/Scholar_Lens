@@ -11,6 +11,9 @@ class ResearchActivity(models.Model):
         ('PROJECT', 'Project'),
         ('SEARCH', 'Search'),
         ('LOGIN', 'Login'),
+        ('BOOKING', 'Facility Booking'),
+        ('FUNDING', 'Funding Alert'),
+        ('MILESTONE', 'Milestone Alert'),
     )
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='activities')

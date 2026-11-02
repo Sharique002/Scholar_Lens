@@ -9,8 +9,9 @@ SIDEBAR = [
     'projects:list',
     'researchers:list',
     'collaboration:list',
+    'facilities:list',
     'search:search',
-]  # Task 4 appends 'facilities:list'
+]
 
 
 class UmsShellTest(TestCase):
@@ -65,8 +66,9 @@ class UmsShellTest(TestCase):
         for name in [
             'papers:upload',
             'projects:create',
+            'facilities:list',
             'collaboration:recommendations',
             'search:search',
-        ]:  # Task 4 adds 'facilities:list'
+        ]:
             self.assertContains(r, f'href="{reverse(name)}" class="ums-quick-action"')
         self.assertContains(r, 'Latest Research &amp; Emerging Technologies')

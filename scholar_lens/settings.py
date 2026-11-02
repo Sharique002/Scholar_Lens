@@ -114,6 +114,8 @@ INSTALLED_APPS = [
     'evaluation.apps.EvaluationConfig',
     'search.apps.SearchConfig',
     'dashboard.apps.DashboardConfig',
+    'django.contrib.postgres',
+    'facilities.apps.FacilitiesConfig',
 ]
 
 MIDDLEWARE = [
@@ -333,3 +335,9 @@ LOGGING = {
     },
 }
 
+
+
+# P08 Module Configuration
+FUNDING_ALERT_DAYS = [int(x) for x in os.environ.get('FUNDING_ALERT_DAYS', '30,14,7,1').split(',') if x.strip()]
+MILESTONE_AT_RISK_DAYS = int(os.environ.get('MILESTONE_AT_RISK_DAYS', 7))
+MILESTONE_AT_RISK_PROGRESS = int(os.environ.get('MILESTONE_AT_RISK_PROGRESS', 50))

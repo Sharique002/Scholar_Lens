@@ -94,12 +94,12 @@ Part B — M8 Facility & Asset Management
 
 Task 4: facilities app, models and migration
 Files: Create `facilities/` (`__init__.py`, `apps.py`, `models.py`, `admin.py`, `urls.py`, `views.py`, `forms.py`, `migrations/0001_initial.py`).
-- [ ] Step 1: Write failing tests (`tests/test_facilities.py`).
-- [ ] Step 2: Confirm tests fail.
-- [ ] Step 3: Implement models, migrations with `BtreeGistExtension()`, register admin.
-- [ ] Step 4: Wire up UI (Facilities link in `base.html`, "Book a Facility" card in `home.html`).
-- [ ] Step 5: Confirm tests pass on Postgres and full suite maintains baseline.
-- [ ] Step 6: Commit. `feat(facilities): models with DB-level double-booking prevention`
+- [x] Step 1: Write failing tests (`tests/test_facilities.py`).
+- [x] Step 2: Confirm tests fail.
+- [x] Step 3: Implement models, migrations with `BtreeGistExtension()`, register admin.
+- [x] Step 4: Wire up UI (Facilities link in `base.html`, "Book a Facility" card in `home.html`).
+- [x] Step 5: Confirm tests pass on Postgres and full suite maintains baseline.
+- [x] Step 6: Commit. `feat(facilities): models with DB-level double-booking prevention`
 
 Task 5: Catalogue and weekly calendar (read-only pages)
 Files: `facilities/views.py`, `facilities/urls.py`, `templates/facilities/list.html`, `templates/facilities/detail.html`.
