@@ -5,16 +5,102 @@
 
 {% block content %}
 <div class="container mt-4 mb-5">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
         <div>
-            <h2 class="h3 fw-bold mb-1"><i class="bi bi-people-fill text-primary me-2"></i>Explainable Researcher Recommendations</h2>
+            <h2 class="h3 fw-bold mb-1" style="color: var(--ums-maroon, #9B2335);"><i class="bi bi-people-fill text-danger me-2"></i>Explainable Researcher Recommendations</h2>
             <p class="text-muted mb-0">Transparent alignment derived from shared research interests, complementary skillsets, and publication history.</p>
         </div>
-        <a href="{% url 'researchers:edit_profile' %}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-pencil me-1"></i> Edit My Interests & Skills
-        </a>
+        <div class="d-flex gap-2">
+            <a href="{% url 'collaboration:graph' %}" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-diagram-3 me-1"></i> Network Graph
+            </a>
+            <a href="{% url 'researchers:edit_profile' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-pencil me-1"></i> Edit My Interests & Skills
+            </a>
+        </div>
     </div>
 
+    {% if stored_suggestions %}
+    <div class="mb-4">
+        <h4 class="h5 fw-bold mb-2" style="color: var(--ums-maroon, #9B2335);">
+            <i class="bi bi-stars text-warning me-1"></i> Algorithmic Opportunities (Expertise Adjacency & Co-authorship Gap)
+        </h4>
+        <div class="row g-3">
+            {% for sug in stored_suggestions %}
+            <div class="col-lg-6 col-md-12">
+                <div class="card h-100 border border-warning-subtle shadow-sm bg-white">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h5 class="card-title fw-bold mb-0">
+                                    <a href="{% url 'researchers:detail' sug.suggested.pk %}" class="text-decoration-none text-dark">
+                                        {{ sug.suggested.user.get_full_name|default:sug.suggested.user.username }}
+                                    </a>
+                                </h5>
+                                <span class="text-muted small">
+                                    {{ sug.suggested.department.name|default:"General Department" }}
+                                </span>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-ums-orange text-dark fs-6 px-2 py-1">
+                                    Match: {{ sug.score|floatformat:0 }}%
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2 my-2 small">
+                            <span class="badge bg-light text-dark border">
+                                Adjacency: {{ sug.adjacency_score|floatformat:0 }} pts
+                            </span>
+                            {% if sug.gap_score > 0 %}
+                            <span class="badge bg-success-subtle text-success border border-success">
+                                <i class="bi bi-lightning-charge me-1"></i>Co-authorship Gap (+{{ sug.gap_score|floatformat:0 }})
+                            </span>
+                            {% endif %}
+                            {% if sug.explanation.is_cross_department %}
+                            <span class="badge bg-info-subtle text-info-emphasis border border-info">
+                                Cross-Department
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        {% if sug.explanation.shared_interests %}
+                        <div class="text-muted small mb-1">
+                            <strong>Shared:</strong> {{ sug.explanation.shared_interests|join:", " }}
+                        </div>
+                        {% endif %}
+                        {% if sug.explanation.complementary_skills %}
+                        <div class="text-muted small">
+                            <strong>Complementary:</strong> {{ sug.explanation.complementary_skills|join:", " }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer bg-light border-top p-2 d-flex justify-content-between align-items-center">
+                        <form method="post" action="{% url 'collaboration:dismiss_suggestion' sug.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2" title="Dismiss this suggestion">
+                                Dismiss
+                            </button>
+                        </form>
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'researchers:detail' sug.suggested.pk %}" class="btn btn-outline-secondary btn-sm py-0 px-2">
+                                Profile
+                            </a>
+                            <a href="{% url 'collaboration:send' sug.suggested.user.id %}" class="btn btn-ums-primary btn-sm py-0 px-2">
+                                Collaborate
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <h4 class="h5 fw-bold mb-3 mt-4" style="color: var(--ums-maroon, #9B2335);">
+        <i class="bi bi-people me-1"></i> Recommended Research Peers
+    </h4>
     <div class="row g-4 mt-1">
         {% for rec in recommendations %}
         <div class="col-lg-6 col-md-12">

@@ -2,10 +2,14 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count, Q
+from django.http import JsonResponse
+from collections import defaultdict
 from django.contrib.auth.models import User
-from .models import CollaborationRequest
+from .models import CollaborationRequest, CollaborationSuggestion
 from .forms import CollaborationRequestForm
 from researchers.models import ResearcherProfile
+from papers.models import ResearchPaper, PaperAuthor
+
 
 @login_required
 def collaboration_list(request):
@@ -22,6 +26,7 @@ def collaboration_list(request):
         'received_requests': received_requests,
         'status_filter': status_filter,
     })
+
 
 @login_required
 def collaboration_send(request, receiver_id):
@@ -64,6 +69,7 @@ def collaboration_send(request, receiver_id):
         
     return render(request, 'collaboration/send.html', {'form': form, 'receiver': receiver})
 
+
 @login_required
 def collaboration_respond(request, pk):
     collab_req = get_object_or_404(CollaborationRequest, pk=pk, receiver=request.user)
@@ -95,6 +101,7 @@ def collaboration_respond(request, pk):
             messages.info(request, 'Collaboration request declined.')
     return redirect('collaboration:list')
 
+
 @login_required
 def collaboration_cancel(request, pk):
     collab_req = get_object_or_404(CollaborationRequest, pk=pk, sender=request.user)
@@ -103,6 +110,7 @@ def collaboration_cancel(request, pk):
         collab_req.save()
         messages.success(request, 'Collaboration request cancelled.')
     return redirect('collaboration:list')
+
 
 @login_required
 def researcher_recommendations(request):
@@ -159,5 +167,126 @@ def researcher_recommendations(request):
             })
             
     recommendations.sort(key=lambda x: x['score'], reverse=True)
+
+    # Stored pre-computed suggestions (M5)
+    stored_suggestions = CollaborationSuggestion.objects.filter(
+        researcher=user_profile,
+        is_dismissed=False
+    ).select_related('suggested__user', 'suggested__department')
     
-    return render(request, 'collaboration/recommendations.html', {'recommendations': recommendations})
+    return render(request, 'collaboration/recommendations.html', {
+        'recommendations': recommendations,
+        'stored_suggestions': stored_suggestions,
+    })
+
+
+@login_required
+def dismiss_suggestion(request, pk):
+    if request.method == 'POST':
+        user_profile = getattr(request.user, 'researcher_profile', None)
+        if user_profile:
+            suggestion = get_object_or_404(CollaborationSuggestion, pk=pk, researcher=user_profile)
+            suggestion.is_dismissed = True
+            suggestion.save(update_fields=['is_dismissed'])
+            messages.info(request, "Suggestion dismissed.")
+    return redirect('collaboration:recommendations')
+
+
+@login_required
+def collaboration_graph(request):
+    profiles = ResearcherProfile.objects.select_related('user', 'department').filter(
+        is_available_for_collaboration=True
+    )
+    
+    nodes_summary = []
+    for p in profiles:
+        nodes_summary.append({
+            'id': p.pk,
+            'name': p.user.get_full_name() or p.user.username,
+            'username': p.user.username,
+            'department': p.department.name if p.department else 'General',
+            'is_verified': p.verification_status == 'VERIFIED',
+        })
+        
+    pair_counts = defaultdict(int)
+    papers = ResearchPaper.objects.filter(authors__researcher__isnull=False).prefetch_related('authors__researcher').distinct()
+    for paper in papers:
+        res_ids = sorted(list(set(a.researcher_id for a in paper.authors.all() if a.researcher_id)))
+        for i in range(len(res_ids)):
+            for j in range(i + 1, len(res_ids)):
+                pair_counts[(res_ids[i], res_ids[j])] += 1
+                
+    edges_summary = []
+    for (r1_id, r2_id), count in pair_counts.items():
+        edges_summary.append({
+            'source': r1_id,
+            'target': r2_id,
+            'weight': count,
+            'type': 'coauthor',
+        })
+        
+    return render(request, 'collaboration/graph.html', {
+        'nodes_summary': nodes_summary,
+        'edges_summary': edges_summary,
+    })
+
+
+@login_required
+def collaboration_graph_data(request):
+    dept_filter = request.GET.get('department', '')
+    profiles = ResearcherProfile.objects.select_related('user', 'department').all()
+    if dept_filter:
+        profiles = profiles.filter(department__name__icontains=dept_filter)
+        
+    nodes = []
+    valid_ids = set()
+    for p in profiles:
+        valid_ids.add(p.pk)
+        nodes.append({
+            'data': {
+                'id': str(p.pk),
+                'label': p.user.get_full_name() or p.user.username,
+                'username': p.user.username,
+                'department': p.department.name if p.department else 'General',
+                'is_verified': p.verification_status == 'VERIFIED',
+            }
+        })
+        
+    pair_counts = defaultdict(int)
+    papers = ResearchPaper.objects.filter(authors__researcher__isnull=False).prefetch_related('authors__researcher').distinct()
+    for paper in papers:
+        res_ids = sorted(list(set(a.researcher_id for a in paper.authors.all() if a.researcher_id and a.researcher_id in valid_ids)))
+        for i in range(len(res_ids)):
+            for j in range(i + 1, len(res_ids)):
+                pair_counts[(res_ids[i], res_ids[j])] += 1
+                
+    edges = []
+    for (r1_id, r2_id), count in pair_counts.items():
+        edges.append({
+            'data': {
+                'id': f"e_co_{r1_id}_{r2_id}",
+                'source': str(r1_id),
+                'target': str(r2_id),
+                'weight': count,
+                'type': 'coauthor',
+            }
+        })
+        
+    suggestions = CollaborationSuggestion.objects.filter(
+        researcher_id__in=valid_ids,
+        suggested_id__in=valid_ids,
+        is_dismissed=False,
+        score__gte=50.0
+    )
+    for sug in suggestions:
+        edges.append({
+            'data': {
+                'id': f"e_sug_{sug.researcher_id}_{sug.suggested_id}",
+                'source': str(sug.researcher_id),
+                'target': str(sug.suggested_id),
+                'weight': sug.score,
+                'type': 'suggestion',
+            }
+        })
+        
+    return JsonResponse({'nodes': nodes, 'edges': edges})

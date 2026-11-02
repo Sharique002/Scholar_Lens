@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Collaboration Network Graph | Scholar Lens{% endblock %}
+
+{% block extra_head %}
+<!-- Cytoscape 3.28.1 loaded strictly on the graph page -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+<style>
+    #cy {
+        width: 100%;
+        height: 550px;
+        background-color: #FAFAFA;
+        border: 1px solid var(--ums-border, #E2E4E8);
+        border-radius: 8px;
+    }
+    .graph-legend-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        background: #FFFFFF;
+        border: 1px solid #E2E4E8;
+    }
+    .graph-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h1 class="h3 fw-bold mb-1" style="color: var(--ums-maroon, #9B2335);">
+                <i class="bi bi-diagram-3 me-2"></i>Institutional Collaboration Network
+            </h1>
+            <p class="text-muted mb-0">
+                Visualizing co-authorship relationships and algorithmic collaboration opportunities across departments.
+            </p>
+        </div>
+        <div class="d-flex gap-2 mt-2 mt-md-0">
+            <a href="{% url 'collaboration:recommendations' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-stars me-1"></i> View Recommendations
+            </a>
+            <a href="{% url 'collaboration:list' %}" class="btn btn-ums-primary">
+                <i class="bi bi-envelope-paper me-1"></i> Active Requests
+            </a>
+        </div>
+    </div>
+
+    <!-- Controls & Legend -->
+    <div class="card mb-3 border-0 shadow-sm">
+        <div class="card-body p-3 d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <label for="deptFilter" class="form-label mb-0 fw-semibold text-muted small">Filter Department:</label>
+                <input type="text" id="deptFilter" class="form-control form-control-sm" placeholder="e.g. Computer Science" style="max-width: 220px;">
+                <button type="button" id="reloadGraphBtn" class="btn btn-sm btn-outline-primary">Apply</button>
+                <button type="button" id="resetLayoutBtn" class="btn btn-sm btn-outline-secondary">Reset View</button>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="text-muted small fw-semibold">Legend:</span>
+                <span class="graph-legend-pill">
+                    <span class="graph-dot" style="background: #9B2335;"></span> Verified Researcher
+                </span>
+                <span class="graph-legend-pill">
+                    <span class="graph-dot" style="background: #7A1B29;"></span> Researcher
+                </span>
+                <span class="graph-legend-pill">
+                    <span style="display:inline-block; width:16px; height:2px; background:#1F2328; vertical-align:middle;"></span> Co-Authorship
+                </span>
+                <span class="graph-legend-pill">
+                    <span style="display:inline-block; width:16px; height:2px; border-top:2px dashed #F37021; vertical-align:middle;"></span> AI Suggestion
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Graph Container -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-2 position-relative">
+            <div id="cy" role="region" aria-label="Interactive collaboration network visualization"></div>
+            <div id="graphLoading" class="position-absolute top-50 start-50 translate-middle text-center" style="display: none;">
+                <div class="spinner-border text-danger" role="status">
+                    <span class="visually-hidden">Loading network graph...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Accessible Fallback Table for Screen Readers and Plain HTML Navigation -->
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-header bg-white py-3">
+            <h2 class="h5 fw-bold mb-0">Collaboration Network Directory (Accessible View)</h2>
+            <small class="text-muted">Tabular listing of all researchers and their institutional collaborations.</small>
+        </div>
+        <div class="card-body p-0 table-responsive">
+            <table class="table table-hover table-striped mb-0 align-middle" aria-label="Collaboration Network Researchers and Connections">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Researcher</th>
+                        <th scope="col">Department</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for node in nodes_summary %}
+                    <tr>
+                        <td><code>#{{ node.id }}</code></td>
+                        <td>
+                            <strong>{{ node.name }}</strong>
+                            <div class="text-muted small">@{{ node.username }}</div>
+                        </td>
+                        <td>{{ node.department }}</td>
+                        <td>
+                            {% if node.is_verified %}
+                                <span class="badge bg-success-subtle text-success border border-success">Verified</span>
+                            {% else %}
+                                <span class="badge bg-light text-muted border">Standard</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'researchers:detail' node.id %}" class="btn btn-sm btn-outline-secondary">
+                                View Profile
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">No researchers currently available in network.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof cytoscape === 'undefined') return;
+
+    var cyContainer = document.getElementById('cy');
+    var loadingIndicator = document.getElementById('graphLoading');
+    var cy = null;
+
+    function loadGraph(dept) {
+        if (loadingIndicator) loadingIndicator.style.display = 'block';
+        var url = "{% url 'collaboration:graph_data' %}";
+        if (dept) {
+            url += "?department=" + encodeURIComponent(dept);
+        }
+
+        fetch(url)
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (loadingIndicator) loadingIndicator.style.display = 'none';
+
+                var elements = [];
+                (data.nodes || []).forEach(function(n) {
+                    elements.push(n);
+                });
+                (data.edges || []).forEach(function(e) {
+                    elements.push(e);
+                });
+
+                if (cy) {
+                    cy.destroy();
+                }
+
+                cy = cytoscape({
+                    container: cyContainer,
+                    elements: elements,
+                    style: [
+                        {
+                            selector: 'node',
+                            style: {
+                                'label': 'data(label)',
+                                'color': '#1F2328',
+                                'font-size': '12px',
+                                'text-valign': 'bottom',
+                                'text-margin-y': 4,
+                                'background-color': '#7A1B29',
+                                'width': 28,
+                                'height': 28
+                            }
+                        },
+                        {
+                            selector: 'node[?is_verified]',
+                            style: {
+                                'background-color': '#9B2335',
+                                'border-width': 2,
+                                'border-color': '#F37021'
+                            }
+                        },
+                        {
+                            selector: 'edge[type = "coauthor"]',
+                            style: {
+                                'line-color': '#5B6270',
+                                'width': 2,
+                                'curve-style': 'bezier',
+                                'opacity': 0.8
+                            }
+                        },
+                        {
+                            selector: 'edge[type = "suggestion"]',
+                            style: {
+                                'line-color': '#F37021',
+                                'line-style': 'dashed',
+                                'width': 2,
+                                'curve-style': 'bezier',
+                                'opacity': 0.7
+                            }
+                        }
+                    ],
+                    layout: {
+                        name: 'cose',
+                        animate: false,
+                        nodeRepulsion: 4500,
+                        idealEdgeLength: 80
+                    }
+                });
+
+                cy.on('tap', 'node', function(evt) {
+                    var node = evt.target;
+                    var nodeId = node.id();
+                    if (nodeId) {
+                        window.location.href = "/researchers/" + nodeId + "/";
+                    }
+                });
+            })
+            .catch(function(err) {
+                if (loadingIndicator) loadingIndicator.style.display = 'none';
+                console.error("Failed to load collaboration network:", err);
+            });
+    }
+
+    loadGraph('');
+
+    var reloadBtn = document.getElementById('reloadGraphBtn');
+    if (reloadBtn) {
+        reloadBtn.addEventListener('click', function() {
+            var dept = document.getElementById('deptFilter').value.trim();
+            loadGraph(dept);
+        });
+    }
+
+    var resetBtn = document.getElementById('resetLayoutBtn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            if (cy) {
+                cy.fit();
+                cy.center();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

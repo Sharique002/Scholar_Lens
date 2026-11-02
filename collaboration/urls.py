@@ -9,4 +9,7 @@ urlpatterns = [
     path('<int:pk>/respond/', views.collaboration_respond, name='respond'),
     path('<int:pk>/cancel/', views.collaboration_cancel, name='cancel'),
     path('recommendations/', views.researcher_recommendations, name='recommendations'),
+    path('suggestions/<int:pk>/dismiss/', views.dismiss_suggestion, name='dismiss_suggestion'),
+    path('graph/', views.collaboration_graph, name='graph'),
+    path('graph/data/', views.collaboration_graph_data, name='graph_data'),
 ]
