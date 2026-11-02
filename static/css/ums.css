@@ -1,17 +1,283 @@
-/* Scholar Lens — LPU UMS-Inspired Design System & Layout */
+/* ==========================================================================
+   SCHOLAR LENS — LPU UMS INSTITUTIONAL DESIGN SYSTEM & PORTAL SHELL
+   ========================================================================== */
+
+/* 1. Design Token Overrides */
 :root {
+    /* Exact Specification Colors */
     --primary: #9B2335;
     --primary-dark: #7A1B29;
     --primary-light: #FBEFF1;
-    --color-orange: #F37021;
-    --color-orange-dark: #E0601A;
-    --color-text-dark: #1F2328;
-    --color-muted: #5B6270;
-    --border-color: #E2E4E8;
+    --color-pink: #9B2335;
+    --color-pink-deep: #7A1B29;
+    --color-pink-soft: #FBEFF1;
+    
+    /* Map Purples and Cyans onto Maroon Spectrum */
+    --color-purple: #9B2335;
+    --color-purple-deep: #7A1B29;
+    --color-lilac-soft: #FBEFF1;
+    --color-cyan: #9B2335;
+    --color-cyan-deep: #7A1B29;
+    --color-cyan-soft: #FBEFF1;
+    --color-mint: #FBEFF1;
+
+    /* Primary Action Orange with High Contrast Dark Text */
+    --color-yellow: #F37021;
+    --color-yellow-deep: #E0601A;
+    --color-yellow-soft: #FFF1E8;
+    --action-orange: #F37021;
+    --action-orange-hover: #E0601A;
+    --action-text-dark: #1F2328;
+
+    /* Neutrals & Institutional Canvas */
+    --canvas-bg: #F5F5F7;
+    --card-bg: #FFFFFF;
     --bg-page: #F5F5F7;
     --bg-card: #FFFFFF;
+    --ink-black: #1F2328;
+    --ink-charcoal: #1F2328;
+    --text-primary: #1F2328;
+    --ink-muted: #5B6270;
+    --text-secondary: #5B6270;
+    --border-dark: #E2E4E8;
+    --border: #E2E4E8;
+    --border-light: #E2E4E8;
+    --danger: #B42318;
+
+    /* Soft Institutional Shadows (Replacing Brutal Offset) */
+    --shadow-pop: 0 1px 2px rgba(0, 0, 0, 0.06);
+    --shadow-pop-lg: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --shadow-soft: 0 2px 4px rgba(0, 0, 0, 0.04);
+    --shadow-float: 0 4px 6px rgba(0, 0, 0, 0.05);
+
+    /* Clean Institutional Geometry & Typography */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 10px;
+    --radius-xl: 12px;
+    --font-script: var(--font-body);
 }
 
+/* Global Reset & Accessible Baseline */
+html, body.ums-body {
+    background-color: var(--canvas-bg);
+    color: var(--text-primary);
+    font-size: 15px;
+    line-height: 1.5;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+/* 2. Primary Buttons & Interactive States */
+.btn-primary,
+.btn-pill-primary,
+.btn-pill-yellow,
+.module-hero-btn {
+    background-color: var(--action-orange) !important;
+    color: var(--action-text-dark) !important;
+    border: 1px solid var(--action-orange-hover) !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+    font-weight: 600 !important;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1.25rem;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.btn-primary:hover,
+.btn-pill-primary:hover,
+.btn-pill-yellow:hover,
+.module-hero-btn:hover {
+    background-color: var(--action-orange-hover) !important;
+    color: var(--action-text-dark) !important;
+    transform: translateY(-1px);
+}
+
+.btn-pill-dark {
+    background-color: var(--primary) !important;
+    color: #FFFFFF !important;
+    border: 1px solid var(--primary-dark) !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+    font-weight: 600;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--radius-sm);
+}
+
+.btn-pill-dark:hover {
+    background-color: var(--primary-dark) !important;
+    color: #FFFFFF !important;
+}
+
+/* 3. Neutralize Neo-Brutalist Offset Shadows & Heavy Borders */
+.hero-pop-card,
+.stat-chip,
+.showcase-pop-card,
+.badge-tag-pill,
+.box-3d-wrapper,
+.box-paper-doc,
+.nav-pill-link,
+.user-pill-btn,
+.dropdown-menu,
+.card,
+.pop-card,
+.feature-card,
+.paper-card,
+.project-card,
+.researcher-card,
+.collaboration-card,
+.action-box {
+    box-shadow: var(--shadow-pop) !important;
+    border-color: var(--border-dark) !important;
+    border-radius: var(--radius-md) !important;
+}
+
+/* 4. University Top Header Bar */
+.ums-header {
+    background-color: #FFFFFF;
+    border-bottom: 3px solid var(--primary);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    height: 56px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.ums-header-inner {
+    height: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.ums-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--primary);
+    letter-spacing: -0.02em;
+}
+
+.ums-brand-icon {
+    font-size: 1.4rem;
+}
+
+.ums-brand-accent {
+    color: var(--action-orange);
+}
+
+/* Header Search Input */
+.ums-header-search {
+    display: flex;
+    align-items: center;
+    background-color: var(--canvas-bg);
+    border: 1px solid var(--border-dark);
+    border-radius: var(--radius-sm);
+    padding: 2px 8px;
+    width: 320px;
+}
+
+.ums-header-search input {
+    border: none;
+    background: transparent;
+    padding: 6px 8px;
+    font-size: 14px;
+    width: 100%;
+    color: var(--text-primary);
+    outline: none;
+}
+
+.ums-header-search button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: var(--ink-muted);
+}
+
+/* Header Bell Icon & Account Dropdown */
+.ums-bell {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    color: var(--text-primary);
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    font-size: 1.15rem;
+    transition: background-color 0.15s ease;
+}
+
+.ums-bell:hover {
+    background-color: var(--primary-light);
+}
+
+.ums-account-dropdown {
+    position: relative;
+    margin-left: 8px;
+}
+
+.ums-account-dropdown .user-pill-btn {
+    border: 1px solid var(--border-dark);
+    background: #FFFFFF;
+    border-radius: var(--radius-sm);
+    padding: 6px 12px;
+    font-size: 14px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.ums-account-dropdown .dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    background: #FFFFFF;
+    border: 1px solid var(--border-dark);
+    border-radius: var(--radius-sm);
+    min-width: 220px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: none;
+    padding: 6px 0;
+    z-index: 200;
+}
+
+.ums-account-dropdown.active .dropdown-menu {
+    display: block;
+}
+
+.dropdown-item {
+    display: block;
+    padding: 8px 16px;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.dropdown-item:hover {
+    background-color: var(--primary-light);
+    color: var(--primary);
+}
+
+.dropdown-divider {
+    border: none;
+    border-top: 1px solid var(--border-dark);
+    margin: 6px 0;
+}
+
+/* 5. Top Announcement / Marquee Strip */
 .top-marquee-strip {
     background-color: var(--primary);
     color: #FFFFFF;
@@ -21,14 +287,233 @@
     overflow: hidden;
     position: relative;
     border-bottom: 1px solid var(--primary-dark);
+    white-space: nowrap;
 }
 
 .marquee-track {
-    animation-duration: 75s !important;
+    display: inline-block;
+    white-space: nowrap;
+    animation: marquee-scroll 75s linear infinite;
+}
+
+@keyframes marquee-scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .marquee-track {
         animation: none !important;
+    }
+}
+
+/* 6. Layout: Left Sidebar + Main Content */
+.ums-layout {
+    display: flex;
+    min-height: calc(100vh - 88px);
+    position: relative;
+}
+
+/* White Left Sidebar */
+aside.ums-sidebar {
+    width: 232px;
+    background-color: #FFFFFF;
+    border-right: 1px solid var(--border-dark);
+    position: fixed;
+    top: 88px;
+    bottom: 0;
+    left: 0;
+    z-index: 90;
+    transition: width 150ms ease;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.ums-sidebar-collapse {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border-dark);
+    padding: 8px 16px;
+    text-align: right;
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--ink-muted);
+    min-height: 36px;
+}
+
+.ums-sidebar-collapse:hover {
+    background-color: var(--canvas-bg);
+    color: var(--primary);
+}
+
+.ums-sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 0;
+}
+
+.ums-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
+    min-height: 44px;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    border-left: 3px solid transparent;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.ums-nav-link:hover {
+    background-color: var(--canvas-bg);
+    color: var(--primary);
+}
+
+.ums-nav-link.is-active {
+    background-color: var(--primary-light);
+    color: var(--primary);
+    border-left: 3px solid var(--primary);
+    font-weight: 700;
+}
+
+.ums-nav-icon {
+    font-size: 1.15rem;
+    min-width: 24px;
+    display: inline-flex;
+    justify-content: center;
+}
+
+.ums-nav-label {
+    white-space: nowrap;
+}
+
+/* Collapsed Desktop Sidebar */
+body.sidebar-collapsed aside.ums-sidebar {
+    width: 64px;
+}
+
+body.sidebar-collapsed .ums-nav-label {
+    display: none;
+}
+
+body.sidebar-collapsed .ums-nav-link {
+    justify-content: center;
+    padding: 0;
+}
+
+body.sidebar-collapsed .ums-sidebar-collapse {
+    text-align: center;
+}
+
+/* Main Content Area */
+main.ums-main {
+    flex: 1;
+    margin-left: 232px;
+    padding: 24px;
+    max-width: 1280px;
+    width: 100%;
+    transition: margin-left 150ms ease;
+    box-sizing: border-box;
+}
+
+body.sidebar-collapsed main.ums-main {
+    margin-left: 64px;
+}
+
+main.ums-main--full {
+    margin-left: 0 !important;
+    max-width: 100%;
+}
+
+/* Breadcrumbs */
+.ums-breadcrumb {
+    font-size: 14px;
+    margin-bottom: 20px;
+    color: var(--ink-muted);
+}
+
+.ums-breadcrumb a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.ums-breadcrumb-sep {
+    margin: 0 8px;
+    color: var(--ink-muted);
+}
+
+.ums-breadcrumb-current {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Clean Institutional Footer */
+.ums-footer {
+    background-color: #FFFFFF;
+    border-top: 1px solid var(--border-dark);
+    padding: 16px 24px;
+    font-size: 14px;
+    color: var(--ink-muted);
+    clear: both;
+}
+
+/* 7. Mobile and Motion Responsiveness */
+@media (max-width: 900px) {
+    aside.ums-sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        top: 56px;
+        width: 260px;
+        box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+    }
+
+    aside.ums-sidebar.active {
+        transform: translateX(0);
+    }
+
+    .ums-sidebar-collapse {
+        display: none;
+    }
+
+    main.ums-main {
+        margin-left: 0 !important;
+        padding: 16px;
+    }
+}
+
+@media (max-width: 600px) {
+    .ums-header-search {
+        display: none;
+    }
+
+    .ums-header-inner {
+        padding: 0 12px;
+    }
+}
+
+/* Accessibility Focus Ring */
+:focus-visible {
+    outline: 2px solid var(--primary) !important;
+    outline-offset: 2px !important;
+}
+
+/* Print Stylesheet for Report Clean Export */
+@media print {
+    .ums-header,
+    .top-marquee-strip,
+    aside.ums-sidebar,
+    .ums-footer,
+    .ums-breadcrumb,
+    .mobile-menu-btn {
+        display: none !important;
+    }
+
+    main.ums-main {
+        margin: 0 !important;
+        padding: 0 !important;
+        max-width: 100% !important;
     }
 }

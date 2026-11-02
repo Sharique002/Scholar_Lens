@@ -75,11 +75,11 @@ Interfaces:
 Task 2: Theme in ums.css
 Files: Create `static/css/ums.css`.
 - [ ] Step 1: Token overrides on `:root`.
-- [ ] Step 2: Primary buttons.
-- [ ] Step 3: Remove brutalist shadows and borders.
-- [ ] Step 4: Shell layout.
-- [ ] Step 5: Mobile and motion.
-- [ ] Step 6: Accessibility.
+- [x] Step 2: Primary buttons.
+- [x] Step 3: Remove brutalist shadows and borders.
+- [x] Step 4: Shell layout.
+- [x] Step 5: Mobile and motion.
+- [x] Step 6: Accessibility.
 - [ ] Step 7: Commit. `feat(ui): maroon/white UMS theme with orange actions`
 
 Task 3: Dashboard quick actions
