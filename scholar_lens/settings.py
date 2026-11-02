@@ -117,6 +117,7 @@ INSTALLED_APPS = [
     'django.contrib.postgres',
     'facilities.apps.FacilitiesConfig',
     'funding.apps.FundingConfig',
+    'opportunities.apps.OpportunitiesConfig',
 ]
 
 MIDDLEWARE = [

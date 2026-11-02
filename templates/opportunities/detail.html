@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ opening.title }} | Scholar Lens{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="mb-3">
+        <a href="{% url 'opportunities:list' %}" class="btn btn-link text-decoration-none p-0 text-muted">
+            <i class="bi bi-arrow-left me-1"></i> Back to Opportunities
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Details -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h1 class="h3 fw-bold mb-1" style="color: var(--ums-maroon, #9B2335);">{{ opening.title }}</h1>
+                            {% if opening.project %}
+                            <div class="text-muted small mb-1">
+                                <i class="bi bi-folder2-open me-1 text-primary"></i>Project:
+                                <a href="{% url 'projects:detail' opening.project.pk %}" class="fw-semibold text-decoration-none">
+                                    {{ opening.project.title }}
+                                </a>
+                            </div>
+                            {% endif %}
+                            {% if opening.department %}
+                                <span class="badge bg-light text-secondary border">{{ opening.department.name }}</span>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {% if opening.status == 'OPEN' %}
+                                <span class="badge bg-success fs-6">Open</span>
+                            {% else %}
+                                <span class="badge bg-secondary fs-6">Closed</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="my-4">
+                        <h2 class="h6 fw-bold text-uppercase text-muted">Description & Role Overview</h2>
+                        <div class="p-3 bg-light rounded border text-secondary" style="white-space: pre-line;">
+                            {{ opening.description }}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h6 fw-bold text-uppercase text-muted">Required Skills</h2>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for skill in opening.required_skills.all %}
+                                <span class="badge bg-white text-dark border px-3 py-2 fs-6">
+                                    <i class="bi bi-check2 text-success me-1"></i>{{ skill.name }}
+                                </span>
+                            {% empty %}
+                                <span class="text-muted small">No specific prerequisite skills required.</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Application Section -->
+            <div id="apply" class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h2 class="h5 fw-bold mb-0">Application Status & Submission</h2>
+                </div>
+                <div class="card-body p-4">
+                    {% if user_application %}
+                        <div class="p-4 rounded border {% if user_application.status == 'ACCEPTED' %}bg-success-subtle border-success{% elif user_application.status == 'REJECTED' %}bg-danger-subtle border-danger{% else %}bg-warning-subtle border-warning{% endif %}">
+                            <h3 class="h5 fw-bold mb-2">
+                                Application Status: <span class="badge {% if user_application.status == 'ACCEPTED' %}bg-success{% elif user_application.status == 'REJECTED' %}bg-danger{% else %}bg-warning text-dark{% endif %}">{{ user_application.status }}</span>
+                            </h3>
+                            <p class="mb-1 text-secondary">Submitted on {{ user_application.created_at|date:"M d, Y H:i" }}.</p>
+                            <p class="mb-0 text-secondary"><strong>Statement:</strong> {{ user_application.statement }}</p>
+                        </div>
+                    {% elif opening.status != 'OPEN' %}
+                        <div class="alert alert-secondary mb-0">
+                            This opportunity is currently closed to new applications.
+                        </div>
+                    {% elif not user.is_authenticated %}
+                        <div class="alert alert-info mb-0">
+                            Please <a href="{% url 'accounts:login' %}">sign in</a> to apply for this research opportunity.
+                        </div>
+                    {% elif is_manager %}
+                        <div class="alert alert-secondary mb-0">
+                            You are the manager/leader of this opportunity and cannot apply.
+                        </div>
+                    {% else %}
+                        <form method="post" action="{% url 'opportunities:apply' opening.pk %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            {% if apply_form.errors %}
+                            <div class="alert alert-danger mb-3">
+                                Please correct the errors below before submitting.
+                                {{ apply_form.errors }}
+                            </div>
+                            {% endif %}
+                            <div class="mb-3">
+                                <label for="id_statement" class="form-label fw-semibold">Statement of Interest</label>
+                                {{ apply_form.statement }}
+                                <small class="text-muted">Summarize your background, relevant skills, and motivation.</small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="id_cv_pdf" class="form-label fw-semibold">Upload CV / Resume (PDF Only, Max 5MB)</label>
+                                {{ apply_form.cv_pdf }}
+                            </div>
+                            <button type="submit" class="btn btn-ums-primary">
+                                <i class="bi bi-send me-1"></i> Submit Application
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Manager Applicant Review Section -->
+            {% if is_manager %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h2 class="h5 fw-bold mb-0">Applicant Review Queue ({{ applications|length }})</h2>
+                    <span class="badge bg-light text-muted border">Manager Access</span>
+                </div>
+                <div class="card-body p-0 table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Applicant</th>
+                                <th>Submitted</th>
+                                <th>Statement / CV</th>
+                                <th>Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for app in applications %}
+                            <tr>
+                                <td>
+                                    <strong>{{ app.applicant.get_full_name|default:app.applicant.username }}</strong>
+                                    <div class="text-muted small">@{{ app.applicant.username }}</div>
+                                </td>
+                                <td class="small text-muted">{{ app.created_at|date:"M d, Y" }}</td>
+                                <td style="max-width: 250px;">
+                                    <div class="small text-truncate" title="{{ app.statement }}">{{ app.statement }}</div>
+                                    {% if app.cv_pdf %}
+                                        <a href="{{ app.cv_pdf.url }}" target="_blank" class="small text-decoration-none">
+                                            <i class="bi bi-file-earmark-pdf text-danger me-1"></i>View CV
+                                        </a>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge {% if app.status == 'ACCEPTED' %}bg-success{% elif app.status == 'REJECTED' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                                        {{ app.status }}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    {% if app.status == 'PENDING' %}
+                                    <form method="post" action="{% url 'opportunities:review' app.pk 'accept' %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-success py-0 px-2">Accept</button>
+                                    </form>
+                                    <form method="post" action="{% url 'opportunities:review' app.pk 'reject' %}" class="d-inline ms-1">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2">Decline</button>
+                                    </form>
+                                    {% else %}
+                                        <span class="text-muted small">Reviewed</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">No applications submitted yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar Info -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h3 class="h6 fw-bold mb-0 text-uppercase">Opportunity Details</h3>
+                </div>
+                <div class="card-body p-3">
+                    <ul class="list-group list-group-flush small">
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Positions Available:</span>
+                            <strong>{{ opening.spots_available }}</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Application Deadline:</span>
+                            <strong>{{ opening.deadline|date:"M d, Y"|default:"Open rolling" }}</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Posted On:</span>
+                            <strong>{{ opening.created_at|date:"M d, Y" }}</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Contact / Lead:</span>
+                            <strong>{{ opening.created_by.get_full_name|default:opening.created_by.username }}</strong>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

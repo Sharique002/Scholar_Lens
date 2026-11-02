@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} | Scholar Lens{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 800px;">
+    <div class="mb-3">
+        <a href="{% url 'opportunities:list' %}" class="btn btn-link text-decoration-none p-0 text-muted">
+            <i class="bi bi-arrow-left me-1"></i> Back to Opportunities
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h1 class="h4 fw-bold mb-0" style="color: var(--ums-maroon, #9B2335);">{{ title }}</h1>
+            <p class="text-muted small mb-0">Publish an opening for student researchers, lab assistants, or project collaborators.</p>
+        </div>
+        <div class="card-body p-4">
+            <form method="post">
+                {% csrf_token %}
+                {% if form.errors %}
+                <div class="alert alert-danger mb-3">
+                    Please correct the errors indicated below.
+                    {{ form.errors }}
+                </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    <label for="id_title" class="form-label fw-semibold">Opening Title *</label>
+                    {{ form.title }}
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="id_project" class="form-label fw-semibold">Associated Project</label>
+                        {{ form.project }}
+                        <small class="text-muted">Optional: link to an existing research project.</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="id_department" class="form-label fw-semibold">Department</label>
+                        {{ form.department }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_description" class="form-label fw-semibold">Description & Responsibilities *</label>
+                    {{ form.description }}
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_required_skills" class="form-label fw-semibold">Required Skills</label>
+                    {{ form.required_skills }}
+                    <small class="text-muted">Hold Ctrl/Cmd to select multiple skills.</small>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label for="id_spots_available" class="form-label fw-semibold">Spots Available *</label>
+                        {{ form.spots_available }}
+                    </div>
+                    <div class="col-md-4">
+                        <label for="id_deadline" class="form-label fw-semibold">Application Deadline</label>
+                        {{ form.deadline }}
+                    </div>
+                    <div class="col-md-4">
+                        <label for="id_status" class="form-label fw-semibold">Status *</label>
+                        {{ form.status }}
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{% url 'opportunities:list' %}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-ums-primary">Publish Opening</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
