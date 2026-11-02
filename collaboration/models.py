@@ -27,3 +27,34 @@ class CollaborationRequest(models.Model):
 
     def __str__(self):
         return f"Request from {self.sender.username} to {self.receiver.username} ({self.status})"
+
+
+class CollaborationSuggestion(models.Model):
+    researcher = models.ForeignKey(
+        'researchers.ResearcherProfile',
+        on_delete=models.CASCADE,
+        related_name='received_suggestions'
+    )
+    suggested = models.ForeignKey(
+        'researchers.ResearcherProfile',
+        on_delete=models.CASCADE,
+        related_name='target_suggestions'
+    )
+    score = models.FloatField()
+    adjacency_score = models.FloatField(default=0.0)
+    gap_score = models.FloatField(default=0.0)
+    explanation = models.JSONField(default=dict)
+    is_dismissed = models.BooleanField(default=False, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-score']
+        unique_together = ('researcher', 'suggested')
+        indexes = [
+            models.Index(fields=['researcher', 'is_dismissed']),
+            models.Index(fields=['score']),
+        ]
+
+    def __str__(self):
+        return f"Suggestion: {self.researcher.user.username} -> {self.suggested.user.username} ({self.score})"
