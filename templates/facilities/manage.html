@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Custodian Booking Queue | Facilities | Scholar Lens{% endblock %}
+
+{% block breadcrumb %}
+<nav class="ums-breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'dashboard:home' %}">Home</a>
+    <span class="ums-breadcrumb-sep">›</span>
+    <a href="{% url 'facilities:list' %}">Facilities</a>
+    <span class="ums-breadcrumb-sep">›</span>
+    <span class="ums-breadcrumb-current">Custodian Queue</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom gap-3">
+        <div>
+            <h1 class="h3 fw-bold mb-1" style="color: var(--ums-maroon);">⚙️ Custodian Booking Management Queue</h1>
+            <p class="text-secondary mb-0">Review pending facility reservation requests and record completed usage.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'facilities:utilisation' %}" class="btn btn-outline-dark">Utilisation Report</a>
+            <a href="{% url 'facilities:list' %}" class="btn btn-outline-secondary">Facilities Catalogue</a>
+        </div>
+    </div>
+
+    <!-- Section 1: Pending Approvals -->
+    <div class="card border rounded-3 shadow-sm bg-white mb-4">
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+            <h2 class="h5 fw-bold mb-0" style="color: var(--ums-maroon);">
+                ⏳ Pending Approval Requests
+                <span class="badge bg-warning text-dark ms-2">{{ pending_bookings.count }}</span>
+            </h2>
+            <span class="text-muted small">Oldest first</span>
+        </div>
+        <div class="card-body p-0">
+            {% if pending_bookings %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Facility</th>
+                            <th>Applicant</th>
+                            <th>Requested Time</th>
+                            <th>Purpose</th>
+                            <th>Requested At</th>
+                            <th>Decision Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for b in pending_bookings %}
+                        <tr>
+                            <td>
+                                <strong>{{ b.facility.name }}</strong>
+                                <div class="text-muted small">📍 {{ b.facility.location }}</div>
+                            </td>
+                            <td>
+                                <strong>{{ b.user.get_full_name|default:b.user.username }}</strong>
+                                <div class="text-muted small">{{ b.user.email }}</div>
+                            </td>
+                            <td>
+                                <div>{{ b.start|date:"M d, Y" }}</div>
+                                <span class="badge bg-light text-dark border">
+                                    {{ b.start|time:"H:i" }} – {{ b.end|time:"H:i" }} ({{ b.hours }}h)
+                                </span>
+                            </td>
+                            <td>
+                                <span class="text-secondary small">{{ b.purpose }}</span>
+                            </td>
+                            <td>
+                                <span class="text-muted small">{{ b.created_at|date:"M d, H:i" }}</span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <form method="post" action="{% url 'facilities:decide' b.pk %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="approve">
+                                        <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                                    </form>
+                                    <form method="post" action="{% url 'facilities:decide' b.pk %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="reject">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Reject</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="p-4 text-center text-muted">
+                <span>✨ No pending booking requests. All caught up!</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Section 2: Usage Logging (Past Approved Bookings) -->
+    <div class="card border rounded-3 shadow-sm bg-white">
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+            <h2 class="h5 fw-bold mb-0" style="color: var(--ums-maroon);">
+                📝 Usage Logging &amp; Attendance
+                <span class="badge bg-secondary ms-2">{{ awaiting_log.count }}</span>
+            </h2>
+            <span class="text-muted small">Approved sessions that have concluded</span>
+        </div>
+        <div class="card-body p-0">
+            {% if awaiting_log %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Facility</th>
+                            <th>Applicant</th>
+                            <th>Concluded Slot</th>
+                            <th>Purpose</th>
+                            <th>Log Attendance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for b in awaiting_log %}
+                        <tr>
+                            <td>
+                                <strong>{{ b.facility.name }}</strong>
+                            </td>
+                            <td>
+                                <strong>{{ b.user.get_full_name|default:b.user.username }}</strong>
+                            </td>
+                            <td>
+                                <div>{{ b.start|date:"M d, Y" }}</div>
+                                <span class="text-muted small">{{ b.start|time:"H:i" }} – {{ b.end|time:"H:i" }} ({{ b.hours }}h)</span>
+                            </td>
+                            <td>
+                                <span class="text-secondary small">{{ b.purpose }}</span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <form method="post" action="{% url 'facilities:log_use' b.pk %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="outcome" value="completed">
+                                        <button type="submit" class="btn btn-sm btn-primary">Mark Completed</button>
+                                    </form>
+                                    <form method="post" action="{% url 'facilities:log_use' b.pk %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="outcome" value="no_show">
+                                        <button type="submit" class="btn btn-sm btn-outline-dark">Mark No-Show</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="p-4 text-center text-muted">
+                <span>All concluded bookings have been logged.</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

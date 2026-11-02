@@ -3,7 +3,7 @@ from django.conf import settings
 
 
 def site_settings(request):
-    """Make site settings and live research marquee items available in all templates."""
+    """Make site settings, live research marquee items, and custodian counters available in all templates."""
     marquee_items = []
     try:
         from papers.models import ResearchPaper
@@ -46,9 +46,23 @@ def site_settings(request):
             "✦ SEMANTIC VECTOR SEARCH",
         ]
 
+    pending_bookings_count = 0
+    if request.user.is_authenticated:
+        try:
+            from facilities.models import Booking
+            if request.user.is_staff:
+                pending_bookings_count = Booking.objects.filter(status='PENDING').count()
+            elif hasattr(request.user, 'custodian_facilities') and request.user.custodian_facilities.exists():
+                pending_bookings_count = Booking.objects.filter(
+                    facility__custodian=request.user,
+                    status='PENDING'
+                ).count()
+        except Exception:
+            pending_bookings_count = 0
+
     return {
         'SITE_NAME': settings.SITE_NAME,
         'AI_CONFIGURED': bool(settings.OPENAI_API_KEY),
         'marquee_items': marquee_items,
+        'pending_bookings_count': pending_bookings_count,
     }
-

@@ -41,8 +41,11 @@
 
             <div class="ums-header-right flex align-center">
                 {% if user.is_authenticated %}
-                <a href="{% url 'dashboard:notifications' %}" class="ums-bell" aria-label="Notifications" title="Notifications">
+                <a href="{% if pending_bookings_count > 0 %}{% url 'facilities:manage' %}{% else %}{% url 'dashboard:notifications' %}{% endif %}" class="ums-bell" aria-label="Notifications" title="{% if pending_bookings_count > 0 %}{{ pending_bookings_count }} pending booking request{{ pending_bookings_count|pluralize }}{% else %}Notifications{% endif %}">
                     <span class="ums-bell-icon">🔔</span>
+                    {% if pending_bookings_count > 0 %}
+                    <span class="badge bg-danger rounded-pill ums-bell-badge" style="font-size: 0.65rem; position: absolute; top: 4px; right: 4px;">{{ pending_bookings_count }}</span>
+                    {% endif %}
                 </a>
 
                 <div class="nav-dropdown ums-account-dropdown">

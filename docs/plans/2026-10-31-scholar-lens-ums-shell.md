@@ -115,9 +115,9 @@ Files: `facilities/forms.py`, `facilities/views.py`, `templates/facilities/book.
 
 Task 7: Custodian approval, usage log, utilisation
 Files: `facilities/views.py`, `templates/facilities/manage.html`, `templates/facilities/utilisation.html`.
-- [ ] Step 1: Write failing tests.
-- [ ] Step 2: Implement `manage`, `log_use`, `utilisation`, and header bell indicator.
-- [ ] Step 3: Confirm tests pass, then commit with `feat(facilities): custodian approvals, usage log, utilisation report`.
+- [x] Step 1: Write failing tests.
+- [x] Step 2: Implement `manage`, `log_use`, `utilisation`, and header bell indicator.
+- [x] Step 3: Confirm tests pass, then commit with `feat(facilities): custodian approvals, usage log, utilisation report`.
 
 Task 8: Seed data, docs, browser check
 - [ ] Extend `seed_demo_data` with 4 facilities across CSE and Biotech.

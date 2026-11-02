@@ -12,6 +12,7 @@ from psycopg2.extras import DateTimeTZRange
 from facilities.models import Facility, FacilitySlot, Booking
 from facilities.forms import BookingForm
 from facilities.views import create_booking
+from dashboard.models import ResearchActivity
 
 
 class FacilitiesModelTest(TestCase):
@@ -449,3 +450,192 @@ class ConcurrentBookingConcurrencyTest(TransactionTestCase):
         self.assertEqual(len(successes), 1)
         self.assertEqual(len(conflicts), 4)
         self.assertEqual(Booking.objects.filter(facility=facility).count(), 1)
+
+
+class CustodianAndUtilisationTest(TestCase):
+    def setUp(self):
+        self.custodian = User.objects.create_user(
+            username='custodian_mgr',
+            password='Password123!',
+            email='cust_mgr@example.com'
+        )
+        self.other_custodian = User.objects.create_user(
+            username='other_cust',
+            password='Password123!',
+            email='other_c@example.com'
+        )
+        self.staff_user = User.objects.create_user(
+            username='staff_officer',
+            password='Password123!',
+            email='staff@example.com',
+            is_staff=True
+        )
+        self.student = User.objects.create_user(
+            username='student_user',
+            password='Password123!',
+            email='student@example.com'
+        )
+        self.facility = Facility.objects.create(
+            name='Precision Chemistry Lab',
+            kind='LAB',
+            department='Chemistry',
+            location='Science Hall 101',
+            custodian=self.custodian,
+            requires_approval=True
+        )
+        self.other_facility = Facility.objects.create(
+            name='Wind Tunnel Suite',
+            kind='EQUIPMENT',
+            department='Aerospace',
+            location='Aero 01',
+            custodian=self.other_custodian,
+            requires_approval=True
+        )
+        # Open Mon-Fri 09:00 - 17:00 (40 hours per week)
+        for w in range(5):
+            FacilitySlot.objects.create(
+                facility=self.facility,
+                weekday=w,
+                opens=time(9, 0),
+                closes=time(17, 0)
+            )
+
+    def test_only_custodian_or_staff_can_decide(self):
+        base_dt = timezone.now().replace(minute=0, second=0, microsecond=0) + timedelta(days=2)
+        booking = Booking.objects.create(
+            facility=self.facility,
+            user=self.student,
+            during=DateTimeTZRange(base_dt + timedelta(hours=10), base_dt + timedelta(hours=12), bounds='[)'),
+            purpose='Titration',
+            status='PENDING'
+        )
+        self.client.force_login(self.student)
+        r = self.client.post(reverse('facilities:decide', args=[booking.pk]), {'action': 'approve'})
+        self.assertEqual(r.status_code, 403)
+
+    def test_approve_and_reject_notify_user(self):
+        base_dt = timezone.now().replace(minute=0, second=0, microsecond=0) + timedelta(days=2)
+        booking = Booking.objects.create(
+            facility=self.facility,
+            user=self.student,
+            during=DateTimeTZRange(base_dt + timedelta(hours=10), base_dt + timedelta(hours=12), bounds='[)'),
+            purpose='Spectroscopy Run',
+            status='PENDING'
+        )
+        # Custodian approves
+        self.client.force_login(self.custodian)
+        r = self.client.post(reverse('facilities:decide', args=[booking.pk]), {'action': 'approve'}, follow=True)
+        self.assertEqual(r.status_code, 200)
+
+        booking.refresh_from_db()
+        self.assertEqual(booking.status, 'APPROVED')
+        self.assertEqual(booking.decided_by, self.custodian)
+        self.assertIsNotNone(booking.decided_at)
+
+        # Check notification for student
+        self.client.force_login(self.student)
+        r_notif = self.client.get(reverse('dashboard:notifications'))
+        self.assertEqual(r_notif.status_code, 200)
+        self.assertContains(r_notif, 'was approved')
+
+    def test_decide_only_pending(self):
+        base_dt = timezone.now().replace(minute=0, second=0, microsecond=0) + timedelta(days=2)
+        booking = Booking.objects.create(
+            facility=self.facility,
+            user=self.student,
+            during=DateTimeTZRange(base_dt + timedelta(hours=10), base_dt + timedelta(hours=12), bounds='[)'),
+            purpose='Titration 2',
+            status='APPROVED',
+            decided_by=self.custodian,
+            decided_at=timezone.now()
+        )
+        self.client.force_login(self.custodian)
+        r = self.client.post(reverse('facilities:decide', args=[booking.pk]), {'action': 'reject'}, follow=True)
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "This booking was already decided.")
+        booking.refresh_from_db()
+        self.assertEqual(booking.status, 'APPROVED')
+
+    def test_log_use_sets_completed_or_no_show(self):
+        # Past booking
+        base_dt = timezone.now().replace(minute=0, second=0, microsecond=0) - timedelta(days=2)
+        booking = Booking.objects.create(
+            facility=self.facility,
+            user=self.student,
+            during=DateTimeTZRange(base_dt + timedelta(hours=10), base_dt + timedelta(hours=12), bounds='[)'),
+            purpose='Completed Experiment',
+            status='APPROVED'
+        )
+        self.client.force_login(self.custodian)
+        r = self.client.post(reverse('facilities:log_use', args=[booking.pk]), {'outcome': 'completed'}, follow=True)
+        self.assertEqual(r.status_code, 200)
+        booking.refresh_from_db()
+        self.assertEqual(booking.status, 'COMPLETED')
+
+        # Test no_show
+        booking2 = Booking.objects.create(
+            facility=self.facility,
+            user=self.student,
+            during=DateTimeTZRange(base_dt + timedelta(hours=14), base_dt + timedelta(hours=16), bounds='[)'),
+            purpose='Ghost Session',
+            status='APPROVED'
+        )
+        r2 = self.client.post(reverse('facilities:log_use', args=[booking2.pk]), {'outcome': 'no_show'}, follow=True)
+        self.assertEqual(r2.status_code, 200)
+        booking2.refresh_from_db()
+        self.assertEqual(booking2.status, 'NO_SHOW')
+
+    def test_utilisation_numbers(self):
+        # 40h open per week (Mon-Fri 09-17)
+        # Create 10h of COMPLETED bookings in a specific week: 2026-10-19 to 2026-10-25
+        mon = date(2026, 10, 19)
+        tue = date(2026, 10, 20)
+        dt_mon = timezone.make_aware(datetime.combine(mon, time(10, 0)))
+        dt_tue = timezone.make_aware(datetime.combine(tue, time(10, 0)))
+
+        # 5h on Monday, 5h on Tuesday = 10h
+        Booking.objects.create(
+            facility=self.facility,
+            user=self.student,
+            during=DateTimeTZRange(dt_mon, dt_mon + timedelta(hours=5), bounds='[)'),
+            purpose='Batch A',
+            status='COMPLETED'
+        )
+        Booking.objects.create(
+            facility=self.facility,
+            user=self.student,
+            during=DateTimeTZRange(dt_tue, dt_tue + timedelta(hours=5), bounds='[)'),
+            purpose='Batch B',
+            status='COMPLETED'
+        )
+
+        self.client.force_login(self.custodian)
+        r = self.client.get(reverse('facilities:utilisation'), {'week': '2026-10-19'})
+        self.assertEqual(r.status_code, 200)
+        # 10 / 40 = 25% utilisation, 30.0 idle
+        self.assertContains(r, '25%')
+        self.assertContains(r, '30.0')
+
+        # Test CSV export
+        r_csv = self.client.get(reverse('facilities:utilisation'), {'week': '2026-10-19', 'format': 'csv'})
+        self.assertEqual(r_csv.status_code, 200)
+        self.assertEqual(r_csv['Content-Type'], 'text/csv')
+        self.assertContains(r_csv, 'Precision Chemistry Lab')
+        self.assertContains(r_csv, '25%')
+
+    def test_utilisation_restricted(self):
+        self.client.force_login(self.student)
+        r_stu = self.client.get(reverse('facilities:utilisation'))
+        self.assertEqual(r_stu.status_code, 403)
+
+        self.client.force_login(self.custodian)
+        r_cust = self.client.get(reverse('facilities:utilisation'))
+        self.assertEqual(r_cust.status_code, 200)
+        self.assertContains(r_cust, 'Precision Chemistry Lab')
+        self.assertNotContains(r_cust, 'Wind Tunnel Suite')
+
+        self.client.force_login(self.staff_user)
+        r_staff = self.client.get(reverse('facilities:utilisation'))
+        self.assertEqual(r_staff.status_code, 200)
+        self.assertContains(r_staff, 'Precision Chemistry Lab')
+        self.assertContains(r_staff, 'Wind Tunnel Suite')

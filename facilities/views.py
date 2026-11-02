@@ -1,3 +1,4 @@
+import csv
 from datetime import datetime, time, timedelta, date
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
@@ -166,11 +167,6 @@ def my_bookings(request):
 
 
 @login_required
-def decide_booking(request, pk):
-    return redirect('facilities:manage')
-
-
-@login_required
 def cancel_booking(request, pk):
     if request.method != 'POST':
         return HttpResponseForbidden("POST required")
@@ -185,15 +181,177 @@ def cancel_booking(request, pk):
 
 
 @login_required
-def log_use(request, pk):
+def manage_facilities(request):
+    if not (request.user.is_staff or request.user.custodian_facilities.exists()):
+        return HttpResponseForbidden("Only custodians and staff can access this page.")
+
+    if request.user.is_staff:
+        facilities = Facility.objects.all()
+    else:
+        facilities = request.user.custodian_facilities.all()
+
+    pending_bookings = Booking.objects.filter(
+        facility__in=facilities,
+        status='PENDING'
+    ).select_related('facility', 'user').order_by('created_at')
+
+    now = timezone.now()
+    approved_bookings = Booking.objects.filter(
+        facility__in=facilities,
+        status='APPROVED'
+    ).select_related('facility', 'user').order_by('created_at')
+    awaiting_log = [b for b in approved_bookings if b.end and b.end <= now]
+
+    context = {
+        'facilities': facilities,
+        'pending_bookings': pending_bookings,
+        'awaiting_log': awaiting_log,
+    }
+    return render(request, 'facilities/manage.html', context)
+
+
+@login_required
+def decide_booking(request, pk):
+    if request.method != 'POST':
+        return HttpResponseForbidden("POST required")
+
+    booking = get_object_or_404(Booking, pk=pk)
+    if not booking.facility.can_manage(request.user):
+        return HttpResponseForbidden("Not authorized to manage this facility")
+
+    if booking.status != 'PENDING':
+        messages.warning(request, "This booking was already decided.")
+        return redirect('facilities:manage')
+
+    action = request.POST.get('action')
+    if action == 'approve':
+        booking.status = 'APPROVED'
+        verb = 'approved'
+    elif action == 'reject':
+        booking.status = 'REJECTED'
+        verb = 'rejected'
+    else:
+        return HttpResponseForbidden("Invalid action")
+
+    booking.decided_by = request.user
+    booking.decided_at = timezone.now()
+    booking.save(update_fields=['status', 'decided_by', 'decided_at'])
+
+    start_date_str = booking.start.strftime('%Y-%m-%d %H:%M') if booking.start else ''
+    ResearchActivity.objects.create(
+        user=booking.user,
+        activity_type='BOOKING',
+        description=f"Your booking for {booking.facility.name} on {start_date_str} was {verb}"
+    )
+
+    messages.success(request, f"Booking for {booking.facility.name} was {verb}.")
     return redirect('facilities:manage')
 
 
 @login_required
-def manage_facilities(request):
-    return render(request, 'facilities/manage.html', {})
+def log_use(request, pk):
+    if request.method != 'POST':
+        return HttpResponseForbidden("POST required")
+
+    booking = get_object_or_404(Booking, pk=pk)
+    if not booking.facility.can_manage(request.user):
+        return HttpResponseForbidden("Not authorized to manage this facility")
+
+    if booking.status != 'APPROVED':
+        messages.error(request, "Only approved bookings can have usage logged.")
+        return redirect('facilities:manage')
+
+    if booking.end and booking.end > timezone.now():
+        messages.error(request, "Cannot log usage before booking end time.")
+        return redirect('facilities:manage')
+
+    outcome = request.POST.get('outcome')
+    if outcome == 'completed':
+        booking.status = 'COMPLETED'
+    elif outcome == 'no_show':
+        booking.status = 'NO_SHOW'
+    else:
+        return HttpResponseForbidden("Invalid outcome")
+
+    booking.save(update_fields=['status'])
+    messages.success(request, f"Usage recorded as {booking.get_status_display()}.")
+    return redirect('facilities:manage')
 
 
 @login_required
 def utilisation_report(request):
-    return render(request, 'facilities/utilisation.html', {})
+    if not (request.user.is_staff or request.user.custodian_facilities.exists()):
+        return HttpResponseForbidden("Only custodians and staff can view utilisation reports.")
+
+    if request.user.is_staff:
+        managed_facilities = Facility.objects.filter(is_active=True)
+    else:
+        managed_facilities = Facility.objects.filter(is_active=True, custodian=request.user)
+
+    week_str = request.GET.get('week', '').strip()
+    try:
+        if week_str:
+            target_date = datetime.strptime(week_str, '%Y-%m-%d').date()
+        else:
+            today = timezone.localdate()
+            this_monday = today - timedelta(days=today.weekday())
+            target_date = this_monday - timedelta(days=7)  # default to last full week
+    except (ValueError, TypeError):
+        today = timezone.localdate()
+        this_monday = today - timedelta(days=today.weekday())
+        target_date = this_monday - timedelta(days=7)
+
+    week_start = target_date - timedelta(days=target_date.weekday())
+    week_end = week_start + timedelta(days=6)
+    prev_week = (week_start - timedelta(days=7)).strftime('%Y-%m-%d')
+    next_week = (week_start + timedelta(days=7)).strftime('%Y-%m-%d')
+
+    week_start_dt = timezone.make_aware(datetime.combine(week_start, time.min))
+    week_end_dt = timezone.make_aware(datetime.combine(week_end, time.max))
+    week_range = DateTimeTZRange(week_start_dt, week_end_dt, bounds='[]')
+
+    report_data = []
+    for fac in managed_facilities.order_by('name'):
+        open_hours = 0.0
+        for slot in fac.slots.all():
+            open_hours += (datetime.combine(date.today(), slot.closes) - datetime.combine(date.today(), slot.opens)).total_seconds() / 3600.0
+
+        completed = fac.bookings.filter(status='COMPLETED', during__overlap=week_range)
+        used_hours = 0.0
+        for b in completed:
+            if b.start and b.end:
+                c_start = max(b.start, week_start_dt)
+                c_end = min(b.end, week_end_dt)
+                if c_end > c_start:
+                    used_hours += (c_end - c_start).total_seconds() / 3600.0
+
+        idle_hours = max(0.0, open_hours - used_hours)
+        util_pct = round((used_hours / open_hours * 100)) if open_hours > 0 else 0
+
+        report_data.append({
+            'facility': fac,
+            'name': fac.name,
+            'department': fac.department,
+            'open_hours': open_hours,
+            'used_hours': used_hours,
+            'idle_hours': idle_hours,
+            'util_pct': util_pct,
+        })
+
+    if request.GET.get('format') == 'csv':
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="facilities_utilisation_{week_start}.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Facility', 'Department', 'Open Hours', 'Used Hours', 'Idle Hours', 'Utilisation (%)'])
+        for r in report_data:
+            writer.writerow([r['name'], r['department'], f"{r['open_hours']:.1f}", f"{r['used_hours']:.1f}", f"{r['idle_hours']:.1f}", f"{r['util_pct']}%"])
+        return response
+
+    context = {
+        'report_data': report_data,
+        'week_start': week_start,
+        'week_end': week_end,
+        'prev_week': prev_week,
+        'next_week': next_week,
+    }
+    return render(request, 'facilities/utilisation.html', context)
