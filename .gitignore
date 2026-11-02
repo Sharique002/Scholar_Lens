@@ -15,14 +15,19 @@ env/
 
 # Environment
 .env
+.env.local
 
 # Django
 *.log
+debug.log
 db.sqlite3
 db.sqlite3-journal
-media/
 staticfiles/
 scratch/
+
+# Media handling
+media/*
+!media/.gitkeep
 
 # IDE
 .vscode/
@@ -44,5 +49,9 @@ htmlcov/
 .coverage.*
 coverage.xml
 
-# Node (if any JS tooling)
+# Node & Cypress
 node_modules/
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/
+cypress.env.json
