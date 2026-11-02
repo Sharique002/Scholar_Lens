@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action_title }} — Scholar Lens Funding{% endblock %}
+
+{% block breadcrumb %}
+<nav class="ums-breadcrumb" aria-label="Breadcrumb">
+  <a href="{% url 'dashboard:home' %}">Home</a> &rsaquo;
+  <a href="{% url 'funding:list' %}">Funding Calls</a> &rsaquo;
+  <span aria-current="page">{{ action_title }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+  <h1 style="font-size: 24px; font-weight: 700; color: var(--color-ink); margin-bottom: 8px;">{{ action_title }}</h1>
+  <p style="color: var(--color-muted); font-size: 14px; margin-bottom: 24px;">Research Office curation form for funding calls, grants, and sponsored projects.</p>
+
+  <div class="ums-card" style="background: #fff; border: 1px solid var(--border-dark); border-radius: 8px; padding: 24px;">
+    <form method="post">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+      <div style="background: #FFEBE6; color: var(--color-danger); padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 14px;">
+        {{ form.non_field_errors }}
+      </div>
+      {% endif %}
+
+      <div style="display: flex; flex-direction: column; gap: 18px;">
+        <div>
+          <label for="id_title" style="display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px;">Call Title *</label>
+          {{ form.title }}
+          {% if form.title.errors %}<div style="color: var(--color-danger); font-size: 12px; margin-top: 4px;">{{ form.title.errors }}</div>{% endif %}
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div>
+            <label for="id_sponsor" style="display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px;">Sponsor / Agency *</label>
+            {{ form.sponsor }}
+            {% if form.sponsor.errors %}<div style="color: var(--color-danger); font-size: 12px; margin-top: 4px;">{{ form.sponsor.errors }}</div>{% endif %}
+          </div>
+          <div>
+            <label for="id_amount" style="display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px;">Amount / Grant Value</label>
+            {{ form.amount }}
+            {% if form.amount.errors %}<div style="color: var(--color-danger); font-size: 12px; margin-top: 4px;">{{ form.amount.errors }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div>
+            <label for="id_research_area" style="display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px;">Research Area</label>
+            {{ form.research_area }}
+            {% if form.research_area.errors %}<div style="color: var(--color-danger); font-size: 12px; margin-top: 4px;">{{ form.research_area.errors }}</div>{% endif %}
+          </div>
+          <div>
+            <label for="id_url" style="display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px;">External URL</label>
+            {{ form.url }}
+            {% if form.url.errors %}<div style="color: var(--color-danger); font-size: 12px; margin-top: 4px;">{{ form.url.errors }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div>
+            <label for="id_opens_on" style="display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px;">Opens On</label>
+            {{ form.opens_on }}
+            {% if form.opens_on.errors %}<div style="color: var(--color-danger); font-size: 12px; margin-top: 4px;">{{ form.opens_on.errors }}</div>{% endif %}
+          </div>
+          <div>
+            <label for="id_deadline" style="display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px;">Deadline *</label>
+            {{ form.deadline }}
+            {% if form.deadline.errors %}<div style="color: var(--color-danger); font-size: 12px; margin-top: 4px;">{{ form.deadline.errors }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div>
+          <label for="id_description" style="display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px;">Description & Scope *</label>
+          {{ form.description }}
+          {% if form.description.errors %}<div style="color: var(--color-danger); font-size: 12px; margin-top: 4px;">{{ form.description.errors }}</div>{% endif %}
+        </div>
+
+        <div>
+          <label for="id_eligibility" style="display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px;">Eligibility *</label>
+          {{ form.eligibility }}
+          {% if form.eligibility.errors %}<div style="color: var(--color-danger); font-size: 12px; margin-top: 4px;">{{ form.eligibility.errors }}</div>{% endif %}
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 10px; margin-top: 6px;">
+          {{ form.is_published }}
+          <label for="id_is_published" style="font-weight: 600; font-size: 14px; margin: 0; cursor: pointer;">Publish immediately (visible to all researchers and students)</label>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px; border-top: 1px solid var(--border-dark); padding-top: 18px;">
+          <a href="{% url 'funding:list' %}" style="padding: 10px 18px; border: 1px solid var(--border-dark); border-radius: 6px; text-decoration: none; color: var(--color-ink); font-weight: 600; font-size: 14px;">
+            Cancel
+          </a>
+          <button type="submit" class="btn-primary" style="padding: 10px 22px; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer;">
+            Save Funding Call
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

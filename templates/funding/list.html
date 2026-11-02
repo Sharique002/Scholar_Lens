@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}Funding Calls — Scholar Lens{% endblock %}
+
+{% block breadcrumb %}
+<nav class="ums-breadcrumb" aria-label="Breadcrumb">
+  <a href="{% url 'dashboard:home' %}">Home</a> &rsaquo;
+  <span aria-current="page">Funding Calls</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="ums-page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+  <div>
+    <h1 style="font-size: 24px; font-weight: 700; color: var(--color-ink); margin: 0 0 4px 0;">Funding Call Register</h1>
+    <p style="margin: 0; color: var(--color-muted); font-size: 14px;">Browse active grants, fellowships, and sponsored research opportunities.</p>
+  </div>
+  {% if user.is_staff %}
+  <div>
+    <a href="{% url 'funding:create' %}" class="btn-primary" style="text-decoration: none; padding: 10px 18px; border-radius: 6px; font-weight: 600;">
+      + Add Funding Call
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Filters Bar -->
+<div class="ums-card" style="background: #fff; border: 1px solid var(--border-dark); border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+  <form method="get" action="{% url 'funding:list' %}" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;">
+    <div style="flex: 1; min-width: 200px;">
+      <label for="id_q" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--color-ink);">Search</label>
+      <input type="text" name="q" id="id_q" value="{{ q }}" placeholder="Keyword or sponsor..." class="form-input" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-dark); border-radius: 6px;">
+    </div>
+
+    <div style="min-width: 160px;">
+      <label for="id_area" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--color-ink);">Research Area</label>
+      <select name="area" id="id_area" class="form-select" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-dark); border-radius: 6px;">
+        <option value="">All Areas</option>
+        {% for code, name in research_areas %}
+          <option value="{{ code }}" {% if selected_area == code %}selected{% endif %}>{{ name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div style="min-width: 150px;">
+      <label for="id_state" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--color-ink);">Status</label>
+      <select name="state" id="id_state" class="form-select" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-dark); border-radius: 6px;">
+        <option value="">All Statuses</option>
+        <option value="open" {% if selected_state == 'open' %}selected{% endif %}>Open</option>
+        <option value="closing" {% if selected_state == 'closing' %}selected{% endif %}>Closing Soon (&le; 14d)</option>
+        <option value="closed" {% if selected_state == 'closed' %}selected{% endif %}>Closed</option>
+      </select>
+    </div>
+
+    <div>
+      <button type="submit" class="btn-primary" style="padding: 8px 18px; border-radius: 6px; font-weight: 600; cursor: pointer;">
+        Filter
+      </button>
+      {% if q or selected_area or selected_state %}
+      <a href="{% url 'funding:list' %}" style="margin-left: 8px; font-size: 13px; color: var(--primary); text-decoration: underline;">Reset</a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- Open Calls Section -->
+<div style="margin-bottom: 36px;">
+  <h2 style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: var(--color-ink);">Open Funding Opportunities ({{ open_calls|length }})</h2>
+  {% if open_calls %}
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
+    {% for call in open_calls %}
+    <div class="ums-card" style="background: #fff; border: 1px solid var(--border-dark); border-radius: 8px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; transition: box-shadow 0.2s;">
+      <div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px;">
+          <h3 style="font-size: 16px; font-weight: 700; margin: 0;">
+            <a href="{% url 'funding:detail' call.pk %}" style="color: var(--primary); text-decoration: none;">
+              {{ call.title }}
+            </a>
+          </h3>
+          {% if not call.is_published %}
+          <span style="background: #FFF4E5; color: #B76E00; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">Draft</span>
+          {% endif %}
+        </div>
+        <p style="font-size: 13px; color: var(--color-muted); margin: 0 0 12px 0;"><strong>Sponsor:</strong> {{ call.sponsor }}</p>
+        <p style="font-size: 14px; color: var(--color-ink); margin: 0 0 16px 0; line-height: 1.4;">{{ call.description|truncatewords:24 }}</p>
+      </div>
+
+      <div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; font-size: 12px;">
+          {% if call.amount %}
+          <span style="background: #EBF5FF; color: #0052CC; padding: 2px 8px; border-radius: 4px; font-weight: 600;">{{ call.amount }}</span>
+          {% endif %}
+          {% if call.get_research_area_display %}
+          <span style="background: #F4F5F7; color: #42526E; padding: 2px 8px; border-radius: 4px;">{{ call.get_research_area_display }}</span>
+          {% endif %}
+          
+          {% if call.days_left < 0 %}
+            <span style="background: #F4F5F7; color: #6B778C; padding: 2px 8px; border-radius: 4px; font-weight: 600;">Closed</span>
+          {% elif call.days_left == 0 %}
+            <span style="background: #FFEBE6; color: var(--color-danger); padding: 2px 8px; border-radius: 4px; font-weight: 600;">Closes today</span>
+          {% elif call.days_left == 1 %}
+            <span style="background: #FFF0B3; color: #172B4D; padding: 2px 8px; border-radius: 4px; font-weight: 600;">1 day left</span>
+          {% else %}
+            <span style="background: {% if call.days_left <= 14 %}#FFF0B3{% else %}#E3FCEF{% endif %}; color: #172B4D; padding: 2px 8px; border-radius: 4px; font-weight: 600;">
+              {{ call.days_left }} days left
+            </span>
+          {% endif %}
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-dark); padding-top: 12px;">
+          <a href="{% url 'funding:detail' call.pk %}" style="font-size: 13px; font-weight: 600; color: var(--primary); text-decoration: none;">View details &rsaquo;</a>
+          <form method="post" action="{% url 'funding:watch' call.pk %}" style="margin: 0;">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button type="submit" style="background: none; border: 1px solid var(--border-dark); border-radius: 4px; padding: 4px 10px; font-size: 12px; cursor: pointer; color: var(--color-ink);">
+              {% if call.pk in watched_call_ids %}🔔 Watching{% else %}🔕 Watch{% endif %}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p style="color: var(--color-muted); font-size: 14px; font-style: italic;">No open funding opportunities match your criteria.</p>
+  {% endif %}
+</div>
+
+<!-- Closed Calls Section -->
+{% if closed_calls %}
+<div style="border-top: 1px solid var(--border-dark); padding-top: 24px;">
+  <h2 style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: var(--color-muted);">Closed Opportunities ({{ closed_calls|length }})</h2>
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; opacity: 0.85;">
+    {% for call in closed_calls %}
+    <div class="ums-card" style="background: #FAFBFC; border: 1px solid var(--border-dark); border-radius: 8px; padding: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px;">
+        <h3 style="font-size: 15px; font-weight: 600; margin: 0;">
+          <a href="{% url 'funding:detail' call.pk %}" style="color: var(--color-ink); text-decoration: none;">
+            {{ call.title }}
+          </a>
+        </h3>
+        <span style="background: #DFE1E6; color: #42526E; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">Closed</span>
+      </div>
+      <p style="font-size: 13px; color: var(--color-muted); margin: 0 0 8px 0;"><strong>Sponsor:</strong> {{ call.sponsor }}</p>
+      <p style="font-size: 12px; color: var(--color-muted); margin: 0;">Closed on {{ call.deadline|date:"d M Y" }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

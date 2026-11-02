@@ -99,6 +99,7 @@
                 <a href="{% url 'researchers:list' %}" class="ums-nav-link{% if request.resolver_match.app_name == 'researchers' %} is-active{% endif %}" title="Researchers" aria-label="Researchers"><span class="ums-nav-icon" aria-hidden="true">👩‍🔬</span><span class="ums-nav-label">Researchers</span></a>
                 <a href="{% url 'collaboration:list' %}" class="ums-nav-link{% if request.resolver_match.app_name == 'collaboration' %} is-active{% endif %}" title="Collaboration" aria-label="Collaboration"><span class="ums-nav-icon" aria-hidden="true">🤝</span><span class="ums-nav-label">Collaboration</span></a>
                 <a href="{% url 'facilities:list' %}" class="ums-nav-link{% if request.resolver_match.app_name == 'facilities' %} is-active{% endif %}" title="Facilities" aria-label="Facilities"><span class="ums-nav-icon" aria-hidden="true">🏛</span><span class="ums-nav-label">Facilities</span></a>
+                <a href="{% url 'funding:list' %}" class="ums-nav-link{% if request.resolver_match.app_name == 'funding' %} is-active{% endif %}" title="Funding" aria-label="Funding"><span class="ums-nav-icon" aria-hidden="true">💰</span><span class="ums-nav-label">Funding</span></a>
                 <a href="{% url 'search:search' %}" class="ums-nav-link{% if request.resolver_match.app_name == 'search' %} is-active{% endif %}" title="Search" aria-label="Search"><span class="ums-nav-icon" aria-hidden="true">🔎</span><span class="ums-nav-label">Search</span></a>
             </nav>
         </aside>

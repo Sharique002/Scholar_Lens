@@ -130,8 +130,8 @@ Part C — M6 Funding Call Register
 Task 9: funding app — register, countdown, watch
 Files: Create `funding/` app, views, models, forms, templates.
 - [ ] Step 1: Write failing tests (`tests/test_funding.py`).
-- [ ] Step 2: Implement models, views, countdown logic.
-- [ ] Step 3: Confirm tests pass, then commit with `feat(funding): funding call register with countdown and watch`.
+- [x] Step 2: Implement models, views, countdown logic.
+- [x] Step 3: Confirm tests pass, then commit with `feat(funding): funding call register with countdown and watch`.
 
 Task 10: Deadline alerts job
 Files: Create `funding/alerts.py` and `send_funding_alerts` management command.

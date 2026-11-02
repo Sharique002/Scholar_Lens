@@ -10,6 +10,7 @@ SIDEBAR = [
     'researchers:list',
     'collaboration:list',
     'facilities:list',
+    'funding:list',
     'search:search',
 ]
 

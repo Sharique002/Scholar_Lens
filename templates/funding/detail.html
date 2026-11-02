@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ call.title }} — Scholar Lens Funding{% endblock %}
+
+{% block breadcrumb %}
+<nav class="ums-breadcrumb" aria-label="Breadcrumb">
+  <a href="{% url 'dashboard:home' %}">Home</a> &rsaquo;
+  <a href="{% url 'funding:list' %}">Funding Calls</a> &rsaquo;
+  <span aria-current="page">{{ call.title|truncatechars:40 }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 0 auto;">
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 24px;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+        <h1 style="font-size: 24px; font-weight: 700; color: var(--color-ink); margin: 0;">{{ call.title }}</h1>
+        {% if not call.is_published %}
+        <span style="background: #FFF4E5; color: #B76E00; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">Draft (Staff Only)</span>
+        {% endif %}
+      </div>
+      <p style="margin: 0; color: var(--color-muted); font-size: 15px;"><strong>Sponsor:</strong> {{ call.sponsor }}</p>
+    </div>
+
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <form method="post" action="{% url 'funding:watch' call.pk %}" style="margin: 0;">
+        {% csrf_token %}
+        <button type="submit" class="btn-pill-primary" style="padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">
+          {% if is_watched %}🔔 Reminders Active (Unwatch){% else %}🔕 Watch for Reminders{% endif %}
+        </button>
+      </form>
+      {% if user.is_staff %}
+      <a href="{% url 'funding:edit' call.pk %}" style="background: #F4F5F7; border: 1px solid var(--border-dark); padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; text-decoration: none; color: var(--color-ink);">
+        Edit Call
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Key Metrics Banner -->
+  <div class="ums-card" style="background: #fff; border: 1px solid var(--border-dark); border-radius: 8px; padding: 20px; margin-bottom: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
+    <div>
+      <div style="font-size: 12px; font-weight: 600; color: var(--color-muted); text-transform: uppercase;">Deadline</div>
+      <div style="font-size: 16px; font-weight: 700; color: var(--color-ink); margin-top: 4px;">{{ call.deadline|date:"d M Y, H:i" }}</div>
+      <div style="margin-top: 6px;">
+        {% if call.days_left < 0 %}
+          <span style="background: #F4F5F7; color: #6B778C; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">Closed</span>
+        {% elif call.days_left == 0 %}
+          <span style="background: #FFEBE6; color: var(--color-danger); padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">Closes today</span>
+        {% elif call.days_left == 1 %}
+          <span style="background: #FFF0B3; color: #172B4D; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">1 day left</span>
+        {% else %}
+          <span style="background: {% if call.days_left <= 14 %}#FFF0B3{% else %}#E3FCEF{% endif %}; color: #172B4D; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">
+            {{ call.days_left }} days left
+          </span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size: 12px; font-weight: 600; color: var(--color-muted); text-transform: uppercase;">Award Amount</div>
+      <div style="font-size: 16px; font-weight: 700; color: #0052CC; margin-top: 4px;">{{ call.amount|default:"Not specified" }}</div>
+    </div>
+
+    <div>
+      <div style="font-size: 12px; font-weight: 600; color: var(--color-muted); text-transform: uppercase;">Research Area</div>
+      <div style="font-size: 15px; font-weight: 600; color: var(--color-ink); margin-top: 4px;">{{ call.get_research_area_display|default:"Cross-disciplinary / All" }}</div>
+    </div>
+
+    <div>
+      <div style="font-size: 12px; font-weight: 600; color: var(--color-muted); text-transform: uppercase;">Opens On</div>
+      <div style="font-size: 15px; font-weight: 600; color: var(--color-ink); margin-top: 4px;">{{ call.opens_on|date:"d M Y"|default:"Immediate" }}</div>
+    </div>
+  </div>
+
+  <!-- Main Details Card -->
+  <div class="ums-card" style="background: #fff; border: 1px solid var(--border-dark); border-radius: 8px; padding: 24px; margin-bottom: 24px;">
+    <h2 style="font-size: 18px; font-weight: 700; color: var(--color-ink); margin: 0 0 12px 0;">Description & Scope</h2>
+    <div style="font-size: 15px; line-height: 1.6; color: var(--color-ink); margin-bottom: 24px; white-space: pre-wrap;">{{ call.description }}</div>
+
+    <h2 style="font-size: 18px; font-weight: 700; color: var(--color-ink); margin: 0 0 12px 0;">Eligibility Criteria</h2>
+    <div style="font-size: 15px; line-height: 1.6; color: var(--color-ink); margin-bottom: 24px; white-space: pre-wrap;">{{ call.eligibility }}</div>
+
+    {% if call.url %}
+    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-dark);">
+      <a href="{{ call.url }}" target="_blank" rel="noopener noreferrer" class="btn-primary" style="display: inline-block; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: 600;">
+        Visit Official Grant Portal &nearr;
+      </a>
+    </div>
+    {% endif %}
+  </div>
+
+  <div style="margin-bottom: 40px;">
+    <a href="{% url 'funding:list' %}" style="color: var(--primary); font-size: 14px; text-decoration: none; font-weight: 600;">&lsaquo; Back to Funding Register</a>
+  </div>
+</div>
+{% endblock %}

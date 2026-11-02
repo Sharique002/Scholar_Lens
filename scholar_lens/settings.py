@@ -116,6 +116,7 @@ INSTALLED_APPS = [
     'dashboard.apps.DashboardConfig',
     'django.contrib.postgres',
     'facilities.apps.FacilitiesConfig',
+    'funding.apps.FundingConfig',
 ]
 
 MIDDLEWARE = [
