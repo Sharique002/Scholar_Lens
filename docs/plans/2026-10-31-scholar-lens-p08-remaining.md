@@ -84,9 +84,9 @@ Files:
 - Modify: `papers/models.py`, `papers/admin.py`.
 - Create: a migration running `TrigramExtension()` and `GinIndex(fields=['normalised_title'], opclasses=['gin_trgm_ops'], name='paper_title_trgm')`.
 - Test: `tests/test_publications.py`.
-- [ ] Step 1: Write failing tests.
-- [ ] Step 2: Implement it.
-- [ ] Step 3: Commit. `feat(papers): DOI, venue, type, normalised title with trigram index, soft merge`
+- [x] Step 1: Write failing tests.
+- [x] Step 2: Implement it.
+- [x] Step 3: Commit. `feat(papers): DOI, venue, type, normalised title with trigram index, soft merge`
 
 Task 3: Duplicate detection, review queue, reversible merges
 Files:

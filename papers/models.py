@@ -1,6 +1,14 @@
 from django.db import models
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
+from django.contrib.postgres.indexes import GinIndex
+
+from .text import normalise_title
+
+
+class ActivePaperManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(merged_into__isnull=True)
 
 
 class ResearchPaper(models.Model):
@@ -114,11 +122,64 @@ class ResearchPaper(models.Model):
         db_index=True,
         help_text=_("Whether this paper was discovered externally rather than uploaded.")
     )
+
+    doi = models.CharField(
+        max_length=128,
+        blank=True,
+        null=True,
+        db_index=True,
+        help_text=_("Digital Object Identifier (DOI).")
+    )
+    normalised_title = models.CharField(
+        max_length=512,
+        blank=True,
+        default='',
+        db_index=True,
+        help_text=_("Lowercased, unaccented, punctuation-free title for deduplication.")
+    )
+    venue = models.CharField(
+        max_length=255,
+        blank=True,
+        default='',
+        help_text=_("Journal, conference, or workshop venue name.")
+    )
+    pub_type = models.CharField(
+        max_length=50,
+        blank=True,
+        default='JOURNAL',
+        choices=[
+            ('JOURNAL', _('Journal')),
+            ('CONFERENCE', _('Conference')),
+            ('BOOK', _('Book')),
+            ('PREPRINT', _('Preprint')),
+            ('OTHER', _('Other')),
+        ],
+        help_text=_("Publication type.")
+    )
+    year = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text=_("Publication year.")
+    )
+    merged_into = models.ForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='merged_copies',
+        help_text=_("Canonical paper this record was merged into (soft merge).")
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    objects = ActivePaperManager()
+    all_objects = models.Manager()
+
     class Meta:
         ordering = ['-created_at']
+        base_manager_name = 'all_objects'
         indexes = [
             models.Index(fields=['title']),
             models.Index(fields=['research_area']),
@@ -127,10 +188,31 @@ class ResearchPaper(models.Model):
             models.Index(fields=['is_external', 'created_at']),
             models.Index(fields=['source', 'external_id']),
             models.Index(fields=['publication_date']),
+            models.Index(fields=['doi']),
+            models.Index(fields=['year']),
+            GinIndex(fields=['normalised_title'], opclasses=['gin_trgm_ops'], name='paper_title_trgm'),
         ]
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        if not self.normalised_title and self.title:
+            self.normalised_title = normalise_title(self.title)
+        if not self.year and self.publication_date:
+            self.year = self.publication_date.year
+        super().save(*args, **kwargs)
+
+    def resolve(self):
+        """Follow merged_into chain until canonical record is reached."""
+        curr = self
+        visited = {curr.pk}
+        while curr.merged_into_id:
+            if curr.merged_into_id in visited:
+                break
+            curr = curr.merged_into
+            visited.add(curr.pk)
+        return curr
 
 
 class PaperAuthor(models.Model):
