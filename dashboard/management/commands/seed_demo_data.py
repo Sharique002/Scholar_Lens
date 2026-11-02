@@ -8,6 +8,10 @@ from researchers.models import ResearcherProfile, ResearchInterest, Skill
 from papers.models import ResearchPaper
 from projects.models import ResearchProject, ProjectMember
 from facilities.models import Facility, FacilitySlot
+from funding.models import FundingCall
+from projects.models import Milestone
+from datetime import date, timedelta
+from django.utils import timezone
 
 
 class Command(BaseCommand):
@@ -23,6 +27,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if options['clear']:
             self.stdout.write('Clearing existing demo data...')
+            FundingCall.objects.filter(title__startswith='[DEMO]').delete()
+            Milestone.objects.filter(title__startswith='[DEMO]').delete()
             Facility.objects.filter(name__in=[
                 'GPU Compute Cluster',
                 'IoT Lab',
@@ -305,6 +311,164 @@ class Command(BaseCommand):
                         defaults={'role': 'RESEARCHER'}
                     )
                 self.stdout.write(f'  Created project: {project.title}')
+
+        # Create demo funding calls (M6)
+        now_dt = timezone.now()
+        funding_data = [
+            {
+                'title': '[DEMO] SERB Early Career Research Award',
+                'sponsor': 'Science and Engineering Research Board (SERB)',
+                'description': '[DEMO] Competitive research grant for young faculty and researchers in artificial intelligence and computing.',
+                'eligibility': 'Faculty within 5 years of PhD award from accredited institutions.',
+                'research_area': 'AI',
+                'amount': 'Up to ₹30 Lakhs',
+                'url': 'https://serb.gov.in',
+                'opens_on': (now_dt - timedelta(days=20)).date(),
+                'deadline': now_dt + timedelta(days=3),
+                'is_published': True,
+            },
+            {
+                'title': '[DEMO] Biotechnology Industry Research Partnership',
+                'sponsor': 'Biotechnology Industry Research Assistance Council (BIRAC)',
+                'description': '[DEMO] Translational research funding linking academia and healthcare industry partners.',
+                'eligibility': 'Universities and research labs partnering with Indian biotechnology startups.',
+                'research_area': 'BIO',
+                'amount': 'Up to ₹50 Lakhs',
+                'url': 'https://birac.nic.in',
+                'opens_on': (now_dt - timedelta(days=15)).date(),
+                'deadline': now_dt + timedelta(days=10),
+                'is_published': True,
+            },
+            {
+                'title': '[DEMO] National Quantum Mission Challenge',
+                'sponsor': 'Department of Science and Technology (DST)',
+                'description': '[DEMO] Long-horizon grant for foundational quantum algorithms and hardware simulation.',
+                'eligibility': 'Institutes of National Importance and recognized research universities.',
+                'research_area': 'OTHER',
+                'amount': 'Up to ₹1 Crore',
+                'url': 'https://dst.gov.in',
+                'opens_on': (now_dt - timedelta(days=5)).date(),
+                'deadline': now_dt + timedelta(days=25),
+                'is_published': True,
+            },
+            {
+                'title': '[DEMO] Clean Energy Innovation Fellowship',
+                'sponsor': 'Ministry of New & Renewable Energy',
+                'description': '[DEMO] Closed grant cycle for grid intelligence and energy software architectures.',
+                'eligibility': 'All researchers.',
+                'research_area': 'SE',
+                'amount': '₹15 Lakhs',
+                'url': 'https://mnre.gov.in',
+                'opens_on': (now_dt - timedelta(days=60)).date(),
+                'deadline': now_dt - timedelta(days=5),
+                'is_published': True,
+            },
+        ]
+
+        student_carol = created_users[2]
+        for f_data in funding_data:
+            call, created = FundingCall.objects.get_or_create(
+                title=f_data['title'],
+                defaults={
+                    'sponsor': f_data['sponsor'],
+                    'description': f_data['description'],
+                    'eligibility': f_data['eligibility'],
+                    'research_area': f_data['research_area'],
+                    'amount': f_data['amount'],
+                    'url': f_data['url'],
+                    'opens_on': f_data['opens_on'],
+                    'deadline': f_data['deadline'],
+                    'is_published': f_data['is_published'],
+                    'created_by': staff_custodian,
+                }
+            )
+            if created:
+                self.stdout.write(f'  Created funding call: {call.title}')
+            if 'SERB' in call.title or 'Biotechnology' in call.title:
+                call.watchers.add(student_carol)
+
+        # Create demo milestones (M7)
+        today = timezone.localdate()
+        p1 = ResearchProject.objects.get(title='[DEMO] AI-Powered Academic Research Assistant')
+        p2 = ResearchProject.objects.get(title='[DEMO] Genomic Analysis at Scale')
+
+        # Project 1 milestones
+        m1, _ = Milestone.objects.get_or_create(
+            project=p1,
+            title='[DEMO] Literature Corpus Assembly',
+            defaults={
+                'is_deliverable': True,
+                'owner': created_users[0],
+                'start_date': today - timedelta(days=25),
+                'due_date': today - timedelta(days=12),
+                'status': 'DONE',
+                'progress': 100,
+                'completed_on': today - timedelta(days=10),
+                'risk': 'ON_TRACK',
+            }
+        )
+
+        m2, _ = Milestone.objects.get_or_create(
+            project=p1,
+            title='[DEMO] Model Fine-Tuning & Evaluation',
+            defaults={
+                'is_deliverable': True,
+                'owner': created_users[1],
+                'start_date': today - timedelta(days=14),
+                'due_date': today + timedelta(days=3),
+                'status': 'IN_PROGRESS',
+                'progress': 30,
+                'risk': 'AT_RISK',
+                'risk_reason': 'Due in 3 days, only 30% done',
+            }
+        )
+
+        m3, _ = Milestone.objects.get_or_create(
+            project=p1,
+            title='[DEMO] User Feedback & Validation',
+            defaults={
+                'is_deliverable': False,
+                'owner': created_users[2],
+                'start_date': today + timedelta(days=4),
+                'due_date': today + timedelta(days=20),
+                'status': 'PLANNED',
+                'progress': 0,
+                'risk': 'AT_RISK',
+                'risk_reason': f'Waiting on "{m2.title}"',
+            }
+        )
+        m3.depends_on.set([m2])
+
+        # Project 2 milestones
+        m4, _ = Milestone.objects.get_or_create(
+            project=p2,
+            title='[DEMO] Distributed Pipeline Deployment',
+            defaults={
+                'is_deliverable': True,
+                'owner': created_users[1],
+                'start_date': today - timedelta(days=20),
+                'due_date': today - timedelta(days=2),
+                'status': 'IN_PROGRESS',
+                'progress': 40,
+                'risk': 'OVERDUE',
+                'risk_reason': f'Was due {(today - timedelta(days=2)).strftime("%d %b")}',
+            }
+        )
+
+        m5, _ = Milestone.objects.get_or_create(
+            project=p2,
+            title='[DEMO] Benchmark Dataset Sequencing',
+            defaults={
+                'is_deliverable': False,
+                'owner': created_users[1],
+                'start_date': today - timedelta(days=10),
+                'due_date': today + timedelta(days=15),
+                'status': 'IN_PROGRESS',
+                'progress': 80,
+                'risk': 'ON_TRACK',
+            }
+        )
+        self.stdout.write('  Created 5 demo milestones across seeded projects.')
 
         self.stdout.write(self.style.SUCCESS('\nDemo data seeded successfully!'))
         self.stdout.write(self.style.WARNING(

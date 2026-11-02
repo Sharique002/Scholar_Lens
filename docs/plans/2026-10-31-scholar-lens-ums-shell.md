@@ -160,7 +160,7 @@ Files: Create `projects/risk.py` and `check_milestone_risk` management command. 
 - [x] Step 3: Confirm tests pass, then commit with `feat(projects): scheduled milestone at-risk detection and board`.
 
 Task 14: Seed, docs, scheduling, browser check (all parts)
-- [ ] Extend `seed_demo_data` with funding calls and milestones.
-- [ ] Add `docs/scheduled-jobs.md`.
-- [ ] Browser check at 1366px and 375px.
-- [ ] Commit `docs+seed: scheduled jobs and demo data for M6/M7`.
+- [x] Extend `seed_demo_data` with funding calls and milestones.
+- [x] Add `docs/scheduled-jobs.md`.
+- [x] Browser check at 1366px and 375px.
+- [x] Commit `docs+seed: scheduled jobs and demo data for M6/M7`.
