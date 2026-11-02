@@ -7,6 +7,7 @@ SIDEBAR = [
     'dashboard:home',
     'papers:list',
     'projects:list',
+    'opportunities:list',
     'researchers:list',
     'collaboration:list',
     'facilities:list',
