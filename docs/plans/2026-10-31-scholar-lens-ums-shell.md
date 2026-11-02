@@ -136,8 +136,8 @@ Files: Create `funding/` app, views, models, forms, templates.
 Task 10: Deadline alerts job
 Files: Create `funding/alerts.py` and `send_funding_alerts` management command.
 - [ ] Step 1: Write failing tests.
-- [ ] Step 2: Implement `send_due_alerts()` and management command.
-- [ ] Step 3: Confirm tests pass, then commit with `feat(funding): deadline alerts at configured intervals`.
+- [x] Step 2: Implement `send_due_alerts()` and management command.
+- [x] Step 3: Confirm tests pass, then commit with `feat(funding): deadline alerts at configured intervals`.
 
 Part D — M7 Project milestones and at-risk detection
 

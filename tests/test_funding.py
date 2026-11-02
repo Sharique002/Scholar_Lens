@@ -1,10 +1,14 @@
 """Tests for M6 Funding Call Register."""
-from datetime import timedelta
-from django.test import TestCase
+from io import StringIO
+from datetime import timedelta, date
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.core.management import call_command
 from funding.models import FundingCall, FundingAlert
+from funding.alerts import send_due_alerts
+from dashboard.models import ResearchActivity
 
 
 class FundingRegisterTests(TestCase):
@@ -148,3 +152,122 @@ class FundingRegisterTests(TestCase):
         messages_list2 = [m.message for m in res2.context['messages']]
         self.assertIn("Reminders turned off.", messages_list2)
         self.assertFalse(self.call_open.watchers.filter(pk=self.student.pk).exists())
+
+
+@override_settings(FUNDING_ALERT_DAYS=[30, 14, 7, 1])
+class FundingAlertsTests(TestCase):
+    def setUp(self):
+        self.watcher = User.objects.create_user('watcher_user', password='password123')
+        self.non_watcher = User.objects.create_user('non_watcher', password='password123')
+        self.staff = User.objects.create_user('alerts_staff', password='password123', is_staff=True)
+        self.ref_date = date(2026, 11, 2)
+        now = timezone.make_aware(timezone.datetime(2026, 11, 2, 10, 0))
+
+        # A call with deadline exactly 14 days ahead of ref_date
+        self.call_14 = FundingCall.objects.create(
+            title="Biotech Quantum Leap",
+            sponsor="Science Foundation",
+            description="Quantum biology fund.",
+            eligibility="All.",
+            research_area="BIO",
+            deadline=now + timedelta(days=14),
+            is_published=True,
+            created_by=self.staff
+        )
+        self.call_14.watchers.add(self.watcher)
+
+    def test_alert_fires_at_threshold(self):
+        # 14 days left triggers threshold 14
+        count = send_due_alerts(today=self.ref_date)
+        self.assertEqual(count, 1)
+
+        # Check notification in dashboard
+        self.assertTrue(ResearchActivity.objects.filter(
+            user=self.watcher,
+            activity_type='FUNDING'
+        ).exists())
+
+        self.client.force_login(self.watcher)
+        res = self.client.get(reverse('dashboard:notifications'))
+        self.assertContains(res, "Biotech Quantum Leap")
+
+    def test_no_alert_between_thresholds(self):
+        self.call_14.delete()
+        # Call 30 days away, first day passes 30
+        call = FundingCall.objects.create(
+            title="Green Energy Fund",
+            sponsor="Renewable Energy Agency",
+            description="Solar tech.",
+            eligibility="All.",
+            deadline=timezone.make_aware(timezone.datetime(2026, 12, 2, 10, 0)),
+            is_published=True,
+            created_by=self.staff
+        )
+        call.watchers.add(self.watcher)
+
+        # At 30 days left (2 Nov)
+        c1 = send_due_alerts(today=date(2026, 11, 2))
+        self.assertEqual(c1, 1)
+
+        # At 20 days left (12 Nov) - threshold 14 has not arrived yet, and 30 already fired
+        c2 = send_due_alerts(today=date(2026, 11, 12))
+        # No new alert should fire for this call
+        self.assertFalse(FundingAlert.objects.filter(call=call, user=self.watcher, days_before=14).exists())
+        self.assertEqual(c2, 0)
+
+    def test_alerts_idempotent(self):
+        # Running twice on the same day fires alert only once
+        c1 = send_due_alerts(today=self.ref_date)
+        self.assertEqual(c1, 1)
+
+        c2 = send_due_alerts(today=self.ref_date)
+        self.assertEqual(c2, 0)
+
+    def test_missed_day_catches_up(self):
+        # A call with deadline 5 days ahead
+        call_5 = FundingCall.objects.create(
+            title="Urgent Climate Challenge",
+            sponsor="UN Climate Hub",
+            description="Climate models.",
+            eligibility="All.",
+            deadline=timezone.make_aware(timezone.datetime(2026, 11, 7, 10, 0)),
+            is_published=True,
+            created_by=self.staff
+        )
+        call_5.watchers.add(self.watcher)
+
+        # Day 1: 5 days left. The 7-day threshold was missed, so target is 7.
+        c1 = send_due_alerts(today=self.ref_date)
+        self.assertEqual(c1, 2)  # call_14 (14d) + call_5 (7d target)
+        self.assertTrue(FundingAlert.objects.filter(call=call_5, days_before=7).exists())
+
+        # Day 5: 1 day left. Threshold 1 is triggered.
+        c2 = send_due_alerts(today=date(2026, 11, 6))
+        self.assertTrue(FundingAlert.objects.filter(call=call_5, days_before=1).exists())
+        self.assertGreaterEqual(c2, 1)
+
+    def test_non_watchers_and_closed_calls_skipped(self):
+        # Non-watcher does not get notification
+        send_due_alerts(today=self.ref_date)
+        self.assertFalse(ResearchActivity.objects.filter(user=self.non_watcher).exists())
+
+        # Closed call (yesterday) gives 0 alerts
+        call_closed = FundingCall.objects.create(
+            title="Expired Call",
+            sponsor="Old Agency",
+            description="Expired.",
+            eligibility="All.",
+            deadline=timezone.make_aware(timezone.datetime(2026, 11, 1, 10, 0)),
+            is_published=True,
+            created_by=self.staff
+        )
+        call_closed.watchers.add(self.watcher)
+        count = send_due_alerts(today=self.ref_date)
+        self.assertEqual(count, 0)
+
+    def test_command_output(self):
+        out = StringIO()
+        call_command('send_funding_alerts', stdout=out)
+        self.assertIn("Sent", out.getvalue())
+        self.assertIn("funding alerts.", out.getvalue())
+
