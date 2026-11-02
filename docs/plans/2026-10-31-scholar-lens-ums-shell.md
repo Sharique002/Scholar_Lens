@@ -120,10 +120,10 @@ Files: `facilities/views.py`, `templates/facilities/manage.html`, `templates/fac
 - [x] Step 3: Confirm tests pass, then commit with `feat(facilities): custodian approvals, usage log, utilisation report`.
 
 Task 8: Seed data, docs, browser check
-- [ ] Extend `seed_demo_data` with 4 facilities across CSE and Biotech.
-- [ ] Add `docs/facilities.md`.
-- [ ] Browser check at 1366px and 375px.
-- [ ] Commit `docs+seed: facilities baseline`.
+- [x] Extend `seed_demo_data` with 4 facilities across CSE and Biotech.
+- [x] Add `docs/facilities.md`.
+- [x] Browser check at 1366px and 375px.
+- [x] Commit `docs+seed: facilities baseline`.
 
 Part C — M6 Funding Call Register
 

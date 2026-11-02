@@ -1,11 +1,13 @@
 """Management command to create demo/seed data for Scholar Lens."""
 import random
+from datetime import time
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from accounts.models import UserProfile
 from researchers.models import ResearcherProfile, ResearchInterest, Skill
 from papers.models import ResearchPaper
 from projects.models import ResearchProject, ProjectMember
+from facilities.models import Facility, FacilitySlot
 
 
 class Command(BaseCommand):
@@ -21,6 +23,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if options['clear']:
             self.stdout.write('Clearing existing demo data...')
+            Facility.objects.filter(name__in=[
+                'GPU Compute Cluster',
+                'IoT Lab',
+                'Confocal Microscope',
+                'PCR Room'
+            ]).delete()
+            ResearchPaper.objects.filter(title__startswith='[DEMO]').delete()
+            ResearchProject.objects.filter(title__startswith='[DEMO]').delete()
             User.objects.filter(username__startswith='demo_').delete()
             ResearchInterest.objects.filter(name__startswith='[DEMO]').delete()
             Skill.objects.filter(name__startswith='[DEMO]').delete()
@@ -78,136 +88,214 @@ class Command(BaseCommand):
                 'role': 'FACULTY',
                 'institution': 'Demo University',
                 'bio': '[DEMO USER] AI researcher focusing on NLP and deep learning.',
-                'headline': '[DEMO] NLP & Deep Learning Researcher',
+                'department': 'Computer Science',
+                'interests': [interests[0], interests[1], interests[3]],
+                'skills': [skills[0], skills[1], skills[2]],
             },
             {
                 'username': 'demo_bob',
                 'email': 'bob@demo.scholarlens.test',
                 'first_name': 'Bob',
                 'last_name': 'Smith',
-                'role': 'STUDENT',
-                'institution': 'Demo Institute of Technology',
-                'bio': '[DEMO USER] PhD student working on computer vision.',
-                'headline': '[DEMO] Computer Vision PhD Student',
+                'role': 'FACULTY',
+                'institution': 'Demo University',
+                'bio': '[DEMO USER] Systems researcher focusing on cloud and distributed computing.',
+                'department': 'Computer Science',
+                'interests': [interests[6], interests[7]],
+                'skills': [skills[0], skills[3], skills[4]],
             },
             {
                 'username': 'demo_carol',
                 'email': 'carol@demo.scholarlens.test',
                 'first_name': 'Carol',
                 'last_name': 'Williams',
+                'role': 'STUDENT',
+                'institution': 'Demo University',
+                'bio': '[DEMO USER] Graduate student working on machine learning applications in bioinformatics.',
+                'department': 'Biotechnology',
+                'interests': [interests[0], interests[9]],
+                'skills': [skills[0], skills[5], skills[6]],
+            },
+            {
+                'username': 'demo_custodian',
+                'email': 'custodian@demo.scholarlens.test',
+                'first_name': 'Facility',
+                'last_name': 'Custodian',
                 'role': 'FACULTY',
-                'institution': 'Demo Research Lab',
-                'bio': '[DEMO USER] Professor specializing in cybersecurity and data privacy.',
-                'headline': '[DEMO] Cybersecurity Professor',
+                'institution': 'Demo University',
+                'bio': '[DEMO USER] Facility custodian and laboratory manager.',
+                'department': 'Research Operations',
+                'interests': [interests[0], interests[6]],
+                'skills': [skills[0], skills[4]],
+                'is_staff': True,
             },
         ]
 
         created_users = []
         for user_data in demo_users_data:
-            username = user_data['username']
-            if User.objects.filter(username=username).exists():
-                self.stdout.write(f'  User {username} already exists, skipping.')
-                created_users.append(User.objects.get(username=username))
-                continue
-
-            user = User.objects.create_user(
-                username=username,
-                email=user_data['email'],
-                password='demo_password_123',
-                first_name=user_data['first_name'],
-                last_name=user_data['last_name'],
-            )
-
-            # Update profile
-            profile = user.profile
-            profile.role = user_data['role']
-            profile.institution = user_data['institution']
-            profile.bio = user_data['bio']
-            profile.save()
-
-            # Create researcher profile
-            researcher_profile, _ = ResearcherProfile.objects.get_or_create(
-                user=user,
+            user, created = User.objects.get_or_create(
+                username=user_data['username'],
                 defaults={
-                    'headline': user_data['headline'],
-                    'expertise_summary': user_data['bio'],
-                    'years_experience': random.randint(2, 15),
-                }
-            )
-
-            # Add random interests and skills
-            selected_interests = random.sample(interests, min(4, len(interests)))
-            researcher_profile.interests.set(selected_interests)
-            selected_skills = random.sample(skills, min(3, len(skills)))
-            researcher_profile.skills.set(selected_skills)
-
-            created_users.append(user)
-            self.stdout.write(f'  Created user: {username}')
-
-        # Create demo papers (without PDFs - metadata only)
-        papers_data = [
-            {
-                'title': '[DEMO] A Survey of Transformer-Based Models in NLP',
-                'abstract': '[DEMO PAPER - NOT REAL RESEARCH] This demo paper surveys transformer architectures. '
-                           'It covers attention mechanisms, pre-training strategies, and fine-tuning approaches. '
-                           'This is demo content for Scholar Lens development purposes only.',
-                'research_area': 'NLP',
-                'keywords': 'demo, transformers, NLP, attention, survey',
-                'status': 'UPLOADED',
-            },
-            {
-                'title': '[DEMO] Deep Learning for Medical Image Classification',
-                'abstract': '[DEMO PAPER - NOT REAL RESEARCH] This demo paper explores CNN-based approaches '
-                           'for classifying medical imaging data. This is demo content for Scholar Lens '
-                           'development purposes only.',
-                'research_area': 'COMPUTER_VISION',
-                'keywords': 'demo, deep learning, medical imaging, CNN, classification',
-                'status': 'UPLOADED',
-            },
-            {
-                'title': '[DEMO] Federated Learning for Privacy-Preserving Analytics',
-                'abstract': '[DEMO PAPER - NOT REAL RESEARCH] This demo paper discusses federated learning '
-                           'techniques that enable privacy-preserving model training across distributed '
-                           'data sources. This is demo content for Scholar Lens development purposes only.',
-                'research_area': 'AI_ML',
-                'keywords': 'demo, federated learning, privacy, distributed systems',
-                'status': 'UPLOADED',
-            },
-        ]
-
-        for i, paper_data in enumerate(papers_data):
-            user = created_users[i % len(created_users)]
-            paper, created = ResearchPaper.objects.get_or_create(
-                title=paper_data['title'],
-                defaults={
-                    'abstract': paper_data['abstract'],
-                    'research_area': paper_data['research_area'],
-                    'keywords': paper_data['keywords'],
-                    'status': paper_data['status'],
-                    'uploader': user,
+                    'email': user_data['email'],
+                    'first_name': user_data['first_name'],
+                    'last_name': user_data['last_name'],
+                    'is_staff': user_data.get('is_staff', False),
                 }
             )
             if created:
-                self.stdout.write(f'  Created paper: {paper_data["title"][:50]}...')
+                user.set_password('demo_password_123')
+                user.save()
+                profile, _ = UserProfile.objects.get_or_create(user=user)
+                profile.role = user_data['role']
+                profile.institution = user_data['institution']
+                profile.bio = user_data['bio']
+                profile.save()
 
-        # Create demo project
-        if created_users:
-            project, created = ResearchProject.objects.get_or_create(
-                title='[DEMO] AI in Healthcare Research Project',
+                researcher_profile, _ = ResearcherProfile.objects.get_or_create(user=user)
+                researcher_profile.headline = f"{user_data['role'].capitalize()} in {user_data['department']}"
+                researcher_profile.expertise_summary = user_data['bio']
+                researcher_profile.save()
+                researcher_profile.interests.set(user_data['interests'])
+                researcher_profile.skills.set(user_data['skills'])
+                self.stdout.write(f'  Created demo user: {user.username}')
+            created_users.append(user)
+
+        # Create demo facilities
+        staff_custodian = created_users[3]
+        facilities_seed = [
+            {
+                'name': 'GPU Compute Cluster',
+                'kind': 'COMPUTE',
+                'department': 'Computer Science & Engineering',
+                'location': 'Tech Tower 401',
+                'description': 'High-performance computing cluster equipped with 8x NVIDIA H100 GPUs for deep learning models.',
+                'capacity': 4,
+            },
+            {
+                'name': 'IoT Lab',
+                'kind': 'LAB',
+                'department': 'Computer Science & Engineering',
+                'location': 'Innovation Block 202',
+                'description': 'Smart sensor networks, FPGA boards, and edge embedded experimentation workbenches.',
+                'capacity': 12,
+            },
+            {
+                'name': 'Confocal Microscope',
+                'kind': 'EQUIPMENT',
+                'department': 'Biotechnology',
+                'location': 'BioScience Block 102',
+                'description': 'High-resolution spectral confocal laser scanning microscope for cellular and tissue imaging.',
+                'capacity': 2,
+            },
+            {
+                'name': 'PCR Room',
+                'kind': 'LAB',
+                'department': 'Biotechnology',
+                'location': 'Genomics Wing 305',
+                'description': 'Sterile real-time quantitative PCR suite for gene expression analysis and nucleic acid amplification.',
+                'capacity': 6,
+            },
+        ]
+
+        for f_data in facilities_seed:
+            facility, created = Facility.objects.get_or_create(
+                name=f_data['name'],
                 defaults={
-                    'description': '[DEMO PROJECT] Exploring applications of artificial intelligence '
-                                  'in healthcare diagnostics and treatment planning. '
-                                  'This is demo content for development purposes.',
-                    'leader': created_users[0],
-                    'research_area': 'AI_ML',
-                    'status': 'ACTIVE',
-                    'is_public': True,
+                    'kind': f_data['kind'],
+                    'department': f_data['department'],
+                    'location': f_data['location'],
+                    'description': f_data['description'],
+                    'capacity': f_data['capacity'],
+                    'custodian': staff_custodian,
+                    'requires_approval': True,
+                    'is_active': True,
+                }
+            )
+            if created:
+                # Mon-Fri 09:00 - 17:00
+                for w in range(5):
+                    FacilitySlot.objects.get_or_create(
+                        facility=facility,
+                        weekday=w,
+                        opens=time(9, 0),
+                        closes=time(17, 0)
+                    )
+                self.stdout.write(f'  Created facility: {facility.name} (Mon-Fri 09:00-17:00)')
+
+        # Create demo papers
+        papers_data = [
+            {
+                'title': '[DEMO] Attention-Based Neural Architectures for Scientific Text Mining',
+                'abstract': '[DEMO ABSTRACT] This paper explores novel attention mechanisms applied to extracting '
+                            'semantic relationships from scientific literature. Evaluated on benchmark NLP datasets. '
+                            'This is demonstration content for development and testing purposes only.',
+                'uploader': created_users[0],
+                'research_area': 'AI_ML',
+                'keywords': 'machine learning, nlp, attention, transformers',
+            },
+            {
+                'title': '[DEMO] Scalable Distributed Systems for Large-Scale Genomic Data Processing',
+                'abstract': '[DEMO ABSTRACT] We propose an architecture for distributing genomic sequence alignment '
+                            'across heterogeneous cloud compute nodes. Results demonstrate significant throughput '
+                            'improvements. Demonstration content only.',
+                'uploader': created_users[1],
+                'research_area': 'BIOINFORMATICS',
+                'keywords': 'distributed systems, genomics, cloud, bioinformatics',
+            },
+        ]
+
+        for p_data in papers_data:
+            paper, created = ResearchPaper.objects.get_or_create(
+                title=p_data['title'],
+                defaults={
+                    'abstract': p_data['abstract'],
+                    'uploader': p_data['uploader'],
+                    'research_area': p_data['research_area'],
+                    'keywords': p_data['keywords'],
+                    'status': 'INDEXED',
+                }
+            )
+            if created:
+                self.stdout.write(f'  Created paper: {paper.title}')
+
+        # Create demo projects
+        projects_data = [
+            {
+                'title': '[DEMO] AI-Powered Academic Research Assistant',
+                'description': '[DEMO PROJECT] Developing an intelligent assistant to help researchers identify '
+                              'relevant literature, summarize papers, and find collaborators across disciplines. '
+                              'This is demo content for development purposes.',
+                'leader': created_users[0],
+                'research_area': 'AI',
+                'status': 'ACTIVE',
+                'is_public': True,
+            },
+            {
+                'title': '[DEMO] Genomic Analysis at Scale',
+                'description': '[DEMO PROJECT] Building computational infrastructure for high-throughput genomic data. '
+                              'This is demo content for development purposes.',
+                'leader': created_users[1],
+                'research_area': 'BIO',
+                'status': 'ACTIVE',
+                'is_public': True,
+            },
+        ]
+
+        for proj_data in projects_data:
+            project, created = ResearchProject.objects.get_or_create(
+                title=proj_data['title'],
+                defaults={
+                    'description': proj_data['description'],
+                    'leader': proj_data['leader'],
+                    'research_area': proj_data['research_area'],
+                    'status': proj_data['status'],
+                    'is_public': proj_data['is_public'],
                 }
             )
             if created:
                 ProjectMember.objects.get_or_create(
                     project=project,
-                    user=created_users[0],
+                    user=proj_data['leader'],
                     defaults={'role': 'LEADER'}
                 )
                 if len(created_users) > 1:
@@ -221,7 +309,8 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('\nDemo data seeded successfully!'))
         self.stdout.write(self.style.WARNING(
             '\nDemo user credentials:\n'
-            '  Username: demo_alice | Password: demo_password_123\n'
-            '  Username: demo_bob   | Password: demo_password_123\n'
-            '  Username: demo_carol | Password: demo_password_123\n'
+            '  Username: demo_alice     | Password: demo_password_123\n'
+            '  Username: demo_bob       | Password: demo_password_123\n'
+            '  Username: demo_carol     | Password: demo_password_123\n'
+            '  Username: demo_custodian | Password: demo_password_123 (Staff/Custodian)\n'
         ))
