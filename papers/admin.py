@@ -22,6 +22,13 @@ class DuplicateCandidateAdmin(admin.ModelAdmin):
     search_fields = ('incoming_paper__title', 'existing_paper__title')
 
 
+@admin.register(PaperAuthor)
+class PaperAuthorAdmin(admin.ModelAdmin):
+    list_display = ('name', 'paper', 'researcher', 'match_status', 'match_score', 'order')
+    list_filter = ('match_status',)
+    search_fields = ('name', 'paper__title', 'orcid')
+
+
 @admin.register(PaperChunk)
 class PaperChunkAdmin(admin.ModelAdmin):
     list_display = ('paper', 'chunk_index', 'token_count', 'created_at')

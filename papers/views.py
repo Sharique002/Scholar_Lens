@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 
-from .models import ResearchPaper, DuplicateCandidate, ImportRun
+from .models import ResearchPaper, DuplicateCandidate, ImportRun, PaperAuthor
 from .forms import PaperUploadForm, PaperEditForm, PaperAuthorFormSet
 from dashboard.permissions import is_office
 
@@ -317,3 +317,50 @@ def import_publications_view(request):
         return redirect('papers:import_publications')
 
     return render(request, 'papers/import.html', {'recent_runs': recent_runs})
+
+
+@login_required
+def author_queue(request):
+    """Review queue for ambiguous author-to-researcher matches."""
+    if not is_office(request.user):
+        raise PermissionDenied("Only Research Office staff can view the author disambiguation queue.")
+
+    pending_authors = (
+        PaperAuthor.objects
+        .filter(match_status=PaperAuthor.MatchStatus.PENDING_REVIEW)
+        .select_related('paper', 'researcher', 'researcher__user', 'researcher__department')
+        .order_by('-match_score', 'paper__title')
+    )
+    return render(request, 'papers/author_queue.html', {'pending_authors': pending_authors})
+
+
+@login_required
+def author_decide(request, author_id):
+    """Staff decision on an ambiguous author match."""
+    if not is_office(request.user):
+        raise PermissionDenied("Only Research Office staff can review author matches.")
+
+    author = get_object_or_404(PaperAuthor, pk=author_id)
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        from dashboard import audit
+        if action == 'confirm':
+            researcher_id = request.POST.get('researcher_id')
+            if researcher_id:
+                author.researcher_id = int(researcher_id)
+            author.match_status = PaperAuthor.MatchStatus.CONFIRMED
+            author.matched_by = request.user
+            author.matched_at = timezone.now()
+            author.save()
+            audit.record(actor=request.user, action='author.confirmed', target=author, researcher_id=author.researcher_id)
+            messages.success(request, f"Confirmed match for author '{author.name}'.")
+        elif action == 'reject':
+            author.match_status = PaperAuthor.MatchStatus.REJECTED
+            author.researcher = None
+            author.matched_by = request.user
+            author.matched_at = timezone.now()
+            author.save()
+            audit.record(actor=request.user, action='author.rejected', target=author)
+            messages.info(request, f"Rejected match for author '{author.name}'.")
+
+    return redirect('papers:author_queue')

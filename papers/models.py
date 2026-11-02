@@ -216,6 +216,12 @@ class ResearchPaper(models.Model):
 
 
 class PaperAuthor(models.Model):
+    class MatchStatus(models.TextChoices):
+        UNMATCHED = 'UNMATCHED', _('Unmatched')
+        PENDING_REVIEW = 'PENDING_REVIEW', _('Pending Review')
+        CONFIRMED = 'CONFIRMED', _('Confirmed')
+        REJECTED = 'REJECTED', _('Rejected')
+
     paper = models.ForeignKey(
         ResearchPaper,
         on_delete=models.CASCADE,
@@ -227,8 +233,36 @@ class PaperAuthor(models.Model):
     order = models.PositiveIntegerField(default=1)
     is_corresponding = models.BooleanField(default=False)
 
+    orcid = models.CharField(max_length=50, blank=True, null=True, db_index=True)
+    researcher = models.ForeignKey(
+        'researchers.ResearcherProfile',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='authored_papers'
+    )
+    match_status = models.CharField(
+        max_length=20,
+        choices=MatchStatus.choices,
+        default=MatchStatus.UNMATCHED,
+        db_index=True
+    )
+    match_score = models.FloatField(null=True, blank=True)
+    matched_at = models.DateTimeField(null=True, blank=True)
+    matched_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+'
+    )
+
     class Meta:
         ordering = ['order']
+        indexes = [
+            models.Index(fields=['match_status']),
+            models.Index(fields=['orcid']),
+        ]
 
     def __str__(self):
         return self.name

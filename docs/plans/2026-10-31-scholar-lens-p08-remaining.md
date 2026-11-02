@@ -110,9 +110,9 @@ Task 5: Author disambiguation and match queue
 Files:
 - Create: `papers/authors.py`, `templates/papers/author_queue.html`, `tests/test_authors.py`.
 - Modify: `papers/models.py` (`PaperAuthor`), `papers/views.py`, `papers/urls.py`, templates.
-- [ ] Step 1: Write failing tests.
-- [ ] Step 2: Implement it.
-- [ ] Step 3: Commit. `feat(papers): author disambiguation with reviewable match queue`
+- [x] Step 1: Write failing tests.
+- [x] Step 2: Implement it.
+- [x] Step 3: Commit. `feat(papers): author disambiguation with reviewable match queue`
 
 Part G — M3 Expertise discovery
 
