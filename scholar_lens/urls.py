@@ -20,6 +20,7 @@ urlpatterns = [
     path('facilities/', include('facilities.urls')),
     path('funding/', include('funding.urls')),
     path('opportunities/', include('opportunities.urls')),
+    path('analytics/', include('analytics.urls')),
     path('ai/', include('ai_engine.urls')),
     path('evaluation/', include('evaluation.urls')),
     path('search/', include('search.urls')),

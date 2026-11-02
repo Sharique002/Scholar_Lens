@@ -103,6 +103,9 @@
                 <a href="{% url 'facilities:list' %}" class="ums-nav-link{% if request.resolver_match.app_name == 'facilities' %} is-active{% endif %}" title="Facilities" aria-label="Facilities"><span class="ums-nav-icon" aria-hidden="true">🏛</span><span class="ums-nav-label">Facilities</span></a>
                 <a href="{% url 'funding:list' %}" class="ums-nav-link{% if request.resolver_match.app_name == 'funding' %} is-active{% endif %}" title="Funding" aria-label="Funding"><span class="ums-nav-icon" aria-hidden="true">💰</span><span class="ums-nav-label">Funding</span></a>
                 <a href="{% url 'search:search' %}" class="ums-nav-link{% if request.resolver_match.app_name == 'search' %} is-active{% endif %}" title="Search" aria-label="Search"><span class="ums-nav-icon" aria-hidden="true">🔎</span><span class="ums-nav-label">Search</span></a>
+                {% if user.is_staff or user.is_superuser or 'dean' in user.username.lower %}
+                <a href="{% url 'analytics:research' %}" class="ums-nav-link{% if request.resolver_match.app_name == 'analytics' %} is-active{% endif %}" title="Reports" aria-label="Reports"><span class="ums-nav-icon" aria-hidden="true">📊</span><span class="ums-nav-label">Reports</span></a>
+                {% endif %}
             </nav>
         </aside>
         {% endif %}

@@ -118,6 +118,7 @@ INSTALLED_APPS = [
     'facilities.apps.FacilitiesConfig',
     'funding.apps.FundingConfig',
     'opportunities.apps.OpportunitiesConfig',
+    'analytics.apps.AnalyticsConfig',
 ]
 
 MIDDLEWARE = [
