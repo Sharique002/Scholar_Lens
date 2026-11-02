@@ -7,9 +7,10 @@ from django.urls import reverse
 from django.db.models import Q
 from django.utils import timezone
 
-from .models import FundingCall
-from .forms import FundingCallForm
+from .models import FundingCall, FundingApplication
+from .forms import FundingCallForm, FundingApplicationForm
 from projects.models import ResearchProject
+from dashboard.audit import record as audit_record
 
 
 @login_required
@@ -70,10 +71,77 @@ def funding_detail(request, pk):
         raise PermissionDenied("This funding call is unpublished.")
 
     is_watched = call.watchers.filter(pk=request.user.pk).exists()
+    user_applications = call.applications.filter(applicant=request.user)
+    all_applications = []
+    if request.user.is_staff:
+        all_applications = call.applications.select_related('applicant', 'project').order_by('-submitted_at')
+
+    apply_form = FundingApplicationForm()
     return render(request, 'funding/detail.html', {
         'call': call,
         'is_watched': is_watched,
+        'user_applications': user_applications,
+        'all_applications': all_applications,
+        'apply_form': apply_form,
     })
+
+
+@login_required
+def funding_apply(request, pk):
+    call = get_object_or_404(FundingCall, pk=pk)
+    if request.method == 'POST':
+        form = FundingApplicationForm(request.POST)
+        if form.is_valid():
+            app = form.save(commit=False)
+            app.call = call
+            app.applicant = request.user
+            app.save()
+
+            audit_record(
+                actor=request.user,
+                action='funding_applied',
+                target=app,
+                call_id=call.pk
+            )
+            messages.success(request, f"Application for '{call.title}' submitted successfully.")
+            return redirect('funding:detail', pk=call.pk)
+        else:
+            messages.error(request, "Failed to submit application. Please check form values.")
+    return redirect('funding:detail', pk=call.pk)
+
+
+@login_required
+def funding_application_decision(request, pk):
+    if not request.user.is_staff:
+        raise PermissionDenied("Only Research Office staff can record funding decisions.")
+
+    app = get_object_or_404(FundingApplication.objects.select_related('call'), pk=pk)
+    if request.method == 'POST':
+        new_status = request.POST.get('status', '').strip()
+        awarded_str = request.POST.get('amount_awarded', '').strip()
+        notes = request.POST.get('notes', '').strip()
+
+        if new_status in dict(FundingApplication.Status.choices):
+            app.status = new_status
+            if awarded_str:
+                try:
+                    app.amount_awarded = float(awarded_str)
+                except ValueError:
+                    pass
+            if notes:
+                app.notes = notes
+            app.decision_date = timezone.localdate()
+            app.save()
+
+            audit_record(
+                actor=request.user,
+                action='funding_decision',
+                target=app,
+                call_id=app.call_id,
+                status=app.status
+            )
+            messages.success(request, f"Application decision recorded: {app.status}.")
+    return redirect('funding:detail', pk=app.call_id)
 
 
 @login_required

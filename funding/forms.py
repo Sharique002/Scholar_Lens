@@ -1,5 +1,5 @@
 from django import forms
-from .models import FundingCall
+from .models import FundingCall, FundingApplication
 
 
 class FundingCallForm(forms.ModelForm):
@@ -28,4 +28,16 @@ class FundingCallForm(forms.ModelForm):
             'opens_on': forms.DateInput(attrs={'class': 'form-input', 'type': 'date'}),
             'deadline': forms.DateTimeInput(attrs={'class': 'form-input', 'type': 'datetime-local'}),
             'is_published': forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
+        }
+
+
+class FundingApplicationForm(forms.ModelForm):
+    class Meta:
+        model = FundingApplication
+        fields = ['title', 'project', 'amount_requested', 'notes']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Proposal Title'}),
+            'project': forms.Select(attrs={'class': 'form-select'}),
+            'amount_requested': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'e.g. 1500000.00'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Proposal summary, co-investigators, etc.'}),
         }

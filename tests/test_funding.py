@@ -271,3 +271,83 @@ class FundingAlertsTests(TestCase):
         self.assertIn("Sent", out.getvalue())
         self.assertIn("funding alerts.", out.getvalue())
 
+
+class FundingApplicationTests(TestCase):
+    def setUp(self):
+        self.staff = User.objects.create_user('fund_staff', password='Password123!', is_staff=True)
+        self.researcher = User.objects.create_user('res_dr', password='Password123!')
+        self.call = FundingCall.objects.create(
+            title='National Robotics Grant',
+            sponsor='DST',
+            description='Robotics R&D.',
+            eligibility='Faculty',
+            deadline=timezone.now() + timedelta(days=20),
+            is_published=True,
+            created_by=self.staff
+        )
+
+    def test_submit_funding_application(self):
+        from funding.models import FundingApplication
+        self.client.login(username='res_dr', password='Password123!')
+        url = reverse('funding:apply', args=[self.call.pk])
+        resp = self.client.post(url, {
+            'title': 'Autonomous Navigation in Dense Crowds',
+            'amount_requested': '1500000.00',
+            'notes': 'Joint proposal with CS department.',
+        })
+        self.assertEqual(resp.status_code, 302)
+
+        app = FundingApplication.objects.filter(call=self.call, applicant=self.researcher).first()
+        self.assertIsNotNone(app)
+        self.assertEqual(app.status, 'SUBMITTED')
+        self.assertEqual(float(app.amount_requested), 1500000.00)
+
+    def test_staff_record_award_decision_and_audit(self):
+        from funding.models import FundingApplication
+        from dashboard.models import AuditEntry
+        app = FundingApplication.objects.create(
+            call=self.call,
+            applicant=self.researcher,
+            title='Autonomous Navigation',
+            amount_requested=1500000.00,
+            status='SUBMITTED'
+        )
+
+        self.client.login(username='fund_staff', password='Password123!')
+        url = reverse('funding:application_decision', args=[app.pk])
+        resp = self.client.post(url, {
+            'status': 'AWARDED',
+            'amount_awarded': '1200000.00',
+            'notes': 'Approved with slight reduction in travel budget.',
+        })
+        self.assertEqual(resp.status_code, 302)
+
+        app.refresh_from_db()
+        self.assertEqual(app.status, 'AWARDED')
+        self.assertEqual(float(app.amount_awarded), 1200000.00)
+
+        audit = AuditEntry.objects.filter(action='funding_decision', target_id=app.pk).first()
+        self.assertIsNotNone(audit)
+        self.assertEqual(audit.actor, self.staff)
+
+    def test_unauthorized_user_cannot_record_award_decision(self):
+        from funding.models import FundingApplication
+        app = FundingApplication.objects.create(
+            call=self.call,
+            applicant=self.researcher,
+            title='Autonomous Navigation',
+            amount_requested=1500000.00,
+            status='SUBMITTED'
+        )
+
+        self.client.login(username='res_dr', password='Password123!')
+        url = reverse('funding:application_decision', args=[app.pk])
+        resp = self.client.post(url, {
+            'status': 'AWARDED',
+            'amount_awarded': '1200000.00',
+        })
+        self.assertEqual(resp.status_code, 403)
+        app.refresh_from_db()
+        self.assertEqual(app.status, 'SUBMITTED')
+
+

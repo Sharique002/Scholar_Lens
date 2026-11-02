@@ -92,3 +92,48 @@ class FundingAlert(models.Model):
 
     def __str__(self):
         return f"Alert for {self.user.username} on {self.call.title} ({self.days_before}d)"
+
+
+class FundingApplication(models.Model):
+    class Status(models.TextChoices):
+        SUBMITTED = 'SUBMITTED', 'Submitted'
+        UNDER_REVIEW = 'UNDER_REVIEW', 'Under Review'
+        AWARDED = 'AWARDED', 'Awarded'
+        REJECTED = 'REJECTED', 'Rejected'
+        WITHDRAWN = 'WITHDRAWN', 'Withdrawn'
+
+    call = models.ForeignKey(
+        FundingCall,
+        on_delete=models.CASCADE,
+        related_name='applications'
+    )
+    applicant = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='funding_applications'
+    )
+    project = models.ForeignKey(
+        'projects.ResearchProject',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='funding_applications'
+    )
+    title = models.CharField(max_length=255, help_text="Proposal title")
+    amount_requested = models.DecimalField(max_digits=12, decimal_places=2, help_text="Amount in currency units")
+    amount_awarded = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.SUBMITTED, db_index=True)
+    decision_date = models.DateField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-submitted_at']
+        indexes = [
+            models.Index(fields=['status', '-submitted_at']),
+        ]
+
+    def __str__(self):
+        return f"Funding App: {self.title} ({self.status}) - {self.applicant.username}"
+

@@ -9,4 +9,6 @@ urlpatterns = [
     path('create/', views.funding_create, name='create'),
     path('<int:pk>/edit/', views.funding_edit, name='edit'),
     path('<int:pk>/watch/', views.funding_watch, name='watch'),
+    path('<int:pk>/apply/', views.funding_apply, name='apply'),
+    path('applications/<int:pk>/decision/', views.funding_application_decision, name='application_decision'),
 ]

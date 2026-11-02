@@ -11,7 +11,7 @@
 {% endblock %}
 
 {% block content %}
-<div style="max-width: 900px; margin: 0 auto;">
+<div style="max-width: 900px; margin: 0 auto; padding: 20px 0;">
   <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 24px;">
     <div>
       <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
@@ -90,6 +90,114 @@
     </div>
     {% endif %}
   </div>
+
+  <!-- Internal Application Submission & Tracking -->
+  <div class="ums-card" style="background: #fff; border: 1px solid var(--border-dark); border-radius: 8px; padding: 24px; margin-bottom: 24px;">
+    <h2 style="font-size: 18px; font-weight: 700; color: var(--color-ink); margin: 0 0 16px 0;">Institutional Proposal Tracking</h2>
+
+    {% if user_applications %}
+      <div style="margin-bottom: 20px;">
+        <h3 style="font-size: 14px; font-weight: 600; color: var(--color-muted); text-transform: uppercase;">Your Submitted Proposals</h3>
+        {% for app in user_applications %}
+        <div style="padding: 12px; border: 1px solid var(--border-dark); border-radius: 6px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <strong>{{ app.title }}</strong>
+            <div style="font-size: 13px; color: var(--color-muted);">Requested: ₹{{ app.amount_requested|floatformat:2 }}{% if app.amount_awarded %} &middot; Awarded: ₹{{ app.amount_awarded|floatformat:2 }}{% endif %}</div>
+          </div>
+          <div>
+            <span style="padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; {% if app.status == 'AWARDED' %}background: #E3FCEF; color: #006644;{% elif app.status == 'REJECTED' %}background: #FFEBE6; color: #DE350B;{% else %}background: #DEEBFF; color: #0747A6;{% endif %}">
+              {{ app.status }}
+            </span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% if call.days_left >= 0 %}
+      <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-dark);">
+        <h3 style="font-size: 15px; font-weight: 700; color: var(--color-ink); margin-bottom: 12px;">Submit Proposal for Tracking & Endorsement</h3>
+        <form method="post" action="{% url 'funding:apply' call.pk %}">
+          {% csrf_token %}
+          <div style="margin-bottom: 12px;">
+            <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px;">Proposal Title *</label>
+            {{ apply_form.title }}
+          </div>
+          <div style="margin-bottom: 12px;">
+            <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px;">Associated Project</label>
+            {{ apply_form.project }}
+          </div>
+          <div style="margin-bottom: 12px;">
+            <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px;">Amount Requested (₹) *</label>
+            {{ apply_form.amount_requested }}
+          </div>
+          <div style="margin-bottom: 16px;">
+            <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px;">Proposal Summary & Notes</label>
+            {{ apply_form.notes }}
+          </div>
+          <button type="submit" class="btn-primary" style="padding: 10px 20px; border-radius: 6px; font-weight: 600; border: none; cursor: pointer;">
+            Submit Proposal
+          </button>
+        </form>
+      </div>
+    {% else %}
+      <p style="color: var(--color-muted); font-size: 14px; margin: 0;">This funding call has concluded and is no longer accepting new proposals.</p>
+    {% endif %}
+  </div>
+
+  <!-- Research Office Staff Applications Queue -->
+  {% if user.is_staff and all_applications %}
+  <div class="ums-card" style="background: #fff; border: 1px solid var(--border-dark); border-radius: 8px; padding: 24px; margin-bottom: 24px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h2 style="font-size: 18px; font-weight: 700; color: var(--color-ink); margin: 0;">Research Office Proposal Decisions ({{ all_applications|length }})</h2>
+      <span style="background: #DEEBFF; color: #0747A6; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">Staff Admin</span>
+    </div>
+    <div style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead>
+          <tr style="border-bottom: 2px solid var(--border-dark); text-align: left;">
+            <th style="padding: 8px;">Applicant</th>
+            <th style="padding: 8px;">Proposal</th>
+            <th style="padding: 8px;">Requested</th>
+            <th style="padding: 8px;">Current Status</th>
+            <th style="padding: 8px; text-align: right;">Record Decision</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in all_applications %}
+          <tr style="border-bottom: 1px solid var(--border-dark);">
+            <td style="padding: 10px 8px;">
+              <strong>{{ a.applicant.username }}</strong>
+            </td>
+            <td style="padding: 10px 8px;">
+              {{ a.title }}
+              {% if a.project %}<div style="font-size: 12px; color: var(--color-muted);">Project: {{ a.project.title }}</div>{% endif %}
+            </td>
+            <td style="padding: 10px 8px;">₹{{ a.amount_requested|floatformat:0 }}</td>
+            <td style="padding: 10px 8px;">
+              <span style="padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; {% if a.status == 'AWARDED' %}background: #E3FCEF; color: #006644;{% elif a.status == 'REJECTED' %}background: #FFEBE6; color: #DE350B;{% else %}background: #DEEBFF; color: #0747A6;{% endif %}">
+                {{ a.status }}
+              </span>
+            </td>
+            <td style="padding: 10px 8px; text-align: right;">
+              <form method="post" action="{% url 'funding:application_decision' a.pk %}" style="display: inline-flex; gap: 6px; align-items: center; margin: 0;">
+                {% csrf_token %}
+                <select name="status" style="font-size: 12px; padding: 4px;">
+                  <option value="AWARDED" {% if a.status == 'AWARDED' %}selected{% endif %}>Awarded</option>
+                  <option value="REJECTED" {% if a.status == 'REJECTED' %}selected{% endif %}>Rejected</option>
+                  <option value="UNDER_REVIEW" {% if a.status == 'UNDER_REVIEW' %}selected{% endif %}>Under Review</option>
+                </select>
+                <input type="number" name="amount_awarded" placeholder="Awarded ₹" value="{{ a.amount_awarded|default:'' }}" style="width: 90px; font-size: 12px; padding: 4px;" step="0.01">
+                <button type="submit" style="font-size: 12px; padding: 4px 8px; background: #0052CC; color: white; border: none; border-radius: 4px; cursor: pointer;">Save</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
 
   <div style="margin-bottom: 40px;">
     <a href="{% url 'funding:list' %}" style="color: var(--primary); font-size: 14px; text-decoration: none; font-weight: 600;">&lsaquo; Back to Funding Register</a>
