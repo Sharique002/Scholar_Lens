@@ -47,6 +47,36 @@
                 </div>
             </div>
 
+            <!-- Milestones Card -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Milestones & Timeline</h4>
+                    <a href="{% url 'projects:milestones' project.pk %}" class="btn btn-sm btn-primary">
+                        View Timeline &rsaquo;
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if project.milestones.all %}
+                        <ul class="list-group list-group-flush">
+                            {% for m in project.milestones.all|slice:":5" %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ m.title }}</strong>
+                                    {% if m.is_deliverable %}<span class="badge bg-info text-dark ms-1">Deliverable</span>{% endif %}
+                                    <div class="text-muted small">Due: {{ m.due_date|date:"d M Y" }} &bull; {{ m.progress }}%</div>
+                                </div>
+                                <span class="badge {% if m.status == 'DONE' %}bg-success{% elif m.risk == 'OVERDUE' %}bg-danger{% elif m.risk == 'AT_RISK' %}bg-warning text-dark{% else %}bg-primary{% endif %}">
+                                    {{ m.get_status_display }}
+                                </span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted mb-0 small">No milestones tracked yet. Plan milestones and track progress on the project timeline.</p>
+                    {% endif %}
+                </div>
+            </div>
+
             {% if papers %}
             <div class="card mb-4">
                 <div class="card-header"><h4>Related Papers ({{ papers.count }})</h4></div>

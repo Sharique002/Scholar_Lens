@@ -579,3 +579,61 @@ main.ums-main--full {
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+
+/* --- Milestone Timeline / Gantt Rules (M7) --- */
+.ums-timeline-track {
+    position: relative;
+    background: #F0F1F3;
+    height: 26px;
+    border-radius: 4px;
+    width: 100%;
+    overflow: hidden;
+}
+
+.ums-timeline-bar {
+    position: absolute;
+    top: 2px;
+    height: 22px;
+    border-radius: 4px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: opacity 0.15s ease;
+    box-sizing: border-box;
+    z-index: 2;
+}
+
+.ums-timeline-bar:hover {
+    opacity: 0.9;
+}
+
+.ums-risk-on_track {
+    background-color: var(--primary-light);
+    color: var(--primary);
+    border: 1px solid var(--primary);
+}
+
+.ums-risk-at_risk {
+    background-color: var(--color-yellow);
+    color: #1F2328;
+    font-weight: 600;
+}
+
+.ums-risk-overdue {
+    background-color: #B42318;
+    color: #FFFFFF;
+    font-weight: 600;
+}
+
+.ums-today-marker {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: #0052CC;
+    z-index: 3;
+}

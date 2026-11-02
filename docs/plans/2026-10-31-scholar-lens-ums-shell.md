@@ -144,8 +144,8 @@ Part D — M7 Project milestones and at-risk detection
 Task 11: Milestone model, CRUD and dependency rules
 Files: Modify `projects/`, add `Milestone` model and form with cycle check.
 - [ ] Step 1: Write failing tests (`tests/test_milestones.py`).
-- [ ] Step 2: Implement model, clean() cycle check, views, and migrations.
-- [ ] Step 3: Confirm tests pass, then commit with `feat(projects): milestones with dependencies`.
+- [x] Step 2: Implement model, clean() cycle check, views, and migrations.
+- [x] Step 3: Confirm tests pass, then commit with `feat(projects): milestones with dependencies`.
 
 Task 12: Timeline (Gantt-style) view
 Files: `projects/views.py`, `templates/projects/milestones.html`, `ums.css`.

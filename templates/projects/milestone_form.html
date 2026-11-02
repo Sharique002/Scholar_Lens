@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action_title }} — Scholar Lens Projects{% endblock %}
+
+{% block breadcrumb %}
+<nav class="ums-breadcrumb" aria-label="Breadcrumb">
+  <a href="{% url 'dashboard:home' %}">Home</a> &rsaquo;
+  <a href="{% url 'projects:list' %}">Projects</a> &rsaquo;
+  <a href="{% url 'projects:detail' project.pk %}">{{ project.title|truncatechars:30 }}</a> &rsaquo;
+  <a href="{% url 'projects:milestones' project.pk %}">Milestones</a> &rsaquo;
+  <span aria-current="page">{{ action_title }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+  <div style="margin-bottom: 24px;">
+    <h1 style="font-size: 24px; font-weight: 700; color: var(--color-ink); margin: 0 0 4px 0;">{{ action_title }}</h1>
+    <p style="margin: 0; color: var(--color-muted); font-size: 14px;">Project: <strong>{{ project.title }}</strong></p>
+  </div>
+
+  <div class="ums-card" style="background: #fff; border: 1px solid var(--border-dark); border-radius: 8px; padding: 24px;">
+    <form method="post">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+      <div style="background: #FFEBE6; color: var(--color-danger); padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 14px;">
+        {{ form.non_field_errors }}
+      </div>
+      {% endif %}
+
+      <div style="display: flex; flex-direction: column; gap: 18px;">
+        <div>
+          <label for="id_title" style="display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px;">Milestone Title *</label>
+          {{ form.title }}
+          {% if form.title.errors %}<div style="color: var(--color-danger); font-size: 12px; margin-top: 4px;">{{ form.title.errors }}</div>{% endif %}
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 10px;">
+          {{ form.is_deliverable }}
+          <label for="id_is_deliverable" style="font-weight: 600; font-size: 14px; margin: 0; cursor: pointer;">This milestone is a key deliverable</label>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div>
+            <label for="id_owner" style="display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px;">Assignee / Owner</label>
+            {{ form.owner }}
+            {% if form.owner.errors %}<div style="color: var(--color-danger); font-size: 12px; margin-top: 4px;">{{ form.owner.errors }}</div>{% endif %}
+          </div>
+          <div>
+            <label for="id_status" style="display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px;">Status</label>
+            {{ form.status }}
+            {% if form.status.errors %}<div style="color: var(--color-danger); font-size: 12px; margin-top: 4px;">{{ form.status.errors }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+          <div>
+            <label for="id_start_date" style="display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px;">Start Date</label>
+            {{ form.start_date }}
+            {% if form.start_date.errors %}<div style="color: var(--color-danger); font-size: 12px; margin-top: 4px;">{{ form.start_date.errors }}</div>{% endif %}
+          </div>
+          <div>
+            <label for="id_due_date" style="display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px;">Due Date *</label>
+            {{ form.due_date }}
+            {% if form.due_date.errors %}<div style="color: var(--color-danger); font-size: 12px; margin-top: 4px;">{{ form.due_date.errors }}</div>{% endif %}
+          </div>
+          <div>
+            <label for="id_progress" style="display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px;">Progress (0–100%)</label>
+            {{ form.progress }}
+            {% if form.progress.errors %}<div style="color: var(--color-danger); font-size: 12px; margin-top: 4px;">{{ form.progress.errors }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div>
+          <label for="id_depends_on" style="display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px;">Dependencies (Must complete before this)</label>
+          {{ form.depends_on }}
+          {% if form.depends_on.errors %}<div style="color: var(--color-danger); font-size: 12px; margin-top: 4px;">{{ form.depends_on.errors }}</div>{% endif %}
+          <div style="font-size: 12px; color: var(--color-muted); margin-top: 4px;">Hold Ctrl/Cmd to select multiple dependencies.</div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px; border-top: 1px solid var(--border-dark); padding-top: 18px;">
+          <a href="{% url 'projects:milestones' project.pk %}" style="padding: 10px 18px; border: 1px solid var(--border-dark); border-radius: 6px; text-decoration: none; color: var(--color-ink); font-weight: 600; font-size: 14px;">
+            Cancel
+          </a>
+          <button type="submit" class="btn-primary" style="padding: 10px 22px; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer;">
+            Save Milestone
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
