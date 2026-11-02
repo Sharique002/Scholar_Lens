@@ -109,9 +109,9 @@ Files: `facilities/views.py`, `facilities/urls.py`, `templates/facilities/list.h
 
 Task 6: Booking form and concurrency proof
 Files: `facilities/forms.py`, `facilities/views.py`, `templates/facilities/book.html`, `templates/facilities/my_bookings.html`.
-- [ ] Step 1: Write failing tests (`test_booking_form_validation`, `test_book_creates_pending_and_redirects`, `test_book_conflict_shows_friendly_error`, `test_concurrent_booking_only_one_wins`).
-- [ ] Step 2: Implement `create_booking()`, `book` view, `my_bookings` view, cancel action.
-- [ ] Step 3: Confirm tests pass, then commit with `feat(facilities): booking with conflict-safe create and concurrency test`.
+- [x] Step 1: Write failing tests (`test_booking_form_validation`, `test_book_creates_pending_and_redirects`, `test_book_conflict_shows_friendly_error`, `test_concurrent_booking_only_one_wins`).
+- [x] Step 2: Implement `create_booking()`, `book` view, `my_bookings` view, cancel action.
+- [x] Step 3: Confirm tests pass, then commit with `feat(facilities): booking with conflict-safe create and concurrency test`.
 
 Task 7: Custodian approval, usage log, utilisation
 Files: `facilities/views.py`, `templates/facilities/manage.html`, `templates/facilities/utilisation.html`.

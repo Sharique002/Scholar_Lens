@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Facility Bookings | Scholar Lens{% endblock %}
+
+{% block breadcrumb %}
+<nav class="ums-breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'dashboard:home' %}">Home</a>
+    <span class="ums-breadcrumb-sep">›</span>
+    <a href="{% url 'facilities:list' %}">Facilities</a>
+    <span class="ums-breadcrumb-sep">›</span>
+    <span class="ums-breadcrumb-current">My Bookings</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom gap-3">
+        <div>
+            <h1 class="h3 fw-bold mb-1" style="color: var(--ums-maroon);">📋 My Facility Bookings</h1>
+            <p class="text-secondary mb-0">Track and manage your research facility reservations and approvals.</p>
+        </div>
+        <div>
+            <a href="{% url 'facilities:list' %}" class="btn btn-pill-orange">Browse Facilities</a>
+        </div>
+    </div>
+
+    {% if bookings %}
+    <div class="card border rounded-3 shadow-sm bg-white">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Facility</th>
+                        <th>Date &amp; Time</th>
+                        <th>Purpose</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in bookings %}
+                    <tr>
+                        <td>
+                            <strong style="color: var(--ums-maroon);">
+                                <a href="{% url 'facilities:detail' b.facility.pk %}" class="text-decoration-none" style="color: var(--ums-maroon);">
+                                    {{ b.facility.name }}
+                                </a>
+                            </strong>
+                            <div class="text-muted small">📍 {{ b.facility.location }} &bull; {{ b.facility.department }}</div>
+                        </td>
+                        <td>
+                            <div>{{ b.start|date:"M d, Y" }}</div>
+                            <span class="text-muted small">{{ b.start|time:"H:i" }} – {{ b.end|time:"H:i" }} ({{ b.hours }}h)</span>
+                        </td>
+                        <td>
+                            <span class="text-secondary small">{{ b.purpose }}</span>
+                        </td>
+                        <td>
+                            {% if b.status == 'APPROVED' %}
+                            <span class="badge bg-success">Approved</span>
+                            {% elif b.status == 'PENDING' %}
+                            <span class="badge bg-warning text-dark">Pending Approval</span>
+                            {% elif b.status == 'REJECTED' %}
+                            <span class="badge bg-danger">Rejected</span>
+                            {% elif b.status == 'CANCELLED' %}
+                            <span class="badge bg-secondary">Cancelled</span>
+                            {% elif b.status == 'COMPLETED' %}
+                            <span class="badge bg-primary">Completed</span>
+                            {% elif b.status == 'NO_SHOW' %}
+                            <span class="badge bg-dark">No Show</span>
+                            {% else %}
+                            <span class="badge bg-light text-dark border">{{ b.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if b.status in 'PENDING,APPROVED' and b.start > now %}
+                            <form method="post" action="{% url 'facilities:cancel' b.pk %}" onsubmit="return confirm('Are you sure you want to cancel this booking?');" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                            </form>
+                            {% else %}
+                            <span class="text-muted small">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5 bg-white border rounded">
+        <div style="font-size: 3rem;" class="mb-2">📋</div>
+        <h4 class="fw-bold">No Bookings Found</h4>
+        <p class="text-secondary small mb-3">You have not reserved any facilities or equipment yet.</p>
+        <a href="{% url 'facilities:list' %}" class="btn btn-pill-orange">Browse Facilities to Book</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

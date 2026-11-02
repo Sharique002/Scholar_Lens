@@ -1,12 +1,43 @@
 from datetime import datetime, time, timedelta, date
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.core.paginator import Paginator
+from django.db import IntegrityError, OperationalError, transaction
 from django.db.models import Q
+from django.http import HttpResponse, HttpResponseForbidden
 from django.utils import timezone
 from psycopg2.extras import DateTimeTZRange
 
 from .models import Facility, FacilitySlot, Booking
+from .forms import BookingForm
+from dashboard.models import ResearchActivity
+
+
+def create_booking(facility, user, during, purpose, status='PENDING'):
+    """
+    Creates a Booking inside an atomic transaction.
+    The PostgreSQL ExclusionConstraint blocks overlapping active bookings.
+    Returns Booking on success, None on IntegrityError or OperationalError (deadlock) conflict.
+    """
+    try:
+        with transaction.atomic():
+            booking = Booking.objects.create(
+                facility=facility,
+                user=user,
+                during=during,
+                purpose=purpose,
+                status=status
+            )
+            start_str = booking.start.strftime('%Y-%m-%d %H:%M') if booking.start else ''
+            ResearchActivity.objects.create(
+                user=user,
+                activity_type='BOOKING',
+                description=f"Requested {facility.name} on {start_str}"
+            )
+            return booking
+    except (IntegrityError, OperationalError):
+        return None
 
 
 @login_required
@@ -96,14 +127,42 @@ def facility_detail(request, pk):
 
 @login_required
 def book_facility(request, pk):
-    facility = get_object_or_404(Facility, pk=pk)
-    return render(request, 'facilities/book.html', {'facility': facility})
+    facility = get_object_or_404(Facility, pk=pk, is_active=True)
+
+    if request.method == 'POST':
+        form = BookingForm(request.POST, facility=facility)
+        if form.is_valid():
+            status = 'APPROVED' if not facility.requires_approval else 'PENDING'
+            booking = create_booking(
+                facility=facility,
+                user=request.user,
+                during=form.cleaned_data['during'],
+                purpose=form.cleaned_data['purpose'],
+                status=status
+            )
+            if booking:
+                if facility.requires_approval:
+                    messages.success(request, "Booking requested. The custodian will approve it soon.")
+                else:
+                    messages.success(request, "Booking confirmed.")
+                return redirect('facilities:my_bookings')
+            else:
+                form.add_error(None, "That time was just taken. Please pick another slot.")
+                return render(request, 'facilities/book.html', {'facility': facility, 'form': form}, status=200)
+    else:
+        initial_date = request.GET.get('date', timezone.localdate().strftime('%Y-%m-%d'))
+        form = BookingForm(facility=facility, initial={'date': initial_date})
+
+    return render(request, 'facilities/book.html', {'facility': facility, 'form': form})
 
 
 @login_required
 def my_bookings(request):
-    bookings = Booking.objects.filter(user=request.user)
-    return render(request, 'facilities/my_bookings.html', {'bookings': bookings})
+    bookings = Booking.objects.filter(user=request.user).select_related('facility').order_by('-created_at')
+    return render(request, 'facilities/my_bookings.html', {
+        'bookings': bookings,
+        'now': timezone.now(),
+    })
 
 
 @login_required
@@ -113,6 +172,15 @@ def decide_booking(request, pk):
 
 @login_required
 def cancel_booking(request, pk):
+    if request.method != 'POST':
+        return HttpResponseForbidden("POST required")
+    booking = get_object_or_404(Booking, pk=pk)
+    if booking.user != request.user and not (request.user.is_staff or booking.facility.can_manage(request.user)):
+        return HttpResponseForbidden("Not authorized to cancel this booking")
+
+    booking.status = 'CANCELLED'
+    booking.save(update_fields=['status'])
+    messages.success(request, "Booking cancelled.")
     return redirect('facilities:my_bookings')
 
 
