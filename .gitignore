@@ -55,3 +55,23 @@ cypress/videos/
 cypress/screenshots/
 cypress/downloads/
 cypress.env.json
+
+# AI Assistant Tooling
+.claude/
+.cursor/
+.windsurf/
+.agents/
+.gemini/
+.trae/
+.kiro/
+.opencode/
+.roo/
+.qoder/
+.continue/
+.codebuddy/
+.factory/
+.kilocode/
+.warp/
+.augment/
+.codewhale/
+.github/prompts/
