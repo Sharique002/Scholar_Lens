@@ -214,6 +214,10 @@ class ResearchPaper(models.Model):
             visited.add(curr.pk)
         return curr
 
+    @property
+    def merged_copies_all(self):
+        return ResearchPaper.all_objects.filter(merged_into=self)
+
 
 class PaperAuthor(models.Model):
     class MatchStatus(models.TextChoices):

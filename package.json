@@ -1,0 +1,14 @@
+{
+  "name": "scholar-lens",
+  "private": true,
+  "scripts": {
+    "e2e:open": "cypress open",
+    "e2e": "cypress run --browser chrome",
+    "e2e:mobile": "cypress run --browser chrome --config viewportWidth=375,viewportHeight=812"
+  },
+  "devDependencies": {
+    "axe-core": "4.10.0",
+    "cypress": "13.15.0",
+    "cypress-axe": "1.5.0"
+  }
+}

@@ -31,6 +31,14 @@ def get_str_env(key, default):
         return default
     return str(val).strip()
 
+def get_bool_env(key, default=False):
+    val = os.environ.get(key, None)
+    if val is None or str(val).strip() == '':
+        return default
+    return str(val).strip().lower() in ('true', '1', 'yes')
+
+E2E = get_bool_env('E2E', False)
+
 # Security
 SECRET_KEY = get_str_env(
     'SECRET_KEY',

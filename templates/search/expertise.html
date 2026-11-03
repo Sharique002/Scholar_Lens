@@ -68,6 +68,20 @@
 
             <div class="card shadow-sm border mb-3">
                 <div class="card-header bg-light fw-bold text-uppercase small">
+                    Verification
+                </div>
+                <div class="list-group list-group-flush small">
+                    <a href="?{% if query %}q={{ query }}&{% endif %}{% if selected_dept %}department={{ selected_dept }}&{% endif %}{% if selected_avail %}availability={{ selected_avail }}&{% endif %}{% if selected_interest %}interest={{ selected_interest }}{% endif %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if not selected_verified %}active{% endif %}">
+                        All Profiles
+                    </a>
+                    <a href="?verified=true{% if query %}&q={{ query }}{% endif %}{% if selected_dept %}&department={{ selected_dept }}{% endif %}{% if selected_avail %}&availability={{ selected_avail }}{% endif %}{% if selected_interest %}&interest={{ selected_interest }}{% endif %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if selected_verified == 'true' %}active{% endif %}">
+                        <span>✓ Verified only</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border mb-3">
+                <div class="card-header bg-light fw-bold text-uppercase small">
                     Collaboration Availability
                 </div>
                 <div class="list-group list-group-flush small">
@@ -112,6 +126,8 @@
                 <span class="text-muted small fw-bold">Showing {{ page_obj.paginator.count }} researcher{{ page_obj.paginator.count|pluralize }}</span>
                 {% if query %}
                 <span class="badge bg-light text-dark border">Query: "{{ query }}"</span>
+                {% else %}
+                <span class="text-muted small"><em>💡 Hint: Enter keywords to search across research domains and skills.</em></span>
                 {% endif %}
             </div>
 

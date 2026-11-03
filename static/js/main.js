@@ -160,11 +160,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 11. Desktop Sidebar Collapse (LPU UMS Shell)
     const sidebarCollapseBtn = document.getElementById('sidebarCollapse');
+    const sidebarNav = document.getElementById('navLinks');
     if (sidebarCollapseBtn) {
         try {
             const savedState = localStorage.getItem('ums-sidebar');
             if (savedState === '1') {
                 document.body.classList.add('sidebar-collapsed');
+                if (sidebarNav) sidebarNav.classList.add('is-collapsed');
                 sidebarCollapseBtn.setAttribute('aria-expanded', 'false');
                 sidebarCollapseBtn.textContent = '»';
             } else {
@@ -175,6 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         sidebarCollapseBtn.addEventListener('click', () => {
             const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
+            if (sidebarNav) sidebarNav.classList.toggle('is-collapsed', isCollapsed);
             sidebarCollapseBtn.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
             sidebarCollapseBtn.textContent = isCollapsed ? '»' : '«';
             try {

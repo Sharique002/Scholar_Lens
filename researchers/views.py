@@ -64,15 +64,33 @@ def researcher_detail(request, pk):
         pk=pk
     )
 
-    papers = profile.user.uploaded_papers.all().order_by('-created_at')
+    from papers.models import PaperAuthor, ResearchPaper
+    authored_paper_ids = PaperAuthor.objects.filter(
+        researcher=profile,
+        match_status=PaperAuthor.MatchStatus.CONFIRMED
+    ).values_list('paper_id', flat=True)
+
+    papers = ResearchPaper.objects.filter(
+        Q(uploader=profile.user) | Q(id__in=authored_paper_ids),
+        merged_into__isnull=True
+    ).distinct().order_by('-created_at')
+
     projects = profile.user.led_projects.all().order_by('-created_at')
     is_owner = (profile.user == request.user)
+
+    pending_authorships = []
+    if is_owner:
+        pending_authorships = PaperAuthor.objects.filter(
+            researcher=profile,
+            match_status=PaperAuthor.MatchStatus.PENDING_REVIEW
+        ).select_related('paper')
 
     return render(request, 'researchers/detail.html', {
         'profile': profile,
         'papers': papers,
         'projects': projects,
         'is_owner': is_owner,
+        'pending_authorships': pending_authorships,
     })
 
 

@@ -1,6 +1,7 @@
 import csv
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 
 from .metrics import is_dean, get_academic_year_range, compute_academic_year_metrics
@@ -8,8 +9,12 @@ from .metrics import is_dean, get_academic_year_range, compute_academic_year_met
 
 @login_required
 def research_report(request):
+    if not (request.user.is_staff or is_dean(request.user)):
+        raise PermissionDenied("Only Research Office staff and the Dean of Research can access academic reports.")
+
     year_param = request.GET.get('year', '').strip()
     export = request.GET.get('export', '').strip().lower()
+    section = request.GET.get('section', '').strip().lower()
 
     start_date, end_date, year_label = get_academic_year_range(year_param)
     user_is_dean = is_dean(request.user)
@@ -20,7 +25,7 @@ def research_report(request):
         include_researchers=user_is_dean
     )
 
-    if export == 'csv':
+    if export == 'csv' or request.GET.get('format') == 'csv' or section == 'all':
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="scholar_lens_research_report_{year_label}.csv"'
         writer = csv.writer(response)

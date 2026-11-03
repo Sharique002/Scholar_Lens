@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v=1.7">
     <link rel="stylesheet" href="{% static 'css/ums.css' %}?v=1.0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% block extra_head %}{% endblock %}
     {% block extra_css %}{% endblock %}
 </head>
 <body class="ums-body">
@@ -113,7 +114,7 @@
 
         <main class="ums-main{% if not user.is_authenticated %} ums-main--full{% endif %}">
             {% block breadcrumb %}
-            <nav class="ums-breadcrumb" aria-label="Breadcrumb">
+            <nav class="ums-breadcrumb ums-breadcrumbs" aria-label="Breadcrumb">
                 <a href="{% if user.is_authenticated %}{% url 'dashboard:home' %}{% else %}{% url 'dashboard:landing' %}{% endif %}">Home</a>
                 <span class="ums-breadcrumb-sep">›</span>
                 <span class="ums-breadcrumb-current">

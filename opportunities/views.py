@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.core.exceptions import PermissionDenied
 from django.contrib import messages
 from django.utils import timezone
@@ -25,8 +26,24 @@ def openings_list(request):
     if dept:
         qs = qs.filter(department__name__icontains=dept)
 
+    recommended_openings = []
+    if request.user.is_authenticated and hasattr(request.user, 'researcher_profile'):
+        user_skills = set(request.user.researcher_profile.skills.all())
+        for op in qs.filter(status='OPEN'):
+            op_skills = set(op.required_skills.all())
+            if op_skills:
+                match_count = len(user_skills & op_skills)
+                pct = int((match_count / len(op_skills)) * 100)
+            else:
+                pct = 100 if user_skills else 50
+            if pct > 0:
+                op.match_pct = pct
+                recommended_openings.append(op)
+        recommended_openings.sort(key=lambda x: getattr(x, 'match_pct', 0), reverse=True)
+
     return render(request, 'opportunities/list.html', {
         'openings': qs,
+        'recommended_openings': recommended_openings,
         'q': q,
         'dept': dept,
         'status_filter': status_filter,
@@ -149,11 +166,29 @@ def application_review(request, pk, action):
         raise PermissionDenied("You do not have permission to review this application.")
 
     if request.method == 'POST':
-        if action == 'accept':
+        if action == 'shortlist':
+            app.status = 'SHORTLISTED'
+            app.reviewed_by = request.user
+            app.reviewed_at = timezone.now()
+            app.save(update_fields=['status', 'reviewed_by', 'reviewed_at', 'updated_at'])
+
+            audit_record(
+                actor=request.user,
+                action='application_shortlisted',
+                target=app,
+                opening_id=opening.id
+            )
+            messages.success(request, f"Application by {app.applicant.username} shortlisted.")
+        elif action == 'accept':
             app.status = 'ACCEPTED'
             app.reviewed_by = request.user
             app.reviewed_at = timezone.now()
             app.save(update_fields=['status', 'reviewed_by', 'reviewed_at', 'updated_at'])
+
+            accepted_count = opening.applications.filter(status='ACCEPTED').count()
+            if accepted_count >= opening.spots_available:
+                opening.status = 'CLOSED'
+                opening.save(update_fields=['status'])
 
             if opening.project:
                 ProjectMember.objects.get_or_create(
@@ -168,7 +203,7 @@ def application_review(request, pk, action):
                 target=app,
                 opening_id=opening.id
             )
-            messages.success(request, f"Application by {app.applicant.username} accepted.")
+            messages.success(request, f"Application by {app.applicant.username} accepted. Position filled.")
         elif action == 'reject':
             app.status = 'REJECTED'
             app.reviewed_by = request.user
@@ -184,3 +219,13 @@ def application_review(request, pk, action):
             messages.info(request, f"Application by {app.applicant.username} declined.")
 
     return redirect('opportunities:detail', pk=opening.pk)
+
+
+@login_required
+@require_POST
+def application_withdraw(request, pk):
+    app = get_object_or_404(OpportunityApplication, pk=pk, applicant=request.user)
+    opening_pk = app.opening.pk
+    app.delete()
+    messages.success(request, "Your application has been withdrawn.")
+    return redirect('opportunities:detail', pk=opening_pk)

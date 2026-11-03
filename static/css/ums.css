@@ -172,7 +172,7 @@ html, body.ums-body {
 }
 
 .ums-brand-accent {
-    color: var(--action-orange);
+    color: #A73C00;
 }
 
 /* Header Search Input */
@@ -435,9 +435,10 @@ main.ums-main--full {
     color: var(--ink-muted);
 }
 
-.ums-breadcrumb a {
+.ums-breadcrumb a,
+.ums-breadcrumbs a {
     color: var(--primary);
-    text-decoration: none;
+    text-decoration: underline;
 }
 
 .ums-breadcrumb-sep {
@@ -636,4 +637,34 @@ main.ums-main--full {
     width: 2px;
     background-color: #0052CC;
     z-index: 3;
+}
+
+/* Accessibility & High Contrast Overrides */
+.book-crimson .book-sub-mini {
+    color: #FFFFFF !important;
+}
+
+.card-cyan {
+    color: #FFFFFF !important;
+}
+
+.card-cyan .step-card-title {
+    color: #FFFFFF !important;
+}
+
+.card-cyan .step-card-desc {
+    color: #FFFFFF !important;
+}
+
+.card-cyan .card-micro-tag {
+    color: #FFFFFF !important;
+    background: rgba(0, 0, 0, 0.35) !important;
+    border-color: #FFFFFF !important;
+}
+
+.card-pink .card-micro-tag,
+.card-purple .card-micro-tag {
+    color: #FFFFFF !important;
+    background: rgba(0, 0, 0, 0.4) !important;
+    border-color: #FFFFFF !important;
 }

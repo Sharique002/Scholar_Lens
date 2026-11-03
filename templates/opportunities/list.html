@@ -34,7 +34,7 @@
                     <input type="text" name="department" class="form-control form-control-sm" placeholder="Department (e.g. CS)" value="{{ dept }}">
                 </div>
                 <div class="col-md-2">
-                    <select name="status" class="form-select form-select-sm">
+                    <select name="status" class="form-select form-select-sm" aria-label="Filter by Status">
                         <option value="OPEN" {% if status_filter == 'OPEN' %}selected{% endif %}>Openings Only</option>
                         <option value="CLOSED" {% if status_filter == 'CLOSED' %}selected{% endif %}>Closed Only</option>
                         <option value="" {% if not status_filter %}selected{% endif %}>All Statuses</option>
@@ -47,6 +47,38 @@
             </form>
         </div>
     </div>
+
+    <!-- Recommended Openings for You -->
+    {% if recommended_openings %}
+    <div class="mb-4">
+        <h2 class="h5 fw-bold mb-3" style="color: var(--ums-maroon, #9B2335);">
+            🎯 Recommended for You
+        </h2>
+        <div class="row g-3">
+            {% for op in recommended_openings %}
+            <div class="col-lg-6">
+                <div class="card h-100 border border-warning shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h3 class="h5 fw-bold mb-0">
+                                <a href="{% url 'opportunities:detail' op.pk %}" class="text-decoration-none text-dark">{{ op.title }}</a>
+                            </h3>
+                            <span class="badge bg-warning text-dark fs-6 px-2 py-1">
+                                You match {{ op.match_pct }}%
+                            </span>
+                        </div>
+                        <p class="text-muted small mb-2">{{ op.description|truncatewords:25 }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="small text-muted">Project: {{ op.project.title }}</span>
+                            <a href="{% url 'opportunities:detail' op.pk %}" class="btn btn-sm btn-ums-primary">View & Apply</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Openings Grid -->
     <div class="row g-4">

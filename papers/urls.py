@@ -11,6 +11,7 @@ urlpatterns = [
     path('dedup/<int:candidate_id>/decide/', views.dedup_decide, name='dedup_decide'),
     path('authors/queue/', views.author_queue, name='author_queue'),
     path('authors/<int:author_id>/decide/', views.author_decide, name='author_decide'),
+    path('authors/<int:author_id>/claim/', views.claim_authorship, name='claim_authorship'),
     path('<int:pk>/', views.paper_detail, name='detail'),
     path('<int:pk>/edit/', views.paper_edit, name='edit'),
     path('<int:pk>/delete/', views.paper_delete, name='delete'),

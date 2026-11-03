@@ -13,14 +13,12 @@ from projects.models import ResearchProject, ProjectMember
 def is_dean(user) -> bool:
     if not user or not user.is_authenticated:
         return False
-    if user.is_superuser:
-        return True
-    if user.groups.filter(name__icontains='Dean').exists():
+    if 'dean' in user.username.lower():
         return True
     profile = getattr(user, 'profile', None)
     if profile and getattr(profile, 'role', '') == 'DEAN':
         return True
-    if 'dean' in user.username.lower():
+    if user.groups.filter(name__icontains='Dean').exists():
         return True
     return False
 

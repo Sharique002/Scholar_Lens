@@ -78,6 +78,7 @@ def expertise_search(request):
     selected_dept = request.GET.get('department', '').strip()
     selected_avail = request.GET.get('availability', '').strip()
     selected_interest = request.GET.get('interest', '').strip()
+    selected_verified = request.GET.get('verified', '').strip()
 
     profiles = (
         ResearcherProfile.objects
@@ -111,6 +112,9 @@ def expertise_search(request):
     if selected_interest:
         profiles = profiles.filter(interests__name__iexact=selected_interest)
 
+    if selected_verified == 'true':
+        profiles = profiles.filter(verification_status='VERIFIED')
+
     dept_facets = Department.objects.annotate(
         profile_count=Count('researchers')
     ).filter(profile_count__gt=0).order_by('-profile_count')
@@ -132,6 +136,7 @@ def expertise_search(request):
         'selected_dept': selected_dept,
         'selected_avail': selected_avail,
         'selected_interest': selected_interest,
+        'selected_verified': selected_verified,
         'dept_facets': dept_facets,
         'interest_facets': interest_facets,
         'available_count': available_count,

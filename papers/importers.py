@@ -1,7 +1,9 @@
 """ORCID and Crossref public metadata importers resilient to malformed records."""
 import re
+import json
 import requests
 from typing import List, Dict, Any, Optional
+from django.conf import settings
 from django.utils import timezone
 from django.db import transaction
 
@@ -39,6 +41,17 @@ def parse_year(val: Any) -> Optional[int]:
 
 def fetch_orcid_works(orcid_id: str) -> List[Dict[str, Any]]:
     """Fetch works from ORCID public API."""
+    if getattr(settings, 'E2E', False):
+        fixture_path = settings.BASE_DIR / 'tests' / 'fixtures' / 'orcid_sample.json'
+        if fixture_path.exists():
+            with open(fixture_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            items = []
+            for g in data.get('group', []):
+                summaries = g.get('work-summary', [])
+                if summaries:
+                    items.append(summaries[0])
+            return items
     clean_orcid = orcid_id.strip()
     url = f"https://pub.orcid.org/v3.0/{clean_orcid}/works"
     headers = {
@@ -58,6 +71,12 @@ def fetch_orcid_works(orcid_id: str) -> List[Dict[str, Any]]:
 
 def fetch_crossref(query: str, rows: int = 20) -> List[Dict[str, Any]]:
     """Fetch works from Crossref REST API."""
+    if getattr(settings, 'E2E', False):
+        fixture_path = settings.BASE_DIR / 'tests' / 'fixtures' / 'crossref_sample.json'
+        if fixture_path.exists():
+            with open(fixture_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            return data.get('message', {}).get('items', [])
     url = "https://api.crossref.org/works"
     params = {'query': query, 'rows': rows}
     headers = {'User-Agent': USER_AGENT}

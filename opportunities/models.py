@@ -61,6 +61,7 @@ class ResearchOpening(models.Model):
 class OpportunityApplication(models.Model):
     class Status(models.TextChoices):
         PENDING = 'PENDING', _('Pending')
+        SHORTLISTED = 'SHORTLISTED', _('Shortlisted')
         ACCEPTED = 'ACCEPTED', _('Accepted')
         REJECTED = 'REJECTED', _('Rejected')
 

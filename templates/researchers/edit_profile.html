@@ -5,7 +5,16 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Edit Profile</h2>
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <h2 class="mb-0">Edit Profile</h2>
+        {% if profile.verification_status == 'VERIFIED' %}
+            <span class="badge bg-success">✓ Verified</span>
+        {% elif profile.verification_status == 'PENDING' %}
+            <span class="badge bg-warning text-dark">Verification pending</span>
+        {% elif profile.verification_status == 'REJECTED' %}
+            <span class="badge bg-danger">Verification rejected</span>
+        {% endif %}
+    </div>
     <div class="row">
         <div class="col-md-8">
             <div class="card mb-4">

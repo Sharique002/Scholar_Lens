@@ -6,6 +6,7 @@ from django.http import FileResponse, Http404
 from django.contrib import messages
 from django.db.models import Q
 from django.core.exceptions import PermissionDenied
+from django.views.decorators.http import require_POST
 from django.utils import timezone
 
 from .models import ResearchPaper, DuplicateCandidate, ImportRun, PaperAuthor
@@ -117,6 +118,11 @@ def paper_detail(request, pk):
         pk=pk
     )
 
+    if paper.merged_into:
+        canonical = paper.resolve()
+        messages.info(request, f"This record was merged into '{canonical.title}'.")
+        return redirect('papers:detail', pk=canonical.pk)
+
     latest_summary = paper.ai_analyses.filter(analysis_type='SUMMARY').first()
     research_gaps = paper.research_gaps.all()
     evaluation_report = paper.evaluation_reports.first()
@@ -141,6 +147,7 @@ def paper_detail(request, pk):
         'chunks_count': paper.chunks.count(),
         'can_evaluate': is_evaluator(request.user),
         'is_office': is_office(request.user),
+        'merged_copies': list(ResearchPaper.all_objects.filter(merged_into=paper)),
     }
     return render(request, 'papers/detail.html', context)
 
@@ -281,8 +288,8 @@ def unmerge_paper(request, paper_id):
 @login_required
 def import_publications_view(request):
     """View to search and import publications from ORCID and Crossref."""
-    if not is_office(request.user):
-        raise PermissionDenied("Only Research Office staff can import external publication batches.")
+    if not (is_office(request.user) or (hasattr(request.user, 'profile') and request.user.profile.is_faculty_or_admin)):
+        raise PermissionDenied("Only faculty and Research Office staff can import external publication batches.")
 
     recent_runs = ImportRun.objects.select_related('initiated_by').all()[:20]
 
@@ -364,3 +371,17 @@ def author_decide(request, author_id):
             messages.info(request, f"Rejected match for author '{author.name}'.")
 
     return redirect('papers:author_queue')
+
+
+@login_required
+@require_POST
+def claim_authorship(request, author_id):
+    author = get_object_or_404(PaperAuthor, pk=author_id)
+    if hasattr(request.user, 'researcher_profile') and author.researcher == request.user.researcher_profile:
+        author.match_status = PaperAuthor.MatchStatus.CONFIRMED
+        author.matched_by = request.user
+        author.matched_at = timezone.now()
+        author.save()
+        messages.success(request, f"Confirmed authorship for '{author.paper.title}'.")
+        return redirect('researchers:detail', pk=request.user.researcher_profile.pk)
+    raise PermissionDenied("You can only confirm your own authorship.")

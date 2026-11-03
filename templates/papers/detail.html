@@ -51,7 +51,24 @@
                         </div>
                     </div>
 
-                    <!-- AI Intelligence & Analysis Section -->
+                    {% if is_office and merged_copies %}
+<div class="alert alert-info mt-3">
+    <h6 class="font-weight-bold">Merged Duplicate Records:</h6>
+    <ul class="mb-2">
+        {% for copy in merged_copies %}
+        <li class="d-flex justify-content-between align-items-center mb-1">
+            <span>{{ copy.title }} (ID: {{ copy.pk }}, {{ copy.venue|default:'No venue' }})</span>
+            <form method="POST" action="{% url 'papers:unmerge' copy.pk %}" class="d-inline ms-2">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-danger">Undo Merge</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<!-- AI Intelligence & Analysis Section -->
                     <div class="mt-5 border-top pt-4">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h4 class="mb-0"><i class="bi bi-cpu text-primary me-2"></i>AI Research Intelligence</h4>

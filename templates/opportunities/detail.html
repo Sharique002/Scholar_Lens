@@ -35,7 +35,7 @@
                             {% if opening.status == 'OPEN' %}
                                 <span class="badge bg-success fs-6">Open</span>
                             {% else %}
-                                <span class="badge bg-secondary fs-6">Closed</span>
+                                <span class="badge bg-secondary fs-6">Filled</span>
                             {% endif %}
                         </div>
                     </div>
@@ -75,6 +75,12 @@
                             </h3>
                             <p class="mb-1 text-secondary">Submitted on {{ user_application.created_at|date:"M d, Y H:i" }}.</p>
                             <p class="mb-0 text-secondary"><strong>Statement:</strong> {{ user_application.statement }}</p>
+                            {% if user_application.status != 'ACCEPTED' %}
+                            <form method="post" action="{% url 'opportunities:withdraw' user_application.pk %}" class="mt-3">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Withdraw Application</button>
+                            </form>
+                            {% endif %}
                         </div>
                     {% elif opening.status != 'OPEN' %}
                         <div class="alert alert-secondary mb-0">
@@ -155,6 +161,19 @@
                                 </td>
                                 <td class="text-end">
                                     {% if app.status == 'PENDING' %}
+                                    <form method="post" action="{% url 'opportunities:review' app.pk 'shortlist' %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-primary py-0 px-2">Shortlist</button>
+                                    </form>
+                                    <form method="post" action="{% url 'opportunities:review' app.pk 'accept' %}" class="d-inline ms-1">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-success py-0 px-2">Accept</button>
+                                    </form>
+                                    <form method="post" action="{% url 'opportunities:review' app.pk 'reject' %}" class="d-inline ms-1">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2">Decline</button>
+                                    </form>
+                                    {% elif app.status == 'SHORTLISTED' %}
                                     <form method="post" action="{% url 'opportunities:review' app.pk 'accept' %}" class="d-inline">
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-sm btn-outline-success py-0 px-2">Accept</button>

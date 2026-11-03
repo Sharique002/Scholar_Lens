@@ -124,7 +124,7 @@
                 <input type="text" name="q" class="form-control retro-input w-100" placeholder="Search by paper title, keywords or abstract..." value="{{ query|default_if_none:'' }}">
             </div>
             <div class="col-md-4">
-                <select name="research_area" class="form-select retro-input w-100">
+                <select name="research_area" class="form-select retro-input w-100" aria-label="Filter by Research Discipline">
                     <option value="">All Research Disciplines</option>
                     {% for value, label in research_areas %}
                         <option value="{{ value }}" {% if current_area == value %}selected{% endif %}>{{ label }}</option>
