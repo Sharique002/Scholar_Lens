@@ -189,7 +189,8 @@ def google_callback_view(request):
         return redirect('accounts:login')
 
     try:
-        redirect_uri = get_redirect_uri(request)
+        stored_redirect_uri = request.session.pop('google_oauth_redirect_uri', None)
+        redirect_uri = stored_redirect_uri or get_redirect_uri(request)
         user_info = exchange_code_for_user_info(code, redirect_uri)
         user, created = get_or_create_google_user(user_info)
 

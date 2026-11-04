@@ -20,12 +20,24 @@ def is_google_auth_configured() -> bool:
     return bool(getattr(settings, 'GOOGLE_CLIENT_ID', '').strip()) and bool(getattr(settings, 'GOOGLE_CLIENT_SECRET', '').strip())
 
 
-def get_redirect_uri(request) -> str:
-    """Build the absolute callback URI for Google OAuth."""
+def get_redirect_uri(request=None) -> str:
+    """Build the absolute callback URI for Google OAuth.
+    
+    Dynamically adapts to the request host (localhost vs 127.0.0.1) so local
+    testing works seamlessly regardless of how the developer accessed the app.
+    """
     configured_uri = getattr(settings, 'GOOGLE_OAUTH_REDIRECT_URI', '').strip()
+    if request is not None:
+        try:
+            dynamic_uri = request.build_absolute_uri(reverse('accounts:google_callback'))
+            # If not configured or configured as local development URL, use dynamic request host
+            if not configured_uri or 'localhost' in configured_uri or '127.0.0.1' in configured_uri:
+                return dynamic_uri
+        except Exception:
+            pass
     if configured_uri:
         return configured_uri
-    return request.build_absolute_uri(reverse('accounts:google_callback'))
+    return "http://localhost:8000/accounts/google/callback/"
 
 
 def get_google_auth_url(request, next_url: str = None) -> tuple[str, str]:
@@ -34,13 +46,15 @@ def get_google_auth_url(request, next_url: str = None) -> tuple[str, str]:
     Returns (auth_url, state).
     """
     state = secrets.token_urlsafe(32)
+    redirect_uri = get_redirect_uri(request)
     request.session['google_oauth_state'] = state
+    request.session['google_oauth_redirect_uri'] = redirect_uri
     if next_url:
         request.session['google_oauth_next'] = next_url
 
     params = {
         'client_id': settings.GOOGLE_CLIENT_ID,
-        'redirect_uri': get_redirect_uri(request),
+        'redirect_uri': redirect_uri,
         'response_type': 'code',
         'scope': 'openid email profile',
         'state': state,
