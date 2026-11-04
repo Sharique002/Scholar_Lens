@@ -288,6 +288,14 @@ SCHOLAR_MAX_RESULTS = get_int_env('SCHOLAR_MAX_RESULTS', 5)
 SITE_NAME = get_str_env('SITE_NAME', 'Scholar Lens')
 SITE_URL = get_str_env('SITE_URL', 'http://localhost:8000')
 
+# Google OAuth2 Single Sign-On (SSO)
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
+GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '')
+GOOGLE_OAUTH_REDIRECT_URI = os.environ.get(
+    'GOOGLE_OAUTH_REDIRECT_URI',
+    f"{SITE_URL.rstrip('/')}/accounts/google/callback/"
+)
+
 # Canonical Scholar Lens Evaluation Framework Weights (must sum to 100)
 EVALUATION_WEIGHTS = {
     'novelty': 20,              # Potential Novelty (20%)

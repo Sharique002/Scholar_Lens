@@ -11,4 +11,9 @@ urlpatterns = [
     path('profile/', views.profile_view, name='profile'),
     path('profile/edit/', views.edit_profile_view, name='edit_profile'),
     path('password/change/', views.change_password_view, name='change_password'),
+    
+    # Google OAuth2 / SSO routes
+    path('google/login/', views.google_login_view, name='google_login'),
+    path('google/callback/', views.google_callback_view, name='google_callback'),
+    path('google/mock/', views.google_mock_view, name='google_mock'),
 ]

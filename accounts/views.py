@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -129,3 +130,133 @@ def change_password_view(request):
         form = PasswordChangeForm(request.user)
         
     return render(request, 'accounts/change_password.html', {'form': form})
+
+
+
+# ==========================================
+# Google OAuth2 / SSO Authentication Views
+# ==========================================
+from django.conf import settings
+from .google_auth import (
+    is_google_auth_configured,
+    get_google_auth_url,
+    get_redirect_uri,
+    exchange_code_for_user_info,
+    get_or_create_google_user,
+)
+
+
+def google_login_view(request):
+    """Initiate Google OAuth2 authentication flow."""
+    if request.user.is_authenticated:
+        return redirect('dashboard:home')
+
+    next_url = request.GET.get('next') or request.POST.get('next')
+    if not is_google_auth_configured():
+        if settings.DEBUG or request.GET.get('mock') == '1':
+            return redirect(f"{reverse('accounts:google_mock')}?next={next_url or ''}")
+        messages.error(
+            request,
+            "Google OAuth is not configured yet. Please configure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env"
+        )
+        return redirect('accounts:login')
+
+    auth_url, _ = get_google_auth_url(request, next_url=next_url)
+    return redirect(auth_url)
+
+
+def google_callback_view(request):
+    """Handle Google OAuth2 callback code exchange and login."""
+    if request.user.is_authenticated:
+        return redirect('dashboard:home')
+
+    error = request.GET.get('error')
+    if error:
+        messages.warning(request, f"Google authentication was cancelled or failed ({error}).")
+        return redirect('accounts:login')
+
+    state = request.GET.get('state')
+    expected_state = request.session.pop('google_oauth_state', None)
+    next_url = request.session.pop('google_oauth_next', None) or 'dashboard:home'
+
+    if not state or state != expected_state:
+        messages.error(request, "Authentication state mismatch. For security, please try signing in again.")
+        return redirect('accounts:login')
+
+    code = request.GET.get('code')
+    if not code:
+        messages.error(request, "Missing Google authorization code.")
+        return redirect('accounts:login')
+
+    try:
+        redirect_uri = get_redirect_uri(request)
+        user_info = exchange_code_for_user_info(code, redirect_uri)
+        user, created = get_or_create_google_user(user_info)
+
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+
+        try:
+            from dashboard.models import ResearchActivity
+            action = "registered and signed in" if created else "signed in"
+            ResearchActivity.objects.create(
+                user=user,
+                activity_type='LOGIN',
+                description=f"User {user.username} {action} via Google OAuth2 Single Sign-On"
+            )
+        except Exception:
+            pass
+
+        greeting = "Welcome" if created else "Welcome back"
+        messages.success(request, f"{greeting}, {user.first_name or user.username}! Successfully authenticated with Google ({user.email}).")
+        return redirect(next_url)
+
+    except Exception as e:
+        messages.error(request, f"Failed to complete Google authentication: {str(e)}")
+        return redirect('accounts:login')
+
+
+def google_mock_view(request):
+    """Mock Google sign-in for development, testing, and CI environments."""
+    if not settings.DEBUG:
+        messages.error(request, "Mock authentication is disabled in production.")
+        return redirect('accounts:login')
+
+    if request.user.is_authenticated:
+        return redirect('dashboard:home')
+
+    next_url = request.GET.get('next') or 'dashboard:home'
+
+    if request.method == 'POST':
+        email = request.POST.get('email', 'shariquehussain03@gmail.com').strip()
+        name = request.POST.get('name', 'Sharique Hussain').strip()
+        role = request.POST.get('role', 'FACULTY')
+
+        mock_payload = {
+            'email': email,
+            'name': name,
+            'given_name': name.split()[0] if name else 'Sharique',
+            'family_name': name.split()[-1] if len(name.split()) > 1 else '',
+            'picture': 'https://lh3.googleusercontent.com/a/default-user',
+            'sub': 'google_mock_123456789',
+        }
+        user, created = get_or_create_google_user(mock_payload)
+        if hasattr(user, 'profile'):
+            user.profile.role = role
+            user.profile.save()
+
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+
+        try:
+            from dashboard.models import ResearchActivity
+            ResearchActivity.objects.create(
+                user=user,
+                activity_type='LOGIN',
+                description=f"User {user.username} signed in via Mock Google SSO"
+            )
+        except Exception:
+            pass
+
+        messages.success(request, f"Successfully signed in with Google Account ({email})!")
+        return redirect(next_url)
+
+    return render(request, 'accounts/google_mock.html', {'next': next_url})
