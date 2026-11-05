@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.urls import reverse
 from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
@@ -177,7 +178,14 @@ def google_callback_view(request):
 
     state = request.GET.get('state')
     expected_state = request.session.pop('google_oauth_state', None)
-    next_url = request.session.pop('google_oauth_next', None) or 'dashboard:home'
+    raw_next = request.session.pop('google_oauth_next', None) or 'dashboard:home'
+    if raw_next and raw_next != 'dashboard:home':
+        if url_has_allowed_host_and_scheme(url=raw_next, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+            next_url = raw_next
+        else:
+            next_url = 'dashboard:home'
+    else:
+        next_url = 'dashboard:home'
 
     if not state or state != expected_state:
         messages.error(request, "Authentication state mismatch. For security, please try signing in again.")

@@ -11,6 +11,14 @@ class UserProfile(models.Model):
     )
     
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    google_sub = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        unique=True,
+        db_index=True,
+        help_text="Google OAuth2 subject ID (sub) for OpenID Connect account linking"
+    )
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='STUDENT')
     bio = models.TextField(blank=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
