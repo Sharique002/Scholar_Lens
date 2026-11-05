@@ -1,7 +1,8 @@
 """Google OAuth2 / OpenID Connect Authentication Service for Scholar Lens.
 
 Implements secure Authorization Code Flow with server-side token exchange,
-OpenID Connect ID token validation, and account provisioning via Google Subject ID (sub).
+cryptographic OpenID Connect ID token validation via google-auth, and account
+provisioning via Google Subject ID (sub).
 """
 import logging
 import re
@@ -74,24 +75,36 @@ def get_google_auth_url(request, next_url: str = None) -> tuple[str, str]:
 
 
 def verify_id_token_server_side(id_token: str, expected_client_id: str) -> dict:
-    """Validate Google OpenID Connect ID token with Google tokeninfo endpoint.
+    """Validate Google OpenID Connect ID token using official google-auth library.
     
-    Validates:
+    Cryptographically validates:
+      - Token signature against Google's public certificates
       - Issuer is accounts.google.com or https://accounts.google.com
       - Audience matches our configured GOOGLE_CLIENT_ID
       - Token is not expired
       - Email is verified
     """
-    resp = requests.get(
-        GOOGLE_TOKENINFO_URL,
-        params={'id_token': id_token},
-        timeout=10
-    )
-    if resp.status_code != 200:
-        raise ValueError(f"Google ID token verification failed (HTTP {resp.status_code}): {resp.text}")
+    claims = None
+    try:
+        from google.oauth2 import id_token as google_id_token
+        from google.auth.transport import requests as google_requests
+        auth_request = google_requests.Request()
+        claims = google_id_token.verify_oauth2_token(id_token, auth_request, expected_client_id)
+    except ImportError:
+        logger.warning("google-auth package not available, falling back to Google tokeninfo endpoint.")
+    except Exception as e:
+        logger.warning("google.oauth2.id_token verification raised: %s, falling back to tokeninfo endpoint.", e)
 
-    claims = resp.json()
-    
+    if not claims:
+        resp = requests.get(
+            GOOGLE_TOKENINFO_URL,
+            params={'id_token': id_token},
+            timeout=10
+        )
+        if resp.status_code != 200:
+            raise ValueError(f"Google ID token verification failed (HTTP {resp.status_code}): {resp.text}")
+        claims = resp.json()
+
     # 1. Validate audience (aud)
     aud = claims.get('aud')
     if aud != expected_client_id:

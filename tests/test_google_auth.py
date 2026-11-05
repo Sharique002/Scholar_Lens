@@ -103,6 +103,21 @@ class GoogleAuthUnitTests(TestCase):
         existing.profile.refresh_from_db()
         self.assertEqual(existing.profile.google_sub, 'google_unique_sub_303')
 
+    @patch('google.oauth2.id_token.verify_oauth2_token')
+    def test_verify_id_token_google_auth_success(self, mock_verify):
+        mock_verify.return_value = {
+            'iss': 'https://accounts.google.com',
+            'aud': 'expected-client-id',
+            'sub': 'google_sub_verified_lib',
+            'email': 'lib_verified@google.com',
+            'email_verified': True,
+            'exp': 9999999999,
+        }
+        claims = verify_id_token_server_side('real_jwt_token', 'expected-client-id')
+        self.assertEqual(claims['sub'], 'google_sub_verified_lib')
+        self.assertEqual(claims['email'], 'lib_verified@google.com')
+        self.assertTrue(mock_verify.called)
+
     @patch('accounts.google_auth.requests.get')
     def test_verify_id_token_server_side_success(self, mock_get):
         mock_resp = MagicMock()
