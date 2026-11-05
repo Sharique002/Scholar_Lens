@@ -146,6 +146,16 @@ def office_hub(request):
     })
 
 
+def privacy_policy(request):
+    """Public privacy policy page for Google OAuth compliance."""
+    return render(request, 'dashboard/privacy.html')
+
+
+def terms_of_service(request):
+    """Public terms of service page."""
+    return render(request, 'dashboard/terms.html')
+
+
 def error_404(request, exception):
     """Custom 404 error page."""
     return render(request, 'errors/404.html', status=404)
