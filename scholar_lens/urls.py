@@ -24,6 +24,7 @@ urlpatterns = [
     path('ai/', include('ai_engine.urls')),
     path('evaluation/', include('evaluation.urls')),
     path('search/', include('search.urls')),
+    path('api/', include('scholar_lens.api')),
 ]
 
 # Custom error handlers

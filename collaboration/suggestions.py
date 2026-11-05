@@ -2,6 +2,7 @@ from django.db.models import Q
 from researchers.models import ResearcherProfile
 from papers.models import PaperAuthor
 from projects.models import ResearchProject, ProjectMember
+from dashboard.models import ResearchActivity
 from .models import CollaborationSuggestion
 
 
@@ -89,7 +90,7 @@ def compute_suggestions(target_researcher=None, top_k=10):
         scored.sort(key=lambda x: x[1], reverse=True)
 
         for cand, score, adj, gap, expl in scored[:top_k]:
-            CollaborationSuggestion.objects.update_or_create(
+            _, created = CollaborationSuggestion.objects.update_or_create(
                 researcher=target_researcher,
                 suggested=cand,
                 defaults={
@@ -99,6 +100,12 @@ def compute_suggestions(target_researcher=None, top_k=10):
                     'explanation': expl,
                 }
             )
+            if created:  # notify once per new pairing, not on every recompute
+                ResearchActivity.objects.create(
+                    user=target_researcher.user,
+                    activity_type='SUGGESTION',
+                    description=f"New collaboration suggestion: {cand.user.get_full_name() or cand.user.username}",
+                )
     else:
         all_researchers = ResearcherProfile.objects.filter(
             is_available_for_collaboration=True

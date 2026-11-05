@@ -69,6 +69,27 @@
                 </div>
             </div>
         </div>
+
+        <!-- Scopus Import Form (licence-dependent) -->
+        <div class="col-md-6">
+            <div class="card shadow-sm border h-100">
+                <div class="card-header bg-light">
+                    <h5 class="fw-bold mb-0">Import from Scopus</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="source" value="scopus">
+                        <div class="mb-3">
+                            <label for="scopus-author-id" class="form-label fw-bold small text-uppercase">Scopus Author ID</label>
+                            <input type="text" id="scopus-author-id" name="query" class="form-control" placeholder="e.g. 57200000000" required>
+                            <div class="form-text">Requires an institutional Elsevier API key (SCOPUS_API_KEY).</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Fetch &amp; Import Works</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Recent Import Runs -->

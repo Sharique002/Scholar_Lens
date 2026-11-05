@@ -282,6 +282,7 @@ OPENAI_EMBEDDING_MODEL = get_str_env('OPENAI_EMBEDDING_MODEL', 'text-embedding-3
 
 # Google Scholar Configuration
 SERPAPI_API_KEY = os.environ.get('SERPAPI_API_KEY', '')
+SCOPUS_API_KEY = os.environ.get('SCOPUS_API_KEY', '')  # Elsevier licence key for Scopus import
 SCHOLAR_API_PROVIDER = get_str_env('SCHOLAR_API_PROVIDER', 'serpapi')
 SCHOLAR_API_TIMEOUT = get_int_env('SCHOLAR_API_TIMEOUT', 10)
 SCHOLAR_MAX_RESULTS = get_int_env('SCHOLAR_MAX_RESULTS', 5)

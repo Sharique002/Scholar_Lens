@@ -86,6 +86,23 @@ def fetch_crossref(query: str, rows: int = 20) -> List[Dict[str, Any]]:
     return data.get('message', {}).get('items', [])
 
 
+def fetch_scopus(author_id: str, rows: int = 25) -> List[Dict[str, Any]]:
+    """Fetch an author's works from the Elsevier Scopus Search API (licence-dependent; needs SCOPUS_API_KEY)."""
+    api_key = getattr(settings, 'SCOPUS_API_KEY', '')
+    if not api_key:
+        raise ValueError("SCOPUS_API_KEY is not configured; Scopus import requires an Elsevier licence key.")
+    resp = requests.get(
+        "https://api.elsevier.com/content/search/scopus",
+        params={'query': f"AU-ID({author_id.strip()})", 'count': rows},
+        headers={'X-ELS-APIKey': api_key, 'Accept': 'application/json', 'User-Agent': USER_AGENT},
+        timeout=15,
+    )
+    resp.raise_for_status()
+    entries = resp.json().get('search-results', {}).get('entry', [])
+    # Scopus returns [{"error": "Result set was empty"}] when there are no hits.
+    return [e for e in entries if isinstance(e, dict) and 'error' not in e]
+
+
 def to_record(raw_item: Dict[str, Any], source: str) -> Optional[Dict[str, Any]]:
     """Sanitize and normalize an external record. Returns None if malformed/unusable."""
     if not isinstance(raw_item, dict):
@@ -213,6 +230,30 @@ def to_record(raw_item: Dict[str, Any], source: str) -> Optional[Dict[str, Any]]
             'source': 'EXTERNAL',
             'external_id': external_id,
             'external_url': external_url,
+        }
+
+    elif src == 'SCOPUS':
+        title = strip_html(str(raw_item.get('dc:title') or '')).strip()
+        if not title:
+            return None
+        doi = (str(raw_item.get('prism:doi') or '')).strip().lower() or None
+        subtype = str(raw_item.get('subtypeDescription') or '').lower()
+        abstract = strip_html(str(raw_item.get('dc:description') or '')).strip()[:5000]
+        creator = str(raw_item.get('dc:creator') or '').strip()
+        eid = str(raw_item.get('eid') or '').strip()
+        return {
+            'title': title[:512],
+            'abstract': abstract or f"Publication on {title}",
+            'year': parse_year(raw_item.get('prism:coverDate')),
+            'venue': str(raw_item.get('prism:publicationName') or '')[:255],
+            'doi': doi,
+            'pub_type': 'CONFERENCE' if 'conference' in subtype else 'JOURNAL',
+            'authors': [{'name': creator, 'orcid': None}] if creator else [],
+            'source': 'EXTERNAL',
+            'external_id': eid or doi or '',
+            'external_url': f"https://doi.org/{doi}" if doi else (
+                f"https://www.scopus.com/record/display.uri?eid={eid}" if eid else ''
+            ),
         }
 
     return None

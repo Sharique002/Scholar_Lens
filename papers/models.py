@@ -356,6 +356,7 @@ class ImportRun(models.Model):
     class Source(models.TextChoices):
         ORCID = 'ORCID', _('ORCID')
         CROSSREF = 'CROSSREF', _('Crossref')
+        SCOPUS = 'SCOPUS', _('Scopus')
 
     class Status(models.TextChoices):
         STARTED = 'STARTED', _('Started')

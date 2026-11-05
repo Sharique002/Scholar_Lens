@@ -296,13 +296,15 @@ def import_publications_view(request):
     if request.method == 'POST':
         source = request.POST.get('source', '').lower()
         query_val = request.POST.get('query', '').strip()
-        from .importers import fetch_orcid_works, fetch_crossref, import_records
+        from .importers import fetch_orcid_works, fetch_crossref, fetch_scopus, import_records
 
         try:
             if source == 'orcid':
                 raw_items = fetch_orcid_works(query_val)
             elif source == 'crossref':
                 raw_items = fetch_crossref(query_val, rows=int(request.POST.get('rows', 20)))
+            elif source == 'scopus':
+                raw_items = fetch_scopus(query_val)
             else:
                 messages.error(request, "Invalid import source specified.")
                 return redirect('papers:import_publications')
