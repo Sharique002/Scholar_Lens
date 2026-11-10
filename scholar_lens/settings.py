@@ -242,9 +242,57 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 # In serverless environments, allow WhiteNoise to serve directly from finders if collectstatic wasn't run
 WHITENOISE_USE_FINDERS = True
 
-# Media files
-MEDIA_URL = '/media/'
-MEDIA_ROOT = Path('/tmp/media') if IS_SERVERLESS else (BASE_DIR / 'media')
+# Persistent Storage (Cloudflare R2 / S3-compatible backend)
+USE_R2_STORAGE = get_bool_env('USE_R2_STORAGE', False) or get_bool_env('USE_S3_STORAGE', False)
+
+if USE_R2_STORAGE:
+    if 'storages' not in INSTALLED_APPS:
+        INSTALLED_APPS.append('storages')
+
+    AWS_ACCESS_KEY_ID = os.environ.get('R2_ACCESS_KEY_ID') or os.environ.get('AWS_ACCESS_KEY_ID', '')
+    AWS_SECRET_ACCESS_KEY = os.environ.get('R2_SECRET_ACCESS_KEY') or os.environ.get('AWS_SECRET_ACCESS_KEY', '')
+    AWS_STORAGE_BUCKET_NAME = os.environ.get('R2_BUCKET_NAME') or os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
+    AWS_S3_ENDPOINT_URL = os.environ.get('R2_ENDPOINT_URL') or os.environ.get('AWS_S3_ENDPOINT_URL', '')
+    AWS_S3_REGION_NAME = os.environ.get('R2_REGION_NAME', 'auto')
+    AWS_S3_SIGNATURE_VERSION = 's3v4'
+    AWS_DEFAULT_ACL = None
+    AWS_QUERYSTRING_AUTH = get_bool_env('AWS_QUERYSTRING_AUTH', True)
+    AWS_QUERYSTRING_EXPIRE = get_int_env('AWS_QUERYSTRING_EXPIRE', 3600)
+    AWS_S3_FILE_OVERWRITE = False
+    AWS_LOCATION = os.environ.get('R2_MEDIA_LOCATION', 'media')
+
+    r2_custom_domain = os.environ.get('R2_CUSTOM_DOMAIN') or os.environ.get('AWS_S3_CUSTOM_DOMAIN', '')
+    if r2_custom_domain:
+        AWS_S3_CUSTOM_DOMAIN = r2_custom_domain
+        MEDIA_URL = f"https://{r2_custom_domain}/{AWS_LOCATION}/"
+    elif AWS_S3_ENDPOINT_URL and AWS_STORAGE_BUCKET_NAME:
+        MEDIA_URL = f"{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/{AWS_LOCATION}/"
+    else:
+        MEDIA_URL = '/media/'
+
+    MEDIA_ROOT = Path('/tmp/media') if IS_SERVERLESS else (BASE_DIR / 'media')
+    STORAGES = {
+        "default": {
+            "BACKEND": "scholar_lens.storage.R2MediaStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        },
+    }
+    DEFAULT_FILE_STORAGE = 'scholar_lens.storage.R2MediaStorage'
+else:
+    # Media files (Local filesystem fallback for local development and offline tests)
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = Path('/tmp/media') if IS_SERVERLESS else (BASE_DIR / 'media')
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        },
+    }
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
