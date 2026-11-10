@@ -3,7 +3,7 @@ from django.conf import settings
 
 
 def site_settings(request):
-    """Make site settings, live research marquee items, and custodian counters available in all templates."""
+    """Make site settings, live research marquee items, custodian counters, and role flags available in all templates."""
     marquee_items = []
     try:
         from papers.models import ResearchPaper
@@ -47,7 +47,18 @@ def site_settings(request):
         ]
 
     pending_bookings_count = 0
+    is_office_user = False
+    is_dean_user = False
+
     if request.user.is_authenticated:
+        try:
+            from dashboard.permissions import is_office, is_dean
+            is_office_user = is_office(request.user)
+            is_dean_user = is_dean(request.user)
+        except Exception:
+            is_office_user = bool(request.user.is_staff)
+            is_dean_user = bool(request.user.is_superuser)
+
         try:
             from facilities.models import Booking
             if request.user.is_staff:
@@ -65,4 +76,6 @@ def site_settings(request):
         'AI_CONFIGURED': bool(settings.OPENAI_API_KEY),
         'marquee_items': marquee_items,
         'pending_bookings_count': pending_bookings_count,
+        'is_office': is_office_user,
+        'is_dean': is_dean_user,
     }

@@ -1,0 +1,42 @@
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Environment & Secrets (CRITICAL: Never embed secrets in images)
+.env
+.env.*
+*.env
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local databases & logs
+*.sqlite3
+db.sqlite3
+*.log
+debug.log
+
+# Node & E2E Testing artifacts (Dev-only)
+node_modules/
+cypress/
+cypress.config.js
+package.json
+package-lock.json
+
+# Local storage & artifacts
+media/
+staticfiles/
+
+# Documentation & IDE
+docs/
+.idea/
+.vscode/
+*.swp
+*.tmp

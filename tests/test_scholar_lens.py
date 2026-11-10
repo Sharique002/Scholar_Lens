@@ -234,9 +234,11 @@ class ResearchPaperModelTest(ScholarLensTestMixin, TestCase):
 
     def test_paper_ordering(self):
         """Papers should be ordered by -created_at by default."""
+        from datetime import timedelta
         paper2 = self.create_paper(self.user, title='Newer Paper')
+        ResearchPaper.objects.filter(id=paper2.id).update(created_at=self.paper.created_at + timedelta(seconds=1))
         papers = list(ResearchPaper.objects.all())
-        self.assertEqual(papers[0], paper2)
+        self.assertEqual(papers[0].id, paper2.id)
 
     def test_paper_status_choices(self):
         for status in ['UPLOADED', 'TEXT_EXTRACTED', 'INDEXED', 'AI_ANALYZED', 'EVALUATED', 'FAILED']:

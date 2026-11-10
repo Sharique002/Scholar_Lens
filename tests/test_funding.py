@@ -51,7 +51,7 @@ class FundingRegisterTests(TestCase):
             eligibility="Lab leads.",
             research_area="BIO",
             amount="Up to 50 Lakhs",
-            deadline=now + timedelta(hours=3),
+            deadline=timezone.localtime().replace(hour=23, minute=59, second=0),
             is_published=True,
             created_by=self.staff
         )

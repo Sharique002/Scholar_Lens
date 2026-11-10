@@ -9,8 +9,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500;1,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=1.7">
-    <link rel="stylesheet" href="{% static 'css/ums.css' %}?v=1.0">
+    <link rel="stylesheet" href="{% static 'css/institutional_tokens.css' %}?v=1.0">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=1.8">
+    <link rel="stylesheet" href="{% static 'css/ums.css' %}?v=1.1">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     {% block extra_head %}{% endblock %}
     {% block extra_css %}{% endblock %}
@@ -60,11 +61,18 @@
                         <a href="{% url 'researchers:edit_profile' %}" class="dropdown-item">🎓 Researcher Profile</a>
                         <a href="{% url 'dashboard:settings' %}" class="dropdown-item">⚙️ Settings</a>
                         <a href="{% url 'accounts:change_password' %}" class="dropdown-item">🔑 Change Password</a>
-                        {% if user.is_staff %}
+                        {% if is_office or is_dean or user.is_staff or user.is_superuser %}
                         <hr class="dropdown-divider">
+                        {% if is_office or user.is_staff or user.is_superuser %}
                         <a href="{% url 'dashboard:office' %}" class="dropdown-item">🏛️ Research Office</a>
                         <a href="{% url 'projects:at_risk' %}" class="dropdown-item">⚠️ At-risk Projects</a>
+                        {% endif %}
+                        {% if is_dean or user.is_superuser %}
+                        <a href="{% url 'analytics:research' %}" class="dropdown-item">📊 Institutional Analytics</a>
+                        {% endif %}
+                        {% if user.is_staff or user.is_superuser %}
                         <a href="{% url 'admin:index' %}" class="dropdown-item">🛡️ Admin Panel</a>
+                        {% endif %}
                         {% endif %}
                         <hr class="dropdown-divider">
                         <a href="{% url 'accounts:logout' %}" class="dropdown-item text-danger">🚪 Logout</a>
@@ -105,7 +113,7 @@
                 <a href="{% url 'facilities:list' %}" class="ums-nav-link{% if request.resolver_match.app_name == 'facilities' %} is-active{% endif %}" title="Facilities" aria-label="Facilities"><span class="ums-nav-icon" aria-hidden="true">🏛</span><span class="ums-nav-label">Facilities</span></a>
                 <a href="{% url 'funding:list' %}" class="ums-nav-link{% if request.resolver_match.app_name == 'funding' %} is-active{% endif %}" title="Funding" aria-label="Funding"><span class="ums-nav-icon" aria-hidden="true">💰</span><span class="ums-nav-label">Funding</span></a>
                 <a href="{% url 'search:search' %}" class="ums-nav-link{% if request.resolver_match.app_name == 'search' %} is-active{% endif %}" title="Search" aria-label="Search"><span class="ums-nav-icon" aria-hidden="true">🔎</span><span class="ums-nav-label">Search</span></a>
-                {% if user.is_staff or user.is_superuser or 'dean' in user.username.lower %}
+                {% if is_office or is_dean or user.is_staff or user.is_superuser %}
                 <a href="{% url 'analytics:research' %}" class="ums-nav-link{% if request.resolver_match.app_name == 'analytics' %} is-active{% endif %}" title="Reports" aria-label="Reports"><span class="ums-nav-icon" aria-hidden="true">📊</span><span class="ums-nav-label">Reports</span></a>
                 {% endif %}
             </nav>
@@ -161,7 +169,8 @@
         </div>
     </footer>
 
-    <script src="{% static 'js/main.js' %}?v=1.1"></script>
+    <script src="{% static 'js/api_client.js' %}?v=1.0"></script>
+    <script src="{% static 'js/main.js' %}?v=1.2"></script>
     <script src="{% static 'js/charts.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>

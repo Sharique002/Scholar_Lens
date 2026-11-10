@@ -2,28 +2,34 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
+    container_name: scholar_lens_db
+    restart: unless-stopped
     environment:
       POSTGRES_DB: scholar_lens
       POSTGRES_USER: scholar_lens
-      POSTGRES_PASSWORD: scholar_lens
+      POSTGRES_PASSWORD: scholar_lens_dev_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U scholar_lens"]
+      test: ["CMD-SHELL", "pg_isready -U scholar_lens -d scholar_lens"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   web:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: scholar_lens_web
+    restart: unless-stopped
     command: >
-      sh -c "python manage.py migrate &&
-             gunicorn scholar_lens.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120"
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py init_admin &&
+             exec gunicorn scholar_lens.wsgi:application --bind 0.0.0.0:8000 --workers 3 --threads 2 --timeout 120"
     volumes:
-      - .:/app
       - media_data:/app/media
     ports:
       - "8000:8000"
@@ -31,15 +37,16 @@ services:
       db:
         condition: service_healthy
     environment:
-      - SECRET_KEY=docker-dev-secret-key-change-in-production
+      - SECRET_KEY=docker-compose-local-dev-key-not-for-production
       - DEBUG=True
       - USE_POSTGRES=True
       - DB_NAME=scholar_lens
       - DB_USER=scholar_lens
-      - DB_PASSWORD=scholar_lens
+      - DB_PASSWORD=scholar_lens_dev_password
       - DB_HOST=db
       - DB_PORT=5432
-      - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
+      - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,web
+      - CSRF_TRUSTED_ORIGINS=http://localhost:8000,http://127.0.0.1:8000
     env_file:
       - .env
 
