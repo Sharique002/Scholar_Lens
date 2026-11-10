@@ -22,10 +22,10 @@ Authoritative query of workflow runs on `origin`:
 
 | Run ID | Commit SHA | Event | Branch | Workflow Name | Status | Conclusion |
 |---|---|---|---|---|---|---|
-| **`42880978698`** | `e0398f5` | `push` | `p08_system_stabilization` | Scholar Lens CI/CD Pipeline & Quality Gates | **in_progress** | Active Run |
+| **`42881937685`** | `79ce83d` | `push` | `p08_system_stabilization` | Scholar Lens CI/CD Pipeline & Quality Gates | **in_progress** | Active Run (Gates 1-5 Passed) |
+| **`42880978698`** | `e0398f5` | `push` | `p08_system_stabilization` | Scholar Lens CI/CD Pipeline & Quality Gates | completed | failure (Diagnosed & Fixed) |
 | **`42866673565`** | `4815e74` | `push` | `p08_system_stabilization` | Scholar Lens CI/CD Pipeline & Quality Gates | **completed** | **SUCCESS (100%)** |
 | **`42864781179`** | `d747a73` | `push` | `p08_system_stabilization` | Scholar Lens CI/CD Pipeline & Quality Gates | **completed** | **SUCCESS (100%)** |
-| **`42863680339`** | `6665375` | `push` | `p08_system_stabilization` | Scholar Lens CI/CD Pipeline & Quality Gates | completed | cancelled (superseded) |
 
 ---
 
