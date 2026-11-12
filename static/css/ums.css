@@ -71,19 +71,43 @@ html, body.ums-body {
 
 /* 2. Professional Institutional Button Architecture */
 
-/* Universal Base Button */
-.btn {
+/* Universal Base Button (Applied to all .btn classes, button tags, and button links) */
+.btn,
+button.btn-primary,
+button.btn-secondary,
+a.btn-primary,
+a.btn-secondary,
+.btn-primary,
+.btn-secondary,
+.btn-maroon,
+.btn-pill-primary,
+.btn-pill-dark,
+.btn-pill-white,
+.btn-pill-yellow,
+.btn-outline,
+.btn-outline-primary,
+.btn-outline-secondary,
+.btn-outline-dark,
+.btn-outline-success,
+.btn-outline-danger,
+.btn-outline-warning,
+.btn-success,
+.btn-danger,
+.btn-warning,
+.btn-info,
+.module-hero-btn,
+.back-nav-btn {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
     gap: 8px !important;
     font-family: 'Plus Jakarta Sans', var(--font-body, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif) !important;
-    font-size: 14px !important;
+    font-size: 13.5px !important;
     font-weight: 600 !important;
-    line-height: 1.4 !important;
+    line-height: 1.2 !important;
     letter-spacing: -0.01em !important;
     padding: 7px 16px !important;
-    min-height: 38px;
+    min-height: 36px;
     border-radius: var(--radius-sm) !important;
     border: 1px solid transparent;
     cursor: pointer !important;
@@ -94,28 +118,86 @@ html, body.ums-body {
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
 }
 
-.btn:hover {
+.btn:hover,
+.btn-primary:hover,
+.btn-secondary:hover,
+.btn-maroon:hover,
+.btn-pill-primary:hover,
+.btn-pill-dark:hover,
+.btn-pill-white:hover,
+.btn-pill-yellow:hover,
+.btn-outline:hover,
+.btn-outline-primary:hover,
+.btn-outline-secondary:hover,
+.btn-outline-dark:hover,
+.btn-outline-success:hover,
+.btn-outline-danger:hover,
+.btn-outline-warning:hover,
+.btn-success:hover,
+.btn-danger:hover,
+.btn-warning:hover,
+.btn-info:hover,
+.module-hero-btn:hover,
+.back-nav-btn:hover {
     transform: translateY(-1px) !important;
     box-shadow: 0 3px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.06) !important;
 }
 
-.btn:active {
+.btn:active,
+.btn-primary:active,
+.btn-secondary:active,
+.btn-maroon:active,
+.btn-pill-primary:active,
+.btn-pill-dark:active,
+.btn-pill-white:active,
+.btn-pill-yellow:active,
+.btn-outline:active,
+.btn-outline-primary:active,
+.btn-outline-secondary:active,
+.btn-outline-dark:active,
+.btn-outline-success:active,
+.btn-outline-danger:active,
+.btn-outline-warning:active,
+.btn-success:active,
+.btn-danger:active,
+.btn-warning:active,
+.btn-info:active,
+.module-hero-btn:active,
+.back-nav-btn:active {
     transform: translateY(1px) scale(0.985) !important;
     box-shadow: 0 1px 1px rgba(15, 23, 42, 0.04) !important;
 }
 
-.btn:focus-visible {
+.btn:focus-visible,
+.back-nav-btn:focus-visible {
     outline: 2px solid var(--primary) !important;
     outline-offset: 2px !important;
 }
 
 .btn:disabled,
-.btn.disabled {
-    opacity: 0.6 !important;
+.btn.disabled,
+button[disabled] {
+    opacity: 0.55 !important;
     cursor: not-allowed !important;
     pointer-events: none !important;
     transform: none !important;
     box-shadow: none !important;
+}
+
+/* Icon Micro-Transitions inside buttons */
+.btn svg,
+.btn i,
+.btn-primary svg,
+.btn-primary i,
+.btn-secondary svg,
+.btn-secondary i,
+.btn-pill-primary svg,
+.btn-pill-white svg,
+.btn-outline-secondary svg,
+.module-hero-btn svg,
+.back-nav-btn svg {
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    flex-shrink: 0 !important;
 }
 
 /* Primary Action Buttons (Institutional Maroon) */
@@ -178,10 +260,10 @@ html, body.ums-body {
 /* Outline Buttons */
 .btn-outline,
 .btn-outline-primary {
-    background: transparent !important;
+    background: #FFFFFF !important;
     color: var(--primary) !important;
     border: 1.5px solid var(--primary) !important;
-    box-shadow: none !important;
+    box-shadow: 0 1px 2px rgba(155, 35, 53, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
 }
 
 .btn-outline:hover,
@@ -189,13 +271,14 @@ html, body.ums-body {
     background: var(--primary-light) !important;
     color: var(--primary-dark) !important;
     border-color: var(--primary-dark) !important;
+    box-shadow: 0 2px 5px rgba(155, 35, 53, 0.15) !important;
 }
 
 .btn-outline-secondary {
     background: #FFFFFF !important;
     color: #475569 !important;
     border: 1px solid #CBD5E1 !important;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
 }
 
 .btn-outline-secondary:hover {
@@ -209,7 +292,7 @@ html, body.ums-body {
     background: #FFFFFF !important;
     color: #1E293B !important;
     border: 1px solid #CBD5E1 !important;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
 }
 
 .btn-outline-dark:hover {
@@ -251,7 +334,7 @@ html, body.ums-body {
 
 /* Button Sizing Variations */
 .btn-sm {
-    padding: 4px 10px !important;
+    padding: 4px 11px !important;
     font-size: 12.5px !important;
     min-height: 30px !important;
     height: 30px;
