@@ -4,10 +4,14 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import UserProfile
 
 class RegistrationForm(UserCreationForm):
+    PUBLIC_ROLE_CHOICES = (
+        ('STUDENT', 'Student'),
+        ('FACULTY', 'Faculty'),
+    )
     email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={'class': 'form-control'}))
     first_name = forms.CharField(required=True, max_length=30, widget=forms.TextInput(attrs={'class': 'form-control'}))
     last_name = forms.CharField(required=True, max_length=30, widget=forms.TextInput(attrs={'class': 'form-control'}))
-    role = forms.ChoiceField(choices=UserProfile.ROLE_CHOICES, required=True, widget=forms.Select(attrs={'class': 'form-control'}))
+    role = forms.ChoiceField(choices=PUBLIC_ROLE_CHOICES, required=True, widget=forms.Select(attrs={'class': 'form-control'}))
     institution = forms.CharField(required=False, max_length=255, widget=forms.TextInput(attrs={'class': 'form-control'}))
 
     class Meta(UserCreationForm.Meta):
