@@ -150,28 +150,52 @@ html, body.ums-body {
 }
 
 .ums-header-inner {
+    position: relative;
     height: 100%;
     max-width: 1440px;
     margin: 0 auto;
     padding: 0 20px;
 }
 
+.ums-header-left {
+    z-index: 2;
+}
+
 .ums-header-center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    gap: 16px;
-    flex: 1;
+    pointer-events: none;
+    z-index: 1;
 }
 
 .portal-institutional-title {
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.03em;
     text-transform: uppercase;
     color: var(--primary);
     white-space: nowrap;
+    text-align: center;
+}
+
+.ums-header-right {
+    z-index: 2;
+    gap: 8px;
+}
+
+.ums-user-name {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    vertical-align: middle;
 }
 
 .ums-brand {
@@ -201,7 +225,13 @@ html, body.ums-body {
     border: 1px solid var(--border-dark);
     border-radius: var(--radius-sm);
     padding: 2px 8px;
-    width: 320px;
+    width: 135px;
+    transition: width 0.2s ease, border-color 0.2s ease;
+}
+
+.ums-header-search:focus-within {
+    width: 190px;
+    border-color: var(--primary);
 }
 
 .ums-header-search input {
@@ -544,11 +574,26 @@ main.ums-main--full {
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 991px) {
     .ums-header-search {
-        display: none;
+        width: 110px;
     }
+    .portal-institutional-title {
+        font-size: 0.70rem;
+        letter-spacing: 0.02em;
+    }
+}
 
+@media (max-width: 768px) {
+    .ums-header-search {
+        display: none !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .portal-institutional-title {
+        display: none !important;
+    }
     .ums-header-inner {
         padding: 0 12px;
     }
