@@ -333,6 +333,8 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = MAX_UPLOAD_SIZE
 DATA_UPLOAD_MAX_MEMORY_SIZE = MAX_UPLOAD_SIZE
 
 # AI Configuration
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
+GEMINI_MODEL = get_str_env('GEMINI_MODEL', 'gemini-1.5-flash')
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
 OPENAI_MODEL = get_str_env('OPENAI_MODEL', 'gpt-4o-mini')
 OPENAI_EMBEDDING_MODEL = get_str_env('OPENAI_EMBEDDING_MODEL', 'text-embedding-3-small')

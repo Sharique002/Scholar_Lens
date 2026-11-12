@@ -25,8 +25,6 @@ def paper_summary(request, paper_id):
                 )
             except Exception:
                 pass
-        except AIServiceNotConfigured:
-            error = "AI service not configured. Please set the API key."
         except Exception as e:
             error = str(e)
             
@@ -62,8 +60,6 @@ def paper_gaps(request, paper_id):
                 )
             except Exception:
                 pass
-        except AIServiceNotConfigured:
-            error = "AI service not configured. Please set the API key."
         except Exception as e:
             error = str(e)
             
@@ -83,12 +79,9 @@ def ask_paper(request, paper_id):
     error = None
     
     if request.method == 'POST':
-        question = request.POST.get('question')
+        question = request.POST.get('question', '').strip()
         if question:
             try:
-                ai = AIService()
-                if not ai.is_configured:
-                    raise AIServiceNotConfigured("AI service not configured. Please set the API key.")
                 answerer = ResearchQuestionAnswerer()
                 answerer.answer_question(paper, question, request.user)
                 try:
@@ -101,9 +94,6 @@ def ask_paper(request, paper_id):
                     )
                 except Exception:
                     pass
-                return redirect('ai_engine:ask_paper', paper_id=paper.id)
-            except AIServiceNotConfigured:
-                error = "AI service not configured. Please set the API key."
             except Exception as e:
                 error = str(e)
 

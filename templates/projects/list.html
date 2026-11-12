@@ -107,40 +107,54 @@
     </div>
 
     <!-- 3. WORKING INTERFACE: SEARCH, FILTERS & PROJECTS DIRECTORY -->
-    <div class="module-work-header">
+    <div class="module-work-header mb-4">
         <div>
             <h2 class="module-work-title">Active Research Projects</h2>
             <p class="text-secondary mb-0">Explore cross-institutional lab initiatives or launch your own research workspace.</p>
         </div>
-        <a href="{% url 'projects:create' %}" class="btn btn-pill-dark">
-            + Create New Project
-        </a>
+        <div class="d-flex gap-2">
+            <a href="{% url 'projects:create' %}" class="btn btn-pill-dark">
+                + Create New Project
+            </a>
+        </div>
     </div>
 
-    <!-- Filter Bar -->
-    <div class="module-filter-bar">
-        <form method="GET" action="{% url 'projects:list' %}" class="row g-3 align-items-center">
-            <div class="col-md-5">
-                <input type="text" name="q" value="{{ query }}" class="form-control retro-input w-100" placeholder="Search projects by title or description...">
+    <!-- Professional Institutional Filter Bar -->
+    <div class="module-filter-bar mb-4 p-4" style="background: #FFFFFF; border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-sm);">
+        <form method="GET" action="{% url 'projects:list' %}" class="row g-4 align-items-end">
+            <div class="col-lg-4 col-md-6">
+                <label class="form-label small fw-bold text-muted mb-2">Project Keywords or Title</label>
+                <div class="position-relative">
+                    <input type="text" name="q" value="{{ query }}" class="form-control" style="border-radius: 8px; padding: 0.65rem 1rem; border: 1px solid var(--border-dark); font-size: 0.925rem;" placeholder="Search projects by title, scope, or methodology...">
+                </div>
             </div>
-            <div class="col-md-3">
-                <select name="status" class="form-select retro-input w-100">
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label small fw-bold text-muted mb-2">Lifecycle Status</label>
+                <select name="status" class="form-select" style="border-radius: 8px; padding: 0.65rem 1rem; border: 1px solid var(--border-dark); font-size: 0.925rem;">
                     <option value="">All Project Statuses</option>
                     {% for code, label in status_choices %}
                     <option value="{{ code }}" {% if status == code %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-3">
-                <select name="area" class="form-select retro-input w-100">
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label small fw-bold text-muted mb-2">Research Discipline</label>
+                <select name="area" class="form-select" style="border-radius: 8px; padding: 0.65rem 1rem; border: 1px solid var(--border-dark); font-size: 0.925rem;">
                     <option value="">All Research Disciplines</option>
                     {% for code, label in area_choices %}
                     <option value="{{ code }}" {% if area == code %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-1">
-                <button type="submit" class="btn btn-pill-yellow w-100">Filter</button>
+            <div class="col-lg-2 col-md-6 d-flex gap-2">
+                <button type="submit" class="btn btn-pill-yellow flex-fill" style="padding: 0.65rem 1rem; font-weight: 700;">
+                    Filter
+                </button>
+                {% if query or status or area %}
+                <a href="{% url 'projects:list' %}" class="btn btn-pill-white" style="padding: 0.65rem 0.85rem;" title="Reset filters">
+                    ✕
+                </a>
+                {% endif %}
             </div>
         </form>
     </div>

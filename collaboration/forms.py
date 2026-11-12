@@ -7,8 +7,8 @@ class CollaborationRequestForm(forms.ModelForm):
         fields = ['receiver', 'project', 'message']
         widgets = {
             'receiver': forms.HiddenInput(),
-            'project': forms.Select(attrs={'class': 'form-control'}),
-            'message': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Write your message here...'}),
+            'project': forms.Select(attrs={'class': 'form-select', 'style': 'border-radius: 8px;'}),
+            'message': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Describe your proposed research partnership, shared objectives, and expected contribution...', 'style': 'border-radius: 8px;'}),
         }
 
     def __init__(self, *args, **kwargs):

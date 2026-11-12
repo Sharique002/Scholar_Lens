@@ -156,6 +156,24 @@ html, body.ums-body {
     padding: 0 20px;
 }
 
+.ums-header-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 16px;
+    flex: 1;
+}
+
+.portal-institutional-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--primary);
+    white-space: nowrap;
+}
+
 .ums-brand {
     display: flex;
     align-items: center;
@@ -314,11 +332,11 @@ html, body.ums-body {
     position: relative;
 }
 
-/* White Left Sidebar */
+/* Institutional Left Sidebar */
 aside.ums-sidebar {
-    width: 232px;
+    width: 240px;
     background-color: #FFFFFF;
-    border-right: 1px solid var(--border-dark);
+    border-right: 1px solid var(--border);
     position: fixed;
     top: 88px;
     bottom: 0;
@@ -327,13 +345,14 @@ aside.ums-sidebar {
     transition: width 150ms ease;
     overflow-y: auto;
     overflow-x: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .ums-sidebar-collapse {
     width: 100%;
     background: transparent;
     border: none;
-    border-bottom: 1px solid var(--border-dark);
+    border-bottom: 1px solid var(--border-light);
     padding: 8px 16px;
     text-align: right;
     cursor: pointer;
@@ -347,10 +366,19 @@ aside.ums-sidebar {
     color: var(--primary);
 }
 
+.ums-sidebar-heading {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    padding: 14px 18px 6px 18px;
+}
+
 .ums-sidebar-nav {
     display: flex;
     flex-direction: column;
-    padding: 8px 0;
+    padding: 4px 0 16px 0;
 }
 
 .ums-nav-link {
@@ -358,32 +386,39 @@ aside.ums-sidebar {
     align-items: center;
     gap: 12px;
     padding: 0 16px;
-    min-height: 44px;
+    margin: 2px 10px;
+    border-radius: 6px;
+    min-height: 40px;
     color: var(--text-primary);
     text-decoration: none;
-    font-size: 15px;
-    font-weight: 500;
-    border-left: 3px solid transparent;
-    transition: background-color 0.15s ease, color 0.15s ease;
+    font-size: 14px;
+    font-weight: 600;
+    border-left: none;
+    transition: all 0.15s ease;
 }
 
 .ums-nav-link:hover {
-    background-color: var(--canvas-bg);
+    background-color: #F8FAFC;
     color: var(--primary);
 }
 
 .ums-nav-link.is-active {
     background-color: var(--primary-light);
     color: var(--primary);
-    border-left: 3px solid var(--primary);
     font-weight: 700;
 }
 
 .ums-nav-icon {
-    font-size: 1.15rem;
-    min-width: 24px;
+    min-width: 20px;
     display: inline-flex;
+    align-items: center;
     justify-content: center;
+    color: var(--text-secondary);
+}
+
+.ums-nav-link.is-active .ums-nav-icon,
+.ums-nav-link:hover .ums-nav-icon {
+    color: var(--primary);
 }
 
 .ums-nav-label {
@@ -428,7 +463,7 @@ main.ums-main--full {
     max-width: 100%;
 }
 
-/* Breadcrumbs */
+/* Breadcrumbs & Universal Back Button */
 .ums-breadcrumb {
     font-size: 14px;
     margin-bottom: 20px;
@@ -449,6 +484,30 @@ main.ums-main--full {
 .ums-breadcrumb-current {
     color: var(--text-primary);
     font-weight: 600;
+}
+
+.back-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background-color: #FFFFFF;
+    border: 1px solid var(--border-dark);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.back-nav-btn:hover {
+    background-color: var(--canvas-bg);
+    color: var(--primary);
+    border-color: var(--primary);
+    text-decoration: none;
 }
 
 /* Clean Institutional Footer */

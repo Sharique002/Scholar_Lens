@@ -13,6 +13,41 @@ from papers.models import ResearchPaper, PaperAuthor
 
 @login_required
 def collaboration_list(request):
+    if request.method == 'POST' and 'quick_send' in request.POST:
+        receiver_id = request.POST.get('receiver')
+        if not receiver_id:
+            messages.error(request, "Please select a researcher to collaborate with.")
+            return redirect('collaboration:list')
+        receiver = get_object_or_404(User, pk=receiver_id)
+        if receiver == request.user:
+            messages.error(request, "You cannot send a collaboration request to yourself.")
+            return redirect('collaboration:list')
+        existing_pending = CollaborationRequest.objects.filter(
+            sender=request.user, receiver=receiver, status='PENDING'
+        ).first()
+        if existing_pending:
+            messages.warning(request, f"You already have a pending collaboration request to {receiver.username}.")
+            return redirect('collaboration:list')
+        form = CollaborationRequestForm(request.POST, user=request.user)
+        if form.is_valid():
+            collab_req = form.save(commit=False)
+            collab_req.sender = request.user
+            collab_req.receiver = receiver
+            collab_req.save()
+            try:
+                from dashboard.models import ResearchActivity
+                ResearchActivity.objects.create(
+                    user=request.user,
+                    activity_type='COLLABORATION',
+                    description=f"Sent collaboration request to {receiver.username}"
+                )
+            except Exception:
+                pass
+            messages.success(request, f'Collaboration request sent to {receiver.get_full_name() or receiver.username} successfully.')
+            return redirect('collaboration:list')
+        else:
+            messages.error(request, 'Please check your inputs and try again.')
+
     sent_requests = CollaborationRequest.objects.filter(sender=request.user)
     received_requests = CollaborationRequest.objects.filter(receiver=request.user)
     
@@ -21,10 +56,15 @@ def collaboration_list(request):
         sent_requests = sent_requests.filter(status=status_filter)
         received_requests = received_requests.filter(status=status_filter)
         
+    quick_form = CollaborationRequestForm(user=request.user)
+    available_researchers = User.objects.exclude(id=request.user.id).select_related('profile')
+
     return render(request, 'collaboration/list.html', {
         'sent_requests': sent_requests,
         'received_requests': received_requests,
         'status_filter': status_filter,
+        'quick_form': quick_form,
+        'available_researchers': available_researchers,
     })
 
 

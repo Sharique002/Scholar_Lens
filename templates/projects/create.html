@@ -1,36 +1,55 @@
 {% extends 'base.html' %}
 
-{% block title %}Create Project{% endblock %}
+{% block title %}Create Research Project — Scholar Lens{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Create Research Project</h4>
+        <div class="col-lg-8 col-md-10">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="h3 fw-bold mb-1">Create Research Project</h2>
+                    <p class="text-secondary small mb-0">Initialize a new research workspace, define objectives, and collaborate with peers.</p>
                 </div>
-                <div class="card-body">
+                <a href="{% url 'projects:list' %}" class="btn btn-sm btn-outline-secondary">
+                    ← Back to Projects
+                </a>
+            </div>
+
+            <div class="card shadow-sm border" style="border-radius: 12px; border-color: var(--border);">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <span class="small fw-bold text-muted text-uppercase">Project Configuration</span>
+                </div>
+                <div class="card-body p-4 p-md-5">
                     <form method="post">
                         {% csrf_token %}
-                        {{ form.non_field_errors }}
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger mb-4">
+                            {% for error in form.non_field_errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                         
                         {% for field in form %}
-                        <div class="mb-3">
-                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold text-dark mb-2" for="{{ field.id_for_label }}">
+                                {{ field.label }}
+                                {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                            </label>
                             {{ field }}
                             {% if field.help_text %}
-                            <small class="form-text text-muted">{{ field.help_text }}</small>
+                            <small class="form-text text-muted d-block mt-1">{{ field.help_text }}</small>
                             {% endif %}
                             {% for error in field.errors %}
-                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            <div class="invalid-feedback d-block mt-1">{{ error }}</div>
                             {% endfor %}
                         </div>
                         {% endfor %}
                         
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Create Project</button>
-                            <a href="{% url 'projects:list' %}" class="btn btn-secondary">Cancel</a>
+                        <div class="d-flex justify-content-end gap-3 pt-3 border-top mt-4">
+                            <a href="{% url 'projects:list' %}" class="btn btn-pill-white px-4">Cancel</a>
+                            <button type="submit" class="btn btn-pill-dark px-4 fw-bold">Create Project Workspace</button>
                         </div>
                     </form>
                 </div>

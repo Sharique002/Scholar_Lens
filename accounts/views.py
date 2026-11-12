@@ -93,9 +93,10 @@ def profile_view(request):
 
 @login_required
 def edit_profile_view(request):
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
     if request.method == 'POST':
         u_form = UserUpdateForm(request.POST, instance=request.user)
-        p_form = UserProfileForm(request.POST, request.FILES, instance=request.user.profile)
+        p_form = UserProfileForm(request.POST, request.FILES, instance=profile)
         
         if u_form.is_valid() and p_form.is_valid():
             u_form.save()
@@ -106,7 +107,7 @@ def edit_profile_view(request):
             messages.error(request, "Please correct the errors below.")
     else:
         u_form = UserUpdateForm(instance=request.user)
-        p_form = UserProfileForm(instance=request.user.profile)
+        p_form = UserProfileForm(instance=profile)
         
     context = {
         'u_form': u_form,

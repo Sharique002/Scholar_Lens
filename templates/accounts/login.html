@@ -207,9 +207,10 @@
 </div>
 
 <script>
-function autofillLogin(username, password) {
+function autofillLogin(username, password, autoSubmit = true) {
     const userInput = document.querySelector('input[name="username"]');
     const passInput = document.querySelector('input[name="password"]');
+    const form = document.getElementById('loginForm');
     if (userInput && passInput) {
         userInput.value = username;
         passInput.value = password;
@@ -217,10 +218,18 @@ function autofillLogin(username, password) {
         // Highlight form inputs briefly
         userInput.style.backgroundColor = '#FEF08A';
         passInput.style.backgroundColor = '#FEF08A';
-        setTimeout(() => {
-            userInput.style.backgroundColor = '';
-            passInput.style.backgroundColor = '';
-        }, 600);
+        
+        if (autoSubmit && form) {
+            setTimeout(() => {
+                form.submit();
+            }, 300);
+        } else {
+            setTimeout(() => {
+                userInput.style.backgroundColor = '';
+                passInput.style.backgroundColor = '';
+            }, 600);
+            form.scrollIntoView({ behavior: 'smooth' });
+        }
     }
 }
 </script>
