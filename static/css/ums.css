@@ -1495,3 +1495,110 @@ ul.helptext li {
 .auth-footer a:hover {
     text-decoration: underline;
 }
+
+/* ==========================================================================
+   SCHOLAR LENS — INSTITUTIONAL PAGINATION SYSTEM
+   ========================================================================== */
+
+nav[aria-label*="navigation" i],
+nav[aria-label*="pagination" i],
+nav[aria-label*="pages" i],
+.pagination-nav {
+    display: flex !important;
+    justify-content: center !important;
+    width: 100% !important;
+    margin: 2.5rem 0 1.5rem 0 !important;
+}
+
+ul.pagination,
+.pagination {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    gap: 6px !important;
+    flex-wrap: wrap !important;
+}
+
+li.page-item,
+.page-item {
+    display: inline-flex !important;
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+li.page-item::marker,
+.pagination li::marker {
+    display: none !important;
+    content: '' !important;
+}
+
+.page-link,
+a.page-link,
+span.page-link {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 38px;
+    height: 38px;
+    padding: 0 14px;
+    font-family: 'Plus Jakarta Sans', var(--font-body, -apple-system, sans-serif);
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #334155 !important;
+    background-color: #FFFFFF !important;
+    border: 1.5px solid #CBD5E1 !important;
+    border-radius: 8px !important;
+    text-decoration: none !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    transition: all 0.15s ease;
+    user-select: none;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+a.page-link:hover {
+    background-color: #F8FAFC !important;
+    border-color: #94A3B8 !important;
+    color: #0F172A !important;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.06);
+    text-decoration: none !important;
+}
+
+a.page-link:active {
+    transform: translateY(0);
+}
+
+/* Active page number (Current Page) */
+li.page-item.active .page-link,
+.page-item.active span.page-link,
+.page-item.active a.page-link,
+.page-link.active {
+    background-color: #9B2335 !important;
+    border-color: #831D2C !important;
+    color: #FFFFFF !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 6px rgba(155, 35, 53, 0.25) !important;
+    cursor: default !important;
+    pointer-events: none;
+    transform: none !important;
+}
+
+/* Disabled state (Previous on first page, Next on last page) */
+li.page-item.disabled .page-link,
+.page-item.disabled span.page-link,
+.page-item.disabled a.page-link,
+.page-link.disabled {
+    background-color: #F8FAFC !important;
+    border-color: #E2E8F0 !important;
+    color: #94A3B8 !important;
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+}

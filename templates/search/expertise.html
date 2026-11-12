@@ -197,10 +197,10 @@
 
             <!-- Pagination -->
             {% if page_obj.has_other_pages %}
-            <nav class="mt-4" aria-label="Expertise pagination">
+            <nav class="pagination-nav mt-4" aria-label="Expertise pagination">
                 <ul class="pagination justify-content-center">
                     {% if page_obj.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_dept %}&department={{ selected_dept }}{% endif %}{% if selected_avail %}&availability={{ selected_avail }}{% endif %}{% if selected_interest %}&interest={{ selected_interest }}{% endif %}">Previous</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_dept %}&department={{ selected_dept }}{% endif %}{% if selected_avail %}&availability={{ selected_avail }}{% endif %}{% if selected_interest %}&interest={{ selected_interest }}{% endif %}">‹ Previous</a></li>
                     {% endif %}
                     
                     {% for num in page_obj.paginator.page_range %}
@@ -212,7 +212,7 @@
                     {% endfor %}
                     
                     {% if page_obj.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_dept %}&department={{ selected_dept }}{% endif %}{% if selected_avail %}&availability={{ selected_avail }}{% endif %}{% if selected_interest %}&interest={{ selected_interest }}{% endif %}">Next</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_dept %}&department={{ selected_dept }}{% endif %}{% if selected_avail %}&availability={{ selected_avail }}{% endif %}{% if selected_interest %}&interest={{ selected_interest }}{% endif %}">Next ›</a></li>
                     {% endif %}
                 </ul>
             </nav>
