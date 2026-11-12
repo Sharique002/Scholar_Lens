@@ -31,16 +31,17 @@ This document provides independent, evidence-based verification of the Git repos
 
 ## 3. Commit Lineage & Ancestry Inspection
 
-The complete linear ancestry between `origin/main` and `origin/p08_system_stabilization` comprises exactly 7 commits:
+The complete linear ancestry between `origin/main` (`8442704fe39c126dafb301d1c97c16945aee600c`) and `origin/p08_system_stabilization` comprises exactly 8 commits (reconciled in Stage 7.2.2):
 
 ```text
-dc96fcd (HEAD -> p08_system_stabilization, origin/p08_system_stabilization) docs(stage7.2): update GitHub Actions telemetry with live run 42881937685
+c3216bc (HEAD -> p08_system_stabilization, origin/p08_system_stabilization) docs(stage7.2.1): final R2 integration verification, CI acceptance evidence, security audit, and regression report
+dc96fcd docs(stage7.2): update GitHub Actions telemetry with live run 42881937685
 79ce83d docs(stage7.2): persistent storage implementation, local verification evidence, and GitHub Actions telemetry
 e0398f5 feat(storage): Cloudflare R2 persistent storage integration, remote stream fallback, and automated test suite
 4815e74 docs(stage7.1.1): post-push verification, CI/CD telemetry, GCP IAM audit and preflight
 d747a73 docs(stage7): GCP free-tier deployment architecture, cost analysis, container optimization, and production readiness audit
 6665375 feat(deploy): GCP Cloud Run deployment configuration, CI/CD quality gates, and staging release baseline
-1e6e08d (origin/main, main) feat(p08): JSON API, Scopus import, booking calendar export, opening and suggestion alerts
+1e6e08d feat(p08): JSON API, Scopus import, booking calendar export, opening and suggestion alerts
 ```
 
 ---
