@@ -1,82 +1,88 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Register - Scholar Lens{% endblock %}
+{% block title %}Register - Scholar Lens Academic Network{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
+<div class="auth-container">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
 
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="card-title mb-0">Create an Account</h3>
-                </div>
-                <div class="card-body">
-                    {% if form.non_field_errors %}
-                        <div class="alert alert-danger">
-                            {% for error in form.non_field_errors %}
-                                {{ error }}
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-brand-emblem">
+                <svg width="30" height="30" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M2.3158 41.1053C8.10527 16.7895 28.9474 0 54.4211 0C75.2632 0 93.7895 11 103.632 28.3684H81.6316L72.9474 20.2632H43.4211V41.1053H2.3158Z" fill="#142D3C"/>
+                    <path d="M106.526 36.4737C108.842 42.2632 110 48.0526 110 54.421C110 78.7368 93.7895 100.158 70.6316 107.105V84.5263L87.4211 67.7368V56.1579H51.5263V36.4737H106.526Z" fill="#142D3C"/>
+                    <path d="M0.578947 49.2105H22V68.8947L38.2105 85.1053H42.8421V64.2632H62.5263V108.842C60.2105 109.421 57.3158 109.421 55 109.421C24.8947 109.421 0 85.1053 0 55C0 53.2632 0 50.9474 0.578947 49.2105Z" fill="#142D3C"/>
+                </svg>
+            </div>
+            <div>
+                <span class="auth-tag-pill">SCHOLAR LENS PORTAL</span>
+            </div>
+            <h1 class="auth-title">Create Your Account</h1>
+            <p class="auth-subtitle">Join the institutional research intelligence and collaboration network</p>
+        </div>
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger" style="border: 1px solid #FCA5A5; border-radius: 8px; font-weight: 600; margin-bottom: 1.5rem;">
+                {% for error in form.non_field_errors %}
+                    <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'accounts:register' %}">
+            {% csrf_token %}
+            
+            {% for field in form %}
+                <div class="auth-form-group">
+                    <label for="{{ field.id_for_label }}" class="auth-label">
+                        {{ field.label }} {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                    </label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <div class="auth-help-box">
+                            {{ field.help_text|safe }}
+                        </div>
+                    {% endif %}
+                    {% if field.errors %}
+                        <div class="invalid-feedback d-block text-danger mt-1" style="font-size: 0.8rem; font-weight: 600;">
+                            {% for error in field.errors %}
+                                <div>{{ error }}</div>
                             {% endfor %}
                         </div>
                     {% endif %}
-
-                    <form method="post" action="{% url 'accounts:register' %}">
-                        {% csrf_token %}
-                        
-                        {% for field in form %}
-                            <div class="form-group mb-3">
-                                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                                {{ field }}
-                                {% if field.help_text %}
-                                    <small class="form-text text-muted">{{ field.help_text }}</small>
-                                {% endif %}
-                                {% if field.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {% for error in field.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        {% endfor %}
-
-                        <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-primary">Register</button>
-                        </div>
-                    </form>
-
-                    <div class="my-3 text-center">
-                        <div class="d-flex align-items-center my-3">
-                            <hr class="flex-grow-1 border-secondary opacity-25">
-                            <span class="px-3 text-muted small fw-bold">OR</span>
-                            <hr class="flex-grow-1 border-secondary opacity-25">
-                        </div>
-                        <a href="{% url 'accounts:google_login' %}" 
-                           class="btn btn-outline-dark w-100 py-2 d-flex align-items-center justify-content-center gap-2 fw-semibold shadow-sm text-dark bg-white" 
-                           style="border: 1.5px solid #dadce0; border-radius: 8px; font-size: 0.95rem;">
-                            <svg width="20" height="20" viewBox="0 0 48 48">
-                                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                            </svg>
-                            <span>Sign Up with Google</span>
-                        </a>
-                    </div>
                 </div>
-                <div class="card-footer text-center">
-                    <p class="mb-0">Already have an account? <a href="{% url 'accounts:login' %}">Log in here</a></p>
-                </div>
-            </div>
+            {% endfor %}
+
+            <button type="submit" class="auth-submit-btn">
+                Register for Scholar Lens ➔
+            </button>
+        </form>
+
+        <div class="auth-divider">
+            <span>OR</span>
+        </div>
+
+        <a href="{% url 'accounts:google_login' %}" class="auth-google-btn">
+            <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            <span>Sign Up with Google</span>
+        </a>
+
+        <div class="auth-footer">
+            <p class="mb-0">Already have an academic account? <a href="{% url 'accounts:login' %}">Log in here</a></p>
         </div>
     </div>
 </div>
