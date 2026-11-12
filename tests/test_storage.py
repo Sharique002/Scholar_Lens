@@ -194,3 +194,100 @@ class StorageIntegrationAndFallbackTests(TestCase):
         except Exception as e:
             # If pymupdf is not installed or test environment lacks native fitz, verify it didn't fail on NotImplementedError
             self.assertNotIn("NotImplementedError", str(e))
+
+
+class R2StorageSecurityTests(TestCase):
+    """Security, authorization, and privacy verification for persistent storage."""
+
+    def setUp(self):
+        self.faculty = User.objects.create_user(
+            username='prof_secure',
+            email='prof@university.edu',
+            password='TestPassword123!',
+            first_name='Prof',
+            last_name='Secure'
+        )
+        self.student = User.objects.create_user(
+            username='student_applicant',
+            email='student@university.edu',
+            password='TestPassword123!',
+            first_name='Student',
+            last_name='Applicant'
+        )
+        self.unauthorized_user = User.objects.create_user(
+            username='other_student',
+            email='other@university.edu',
+            password='TestPassword123!',
+            first_name='Other',
+            last_name='Student'
+        )
+
+    def test_r2_private_bucket_default_acl_none(self):
+        """R2MediaStorage must enforce default_acl=None to prevent accidental public bucket exposure."""
+        storage = R2MediaStorage()
+        self.assertIsNone(storage.default_acl)
+        self.assertFalse(storage.file_overwrite)
+        self.assertTrue(storage.querystring_auth)
+
+    def test_presigned_url_expiry_defaults_and_overrides(self):
+        """Presigned URLs must have limited lifetime (default 3600 seconds = 1 hour)."""
+        with override_settings(AWS_QUERYSTRING_EXPIRE=1800):
+            storage = R2MediaStorage()
+            self.assertEqual(storage.querystring_expire, 1800)
+
+    def test_cv_access_restricted_to_faculty_owner(self):
+        """Confidential CV URLs must only be visible to opening owner or staff, never other students."""
+        from opportunities.models import ResearchOpening, OpportunityApplication
+        from researchers.models import Department
+
+        dept, _ = Department.objects.get_or_create(name="Physics", defaults={"code": "PHYS"})
+        opening = ResearchOpening.objects.create(
+            title="Quantum Lab Assistant",
+            created_by=self.faculty,
+            department=dept,
+            description="Looking for research assistants.",
+            deadline="2027-12-31",
+            status="OPEN"
+        )
+        OpportunityApplication.objects.create(
+            opening=opening,
+            applicant=self.student,
+            statement="Interested in quantum computing.",
+            cv_pdf="opportunity_cvs/student_secret_cv.pdf",
+            status="SUBMITTED"
+        )
+
+        detail_url = reverse('opportunities:detail', kwargs={'pk': opening.pk})
+
+        # 1. Unauthenticated user cannot see applicant CVs
+        resp = self.client.get(detail_url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotIn("student_secret_cv.pdf", resp.content.decode('utf-8'))
+
+        # 2. Another student cannot see applicant CVs
+        self.client.login(username='other_student', password='TestPassword123!')
+        resp = self.client.get(detail_url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotIn("student_secret_cv.pdf", resp.content.decode('utf-8'))
+        self.client.logout()
+
+        # 3. Faculty owner CAN see applicant CV link
+        self.client.login(username='prof_secure', password='TestPassword123!')
+        resp = self.client.get(detail_url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("opportunity_cvs/student_secret_cv.pdf", resp.content.decode('utf-8'))
+        self.client.logout()
+
+    def test_storage_logger_does_not_leak_secrets_on_error(self):
+        """Storage logger must log filename and error message without leaking sensitive credentials."""
+        storage = R2MediaStorage()
+        with self.assertLogs('scholar_lens.storage', level='ERROR') as cm:
+            with patch('storages.backends.s3boto3.S3Boto3Storage.url', side_effect=Exception("Connection refused")):
+                with self.assertRaises(Exception):
+                    storage.url('opportunity_cvs/sensitive_cv.pdf')
+        log_output = "\n".join(cm.output)
+        self.assertIn("sensitive_cv.pdf", log_output)
+        self.assertNotIn("AWS_SECRET_ACCESS_KEY", log_output)
+        self.assertNotIn("AWS_ACCESS_KEY_ID", log_output)
+        self.assertNotIn("R2_SECRET_ACCESS_KEY", log_output)
+
