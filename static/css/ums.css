@@ -436,22 +436,59 @@ button[disabled] {
 }
 
 .ums-brand {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 9px;
     text-decoration: none;
     font-size: 1.25rem;
     font-weight: 800;
-    color: var(--primary);
-    letter-spacing: -0.02em;
+    color: #142D3C;
+    letter-spacing: -0.025em;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    user-select: none;
+}
+
+.ums-brand:hover {
+    opacity: 0.92;
+    transform: translateY(-0.5px);
+    text-decoration: none;
 }
 
 .ums-brand-icon {
-    font-size: 1.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.ums-brand-icon svg {
+    display: block;
+    width: 26px;
+    height: 26px;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ums-brand:hover .ums-brand-icon svg {
+    transform: rotate(15deg);
+}
+
+.ums-brand-text {
+    font-family: 'Plus Jakarta Sans', var(--font-display, -apple-system, BlinkMacSystemFont, sans-serif);
+    font-weight: 800;
+    font-size: 1.25rem;
+    color: #142D3C;
+    letter-spacing: -0.025em;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
 }
 
 .ums-brand-accent {
-    color: #A73C00;
+    color: var(--primary, #9B2335);
+    margin-left: 0.22em;
 }
 
 /* Header Search Input */
@@ -932,13 +969,15 @@ body.sidebar-collapsed .ums-footer {
     }
 }
 
+@media (max-width: 1080px) {
+    .portal-institutional-title {
+        display: none !important;
+    }
+}
+
 @media (max-width: 991px) {
     .ums-header-search {
         width: 110px;
-    }
-    .portal-institutional-title {
-        font-size: 0.70rem;
-        letter-spacing: 0.02em;
     }
 }
 
@@ -947,10 +986,6 @@ body.sidebar-collapsed .ums-footer {
         display: none !important;
     }
 }
-
-@media (max-width: 600px) {
-    .portal-institutional-title {
-        display: none !important;
     }
     .ums-header-inner {
         padding: 0 12px;

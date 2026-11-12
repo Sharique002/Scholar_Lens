@@ -11,7 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500;1,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/institutional_tokens.css' %}?v=1.0">
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v=1.8">
-    <link rel="stylesheet" href="{% static 'css/ums.css' %}?v=2.4">
+    <link rel="stylesheet" href="{% static 'css/ums.css' %}?v=2.5">
+    <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     {% block extra_head %}{% endblock %}
     {% block extra_css %}{% endblock %}
@@ -26,9 +27,13 @@
                     <span class="hamburger"></span>
                 </button>
                 {% endif %}
-                <a href="{% if user.is_authenticated %}{% url 'dashboard:home' %}{% else %}{% url 'dashboard:landing' %}{% endif %}" class="ums-brand">
+                <a href="{% if user.is_authenticated %}{% url 'dashboard:home' %}{% else %}{% url 'dashboard:landing' %}{% endif %}" class="ums-brand" aria-label="Scholar Lens — Institutional Research Intelligence Platform">
                     <span class="ums-brand-icon">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                        <svg width="26" height="26" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M2.3158 41.1053C8.10527 16.7895 28.9474 0 54.4211 0C75.2632 0 93.7895 11 103.632 28.3684H81.6316L72.9474 20.2632H43.4211V41.1053H2.3158Z" fill="#142D3C"/>
+                            <path d="M106.526 36.4737C108.842 42.2632 110 48.0526 110 54.421C110 78.7368 93.7895 100.158 70.6316 107.105V84.5263L87.4211 67.7368V56.1579H51.5263V36.4737H106.526Z" fill="#142D3C"/>
+                            <path d="M0.578947 49.2105H22V68.8947L38.2105 85.1053H42.8421V64.2632H62.5263V108.842C60.2105 109.421 57.3158 109.421 55 109.421C24.8947 109.421 0 85.1053 0 55C0 53.2632 0 50.9474 0.578947 49.2105Z" fill="#142D3C"/>
+                        </svg>
                     </span>
                     <span class="ums-brand-text">Scholar <span class="ums-brand-accent">Lens</span></span>
                 </a>
@@ -253,8 +258,13 @@
 
     <!-- Clean Institutional Footer -->
     <footer class="ums-footer{% if not user.is_authenticated %} ums-footer--full{% endif %}">
-        <div class="container text-center">
-            <p>&copy; {% now "Y" %} Scholar Lens &middot; Research Intelligence Portal &middot; <a href="{% url 'dashboard:privacy' %}" style="color: inherit; text-decoration: underline;">Privacy Policy</a> &middot; <a href="{% url 'dashboard:terms' %}" style="color: inherit; text-decoration: underline;">Terms of Service</a></p>
+        <div class="container text-center flex justify-center align-center gap-2">
+            <svg width="15" height="15" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="opacity: 0.65; flex-shrink: 0; vertical-align: middle;">
+                <path d="M2.3158 41.1053C8.10527 16.7895 28.9474 0 54.4211 0C75.2632 0 93.7895 11 103.632 28.3684H81.6316L72.9474 20.2632H43.4211V41.1053H2.3158Z" fill="currentColor"/>
+                <path d="M106.526 36.4737C108.842 42.2632 110 48.0526 110 54.421C110 78.7368 93.7895 100.158 70.6316 107.105V84.5263L87.4211 67.7368V56.1579H51.5263V36.4737H106.526Z" fill="currentColor"/>
+                <path d="M0.578947 49.2105H22V68.8947L38.2105 85.1053H42.8421V64.2632H62.5263V108.842C60.2105 109.421 57.3158 109.421 55 109.421C24.8947 109.421 0 85.1053 0 55C0 53.2632 0 50.9474 0.578947 49.2105Z" fill="currentColor"/>
+            </svg>
+            <p class="mb-0">&copy; {% now "Y" %} Scholar Lens &middot; Institutional Research Intelligence Platform &middot; <a href="{% url 'dashboard:privacy' %}" style="color: inherit; text-decoration: underline;">Privacy Policy</a> &middot; <a href="{% url 'dashboard:terms' %}" style="color: inherit; text-decoration: underline;">Terms of Service</a></p>
         </div>
     </footer>
 
