@@ -48,3 +48,21 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS("Successfully created researcher user 'demo_researcher'"))
         else:
             self.stdout.write("Researcher user 'demo_researcher' already exists.")
+
+        # Ensure demo student account exists matching the 1-click Quick Demo Credentials button
+        student_username = os.environ.get('STUDENT_USERNAME', 'student')
+        student_password = os.environ.get('STUDENT_PASSWORD', 'Student@12345')
+        if not User.objects.filter(username=student_username).exists():
+            student_user = User.objects.create_user(
+                username=student_username,
+                email=os.environ.get('STUDENT_EMAIL', 'student@scholarlens.org'),
+                password=student_password,
+                first_name='Aarav',
+                last_name='Sharma'
+            )
+            student_user.profile.role = 'STUDENT'
+            student_user.profile.institution = 'University of Science & Technology'
+            student_user.profile.save()
+            self.stdout.write(self.style.SUCCESS(f"Successfully created student user '{student_username}'"))
+        else:
+            self.stdout.write(f"Student user '{student_username}' already exists.")
