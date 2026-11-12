@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500;1,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/institutional_tokens.css' %}?v=1.0">
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v=1.8">
-    <link rel="stylesheet" href="{% static 'css/ums.css' %}?v=2.2">
+    <link rel="stylesheet" href="{% static 'css/ums.css' %}?v=2.3">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     {% block extra_head %}{% endblock %}
     {% block extra_css %}{% endblock %}
@@ -197,12 +197,15 @@
         <main class="ums-main{% if not user.is_authenticated %} ums-main--full{% endif %}">
             {% block breadcrumb %}
             <nav class="ums-breadcrumb ums-breadcrumbs" aria-label="Breadcrumb">
-                <div class="d-flex align-items-center justify-content-between w-100 flex-wrap gap-2">
-                    <div class="d-flex align-items-center">
+                <div class="ums-breadcrumb-wrapper d-flex align-items-center justify-content-between w-100 flex-wrap gap-2">
+                    <div class="ums-breadcrumb-trail d-flex align-items-center flex-wrap">
                         <a href="{% if user.is_authenticated %}{% url 'dashboard:home' %}{% else %}{% url 'dashboard:landing' %}{% endif %}">Home</a>
                         <span class="ums-breadcrumb-sep">›</span>
                         <span class="ums-breadcrumb-current">
-                            {% if request.resolver_match.app_name == 'dashboard' %}Dashboard
+                            {% if request.resolver_match.url_name == 'settings' %}Settings
+                            {% elif request.resolver_match.url_name == 'notifications' %}Notifications
+                            {% elif request.resolver_match.url_name == 'office' %}Research Office
+                            {% elif request.resolver_match.app_name == 'dashboard' %}Dashboard
                             {% elif request.resolver_match.app_name == 'papers' %}Papers
                             {% elif request.resolver_match.app_name == 'projects' %}Projects
                             {% elif request.resolver_match.app_name == 'researchers' %}Researchers
@@ -219,9 +222,9 @@
                         </span>
                     </div>
                     {% block back_button %}
-                    {% if request.path != '/' and request.path != '/dashboard/' %}
+                    {% if request.path != '/' and request.path != '/dashboard/' and request.path != '/dashboard' and request.resolver_match.url_name != 'home' and request.resolver_match.url_name != 'landing' %}
                     <button type="button" onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href='{% url 'dashboard:home' %}'; }" class="back-nav-btn" aria-label="Go back">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                        <svg class="back-nav-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                         <span>Back</span>
                     </button>
                     {% endif %}
