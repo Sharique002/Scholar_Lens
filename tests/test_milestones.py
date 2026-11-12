@@ -103,7 +103,7 @@ class MilestoneTests(TestCase):
 
         m.refresh_from_db()
         self.assertEqual(m.progress, 100)
-        self.assertEqual(m.completed_on, date.today())
+        self.assertEqual(m.completed_on, timezone.localdate())
         self.assertEqual(m.risk, 'ON_TRACK')
         self.assertEqual(m.risk_reason, '')
 

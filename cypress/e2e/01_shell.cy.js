@@ -105,4 +105,9 @@ describe('01 - Institutional Shell & Navigation', () => {
     cy.contains('PUBLIC RATINGS').should('not.exist');
     cy.contains('9.85/10').should('not.exist');
   });
+
+  it('displays developer attribution Sharique [MSH] in the footer', () => {
+    cy.visit('/');
+    cy.get('footer.ums-footer').should('contain', 'Developed by Sharique [MSH]');
+  });
 });

@@ -70,9 +70,13 @@ def login_view(request):
             except Exception:
                 pass
             messages.success(request, f"Welcome back, {user.username}!")
-            # Get 'next' parameter if it exists
-            next_url = request.GET.get('next')
-            if next_url:
+            # Get and validate 'next' parameter to prevent open redirect vulnerabilities
+            next_url = request.GET.get('next') or request.POST.get('next')
+            if next_url and url_has_allowed_host_and_scheme(
+                url=next_url,
+                allowed_hosts={request.get_host()},
+                require_https=request.is_secure()
+            ):
                 return redirect(next_url)
             return redirect('dashboard:home')
         else:
@@ -233,7 +237,14 @@ def google_mock_view(request):
     if request.user.is_authenticated:
         return redirect('dashboard:home')
 
-    next_url = request.GET.get('next') or 'dashboard:home'
+    raw_next = request.GET.get('next') or request.POST.get('next') or 'dashboard:home'
+    if raw_next and raw_next != 'dashboard:home':
+        if url_has_allowed_host_and_scheme(url=raw_next, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+            next_url = raw_next
+        else:
+            next_url = 'dashboard:home'
+    else:
+        next_url = 'dashboard:home'
 
     if request.method == 'POST':
         email = request.POST.get('email', 'shariquehussain03@gmail.com').strip()

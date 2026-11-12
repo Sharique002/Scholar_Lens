@@ -39,6 +39,22 @@ class UserProfileForm(forms.ModelForm):
             'website': forms.URLInput(attrs={'class': 'form-control'}),
         }
 
+    def clean_avatar(self):
+        avatar = self.cleaned_data.get('avatar')
+        if avatar and hasattr(avatar, 'size'):
+            max_size = 5 * 1024 * 1024  # 5MB
+            if avatar.size > max_size:
+                raise forms.ValidationError("Avatar image size must be under 5 MB.")
+            from PIL import Image
+            try:
+                img = Image.open(avatar)
+                img.verify()
+                if hasattr(avatar, 'seek'):
+                    avatar.seek(0)
+            except Exception:
+                raise forms.ValidationError("Invalid image file. Please upload a valid JPEG, PNG, or WebP image.")
+        return avatar
+
 class UserUpdateForm(forms.ModelForm):
     class Meta:
         model = User
