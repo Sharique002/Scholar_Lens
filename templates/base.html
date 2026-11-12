@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500;1,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/institutional_tokens.css' %}?v=1.0">
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v=1.8">
-    <link rel="stylesheet" href="{% static 'css/ums.css' %}?v=2.0">
+    <link rel="stylesheet" href="{% static 'css/ums.css' %}?v=2.2">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     {% block extra_head %}{% endblock %}
     {% block extra_css %}{% endblock %}
@@ -110,7 +110,7 @@
     </header>
 
     <!-- Top Announcement / Marquee Strip -->
-    <div class="top-marquee-strip">
+    <div class="top-marquee-strip{% if not user.is_authenticated %} top-marquee-strip--full{% endif %}">
         <div class="marquee-track">
             {% for item in marquee_items %}
                 <span>{{ item }}</span>
@@ -249,7 +249,7 @@
     </div>
 
     <!-- Clean Institutional Footer -->
-    <footer class="ums-footer">
+    <footer class="ums-footer{% if not user.is_authenticated %} ums-footer--full{% endif %}">
         <div class="container text-center">
             <p>&copy; {% now "Y" %} Scholar Lens &middot; Research Intelligence Portal &middot; <a href="{% url 'dashboard:privacy' %}" style="color: inherit; text-decoration: underline;">Privacy Policy</a> &middot; <a href="{% url 'dashboard:terms' %}" style="color: inherit; text-decoration: underline;">Terms of Service</a></p>
         </div>

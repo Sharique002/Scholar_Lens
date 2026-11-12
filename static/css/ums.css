@@ -327,21 +327,53 @@ html, body.ums-body {
 
 /* 5. Top Announcement / Marquee Strip */
 .top-marquee-strip {
-    background-color: var(--primary);
-    color: #FFFFFF;
+    background-color: var(--primary) !important;
+    color: #FFFFFF !important;
+    font-family: 'Plus Jakarta Sans', var(--font-body, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
     font-size: 13px;
-    height: 32px;
-    line-height: 32px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    height: 34px;
+    padding: 0 !important;
+    margin: 0;
+    display: flex;
+    align-items: center;
     overflow: hidden;
     position: relative;
     border-bottom: 1px solid var(--primary-dark);
     white-space: nowrap;
+    margin-left: 240px;
+    transition: margin-left 150ms ease;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+.top-marquee-strip--full {
+    margin-left: 0 !important;
 }
 
 .marquee-track {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    height: 100%;
     white-space: nowrap;
     animation: marquee-scroll 75s linear infinite;
+    line-height: 1;
+    margin: 0;
+    padding: 0;
+}
+
+.marquee-track:hover {
+    animation-play-state: paused;
+}
+
+.marquee-track span {
+    display: inline-flex;
+    align-items: center;
+    height: 100%;
+    padding: 0 16px;
+    line-height: 1;
+    white-space: nowrap;
 }
 
 @keyframes marquee-scroll {
@@ -358,7 +390,7 @@ html, body.ums-body {
 /* 6. Layout: Left Sidebar + Main Content */
 .ums-layout {
     display: flex;
-    min-height: calc(100vh - 88px);
+    min-height: calc(100vh - 56px - 34px - 53px);
     position: relative;
 }
 
@@ -368,11 +400,11 @@ aside.ums-sidebar {
     background-color: #FFFFFF;
     border-right: 1px solid var(--border);
     position: fixed;
-    top: 88px;
+    top: 56px;
     bottom: 0;
     left: 0;
     z-index: 90;
-    transition: width 150ms ease;
+    transition: width 150ms ease, margin-left 150ms ease;
     overflow-y: auto;
     overflow-x: hidden;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
@@ -460,6 +492,10 @@ body.sidebar-collapsed aside.ums-sidebar {
     width: 64px;
 }
 
+body.sidebar-collapsed .top-marquee-strip {
+    margin-left: 64px;
+}
+
 body.sidebar-collapsed .ums-nav-label {
     display: none;
 }
@@ -476,7 +512,7 @@ body.sidebar-collapsed .ums-sidebar-collapse {
 /* Main Content Area */
 main.ums-main {
     flex: 1;
-    margin-left: 232px;
+    margin-left: 240px;
     padding: 24px;
     max-width: 1280px;
     width: 100%;
@@ -548,6 +584,16 @@ main.ums-main--full {
     font-size: 14px;
     color: var(--ink-muted);
     clear: both;
+    margin-left: 240px;
+    transition: margin-left 150ms ease;
+}
+
+body.sidebar-collapsed .ums-footer {
+    margin-left: 64px;
+}
+
+.ums-footer--full {
+    margin-left: 0 !important;
 }
 
 /* 7. Mobile and Motion Responsiveness */
@@ -568,9 +614,17 @@ main.ums-main--full {
         display: none;
     }
 
+    .top-marquee-strip {
+        margin-left: 0 !important;
+    }
+
     main.ums-main {
         margin-left: 0 !important;
         padding: 16px;
+    }
+
+    .ums-footer {
+        margin-left: 0 !important;
     }
 }
 
