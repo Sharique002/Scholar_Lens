@@ -1,50 +1,81 @@
+"""Management command to securely and idempotently initialize initial administrative accounts."""
 import os
+import secrets
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
+from django.db import transaction
 
 
 class Command(BaseCommand):
-    help = 'Initialize default admin and faculty accounts for deployment'
+    help = 'Idempotently initialize administrator account with strict security protections'
 
     def handle(self, *args, **options):
-        admin_username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'admin')
-        admin_email = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'admin@scholarlens.org')
-        admin_password = os.environ.get('DJANGO_SUPERUSER_PASSWORD', 'Admin@12345')
+        admin_username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'admin').strip()
+        admin_email = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'admin@scholarlens.org').strip()
+        admin_password = os.environ.get('DJANGO_SUPERUSER_PASSWORD', '').strip()
 
-        if not User.objects.filter(username=admin_username).exists():
-            admin_user = User.objects.create_superuser(
-                username=admin_username,
-                email=admin_email,
-                password=admin_password
+        # In production (DEBUG=False), require an explicit environment-provided password
+        if not settings.DEBUG and not admin_password:
+            self.stdout.write(
+                self.style.WARNING(
+                    "DJANGO_SUPERUSER_PASSWORD is not set in production. "
+                    "Skipping automated administrator provisioning for security."
+                )
             )
-            admin_user.profile.role = 'ADMIN'
-            admin_user.profile.save()
-            self.stdout.write(self.style.SUCCESS(f"Successfully created admin user '{admin_username}'"))
-        else:
-            self.stdout.write(f"Admin user '{admin_username}' already exists.")
+            return
 
-        # Also ensure faculty account exists for novelty evaluation testing
+        # In development, provide a fallback if unset
+        if settings.DEBUG and not admin_password:
+            admin_password = 'Admin@12345'
+
+        # Idempotent check: Never overwrite or reset existing administrator credentials or roles
+        if User.objects.filter(username=admin_username).exists():
+            self.stdout.write(f"Administrator account '{admin_username}' already exists. Preserving existing credentials and roles.")
+        else:
+            with transaction.atomic():
+                admin_user = User.objects.create_superuser(
+                    username=admin_username,
+                    email=admin_email,
+                    password=admin_password
+                )
+                if hasattr(admin_user, 'profile'):
+                    admin_user.profile.role = 'ADMIN'
+                    admin_user.profile.save()
+                self.stdout.write(self.style.SUCCESS(f"Successfully provisioned initial administrator '{admin_username}'"))
+
+        # Demo accounts: Strictly permitted ONLY in DEBUG or when CREATE_DEMO_ACCOUNTS is explicitly enabled
+        allow_demo = settings.DEBUG or os.environ.get('CREATE_DEMO_ACCOUNTS', '').lower() in ('true', '1', 'yes')
+        if not allow_demo:
+            self.stdout.write("Skipping demo accounts provisioning in production.")
+            return
+
+        # Faculty account for testing evaluation workflows
+        faculty_pw = os.environ.get('FACULTY_PASSWORD', 'Faculty@12345')
         if not User.objects.filter(username='faculty').exists():
-            faculty_user = User.objects.create_user(
-                username='faculty',
-                email='faculty@scholarlens.org',
-                password=os.environ.get('FACULTY_PASSWORD', 'Faculty@12345')
-            )
-            faculty_user.profile.role = 'FACULTY'
-            faculty_user.profile.save()
-            self.stdout.write(self.style.SUCCESS("Successfully created faculty user 'faculty'"))
+            with transaction.atomic():
+                faculty_user = User.objects.create_user(
+                    username='faculty',
+                    email='faculty@scholarlens.org',
+                    password=faculty_pw
+                )
+                faculty_user.profile.role = 'FACULTY'
+                faculty_user.profile.save()
+                self.stdout.write(self.style.SUCCESS("Provisioned demo faculty user 'faculty'"))
         else:
-            self.stdout.write("Faculty user 'faculty' already exists.")
+            self.stdout.write("Demo faculty user 'faculty' already exists.")
 
-        # Ensure a demo researcher account exists for immediate testing
+        # Researcher account for testing collaboration workflows
+        researcher_pw = os.environ.get('RESEARCHER_PASSWORD', 'Researcher@12345')
         if not User.objects.filter(username='demo_researcher').exists():
-            researcher_user = User.objects.create_user(
-                username='demo_researcher',
-                email='researcher@scholarlens.org',
-                password=os.environ.get('RESEARCHER_PASSWORD', 'Researcher@12345')
-            )
-            researcher_user.profile.role = 'RESEARCHER'
-            researcher_user.profile.save()
-            self.stdout.write(self.style.SUCCESS("Successfully created researcher user 'demo_researcher'"))
+            with transaction.atomic():
+                researcher_user = User.objects.create_user(
+                    username='demo_researcher',
+                    email='researcher@scholarlens.org',
+                    password=researcher_pw
+                )
+                researcher_user.profile.role = 'RESEARCHER'
+                researcher_user.profile.save()
+                self.stdout.write(self.style.SUCCESS("Provisioned demo researcher user 'demo_researcher'"))
         else:
-            self.stdout.write("Researcher user 'demo_researcher' already exists.")
+            self.stdout.write("Demo researcher user 'demo_researcher' already exists.")
