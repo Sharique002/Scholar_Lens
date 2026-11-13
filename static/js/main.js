@@ -1,294 +1,193 @@
 /**
- * Scholar Lens — application shell behaviour.
- * Progressive enhancement only: every page works without this file.
+ * Main JavaScript File for Scholar Lens
  */
+
 document.addEventListener('DOMContentLoaded', () => {
-    const root = document.documentElement;
-    const sidebar = document.getElementById('navLinks');
-    const backdrop = document.getElementById('sidebarBackdrop');
+    // 1. Mobile Menu Toggle
     const mobileBtn = document.getElementById('mobileMenuBtn');
-    const collapseBtn = document.getElementById('sidebarCollapse');
-
-    // 1. Mobile navigation drawer
-    const setDrawer = (open) => {
-        if (!sidebar) return;
-        sidebar.classList.toggle('active', open);
-        if (mobileBtn) {
-            mobileBtn.setAttribute('aria-expanded', String(open));
-            mobileBtn.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
-        }
-        if (backdrop) {
-            backdrop.hidden = !open;
-            requestAnimationFrame(() => backdrop.classList.toggle('is-visible', open));
-        }
-        if (open) {
-            const first = sidebar.querySelector('a');
-            if (first) first.focus();
-        }
-    };
-    if (mobileBtn && sidebar) {
-        mobileBtn.addEventListener('click', () => setDrawer(!sidebar.classList.contains('active')));
-        if (backdrop) backdrop.addEventListener('click', () => setDrawer(false));
-        sidebar.addEventListener('click', (e) => { if (e.target.closest('a')) setDrawer(false); });
-    }
-
-    // 2. Desktop sidebar collapse (state restored in <head> to avoid a flash)
-    if (collapseBtn && sidebar) {
-        const apply = (collapsed) => {
-            root.classList.toggle('sb-collapsed', collapsed);
-            sidebar.classList.toggle('is-collapsed', collapsed);
-            collapseBtn.setAttribute('aria-expanded', String(!collapsed));
-            collapseBtn.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
-            collapseBtn.title = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
-        };
-        apply(root.classList.contains('sb-collapsed'));
-        collapseBtn.addEventListener('click', () => {
-            const collapsed = !root.classList.contains('sb-collapsed');
-            apply(collapsed);
-            try { localStorage.setItem('ums-sidebar', collapsed ? '1' : '0'); } catch (e) {}
+    const navLinks = document.getElementById('navLinks');
+    
+    if (mobileBtn && navLinks) {
+        mobileBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            const hamburger = mobileBtn.querySelector('.hamburger');
+            if (navLinks.classList.contains('active')) {
+                hamburger.style.backgroundColor = 'transparent';
+                hamburger.style.setProperty('--before-transform', 'rotate(45deg) translate(5px, 5px)');
+                hamburger.style.setProperty('--after-transform', 'rotate(-45deg) translate(5px, -5px)');
+            } else {
+                hamburger.style.backgroundColor = '';
+                hamburger.style.setProperty('--before-transform', 'none');
+                hamburger.style.setProperty('--after-transform', 'none');
+            }
         });
     }
 
-    // 3. Dropdown menus (click, Esc, outside click)
+    // 2. Dropdown Toggle for Navigation
     const dropdowns = document.querySelectorAll('.nav-dropdown');
-    const closeDropdown = (d) => {
-        d.classList.remove('active');
-        const t = d.querySelector('.dropdown-toggle');
-        if (t) t.setAttribute('aria-expanded', 'false');
-    };
-    dropdowns.forEach((dropdown) => {
+    dropdowns.forEach(dropdown => {
         const toggle = dropdown.querySelector('.dropdown-toggle');
-        if (!toggle) return;
-        toggle.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            dropdowns.forEach((d) => { if (d !== dropdown) closeDropdown(d); });
-            const open = dropdown.classList.toggle('active');
-            toggle.setAttribute('aria-expanded', String(open));
-            if (open) {
-                const first = dropdown.querySelector('.dropdown-menu a, .dropdown-menu button');
-                if (first && e.detail === 0) first.focus(); // keyboard activation moves focus into the menu
-            }
-        });
-    });
-    document.addEventListener('click', (e) => {
-        dropdowns.forEach((d) => { if (!d.contains(e.target)) closeDropdown(d); });
-    });
-
-    // 4. Global keys: Esc closes overlays, "/" focuses search
-    const search = document.getElementById('globalSearch');
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            dropdowns.forEach((d) => {
-                if (d.classList.contains('active')) {
-                    closeDropdown(d);
-                    const t = d.querySelector('.dropdown-toggle');
-                    if (t) t.focus();
-                }
-            });
-            if (sidebar && sidebar.classList.contains('active')) {
-                setDrawer(false);
-                if (mobileBtn) mobileBtn.focus();
-            }
-        }
-        const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable;
-        if (e.key === '/' && !typing && search && search.offsetParent !== null) {
-            e.preventDefault();
-            search.focus();
-        }
-    });
-
-    // 5. Toasts (Django messages). Errors persist until dismissed.
-    document.querySelectorAll('.toast-region .alert, .alert-dismissible').forEach((alert) => {
-        const dismiss = () => {
-            alert.classList.add('is-leaving');
-            setTimeout(() => alert.remove(), 200);
-        };
-        const closeBtn = alert.querySelector('.close-alert');
-        if (closeBtn) closeBtn.addEventListener('click', dismiss);
-        if (alert.closest('.toast-region') && !alert.hasAttribute('data-persist')) {
-            let timer = setTimeout(dismiss, 6000);
-            alert.addEventListener('mouseenter', () => clearTimeout(timer));
-            alert.addEventListener('mouseleave', () => { timer = setTimeout(dismiss, 3000); });
-        }
-    });
-
-    // 6. Tabs (.tab-btn[data-target]) with ARIA state
-    document.querySelectorAll('.tab-btn').forEach((btn) => {
-        btn.addEventListener('click', () => {
-            const container = btn.closest('.tabs-container') || document;
-            container.querySelectorAll('.tab-btn').forEach((b) => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
-            container.querySelectorAll('.tab-content').forEach((c) => c.classList.remove('active'));
-            btn.classList.add('active');
-            btn.setAttribute('aria-selected', 'true');
-            const target = document.getElementById(btn.getAttribute('data-target'));
-            if (target) target.classList.add('active');
-        });
-    });
-
-    // 6b. Bootstrap-markup tabs (data-bs-toggle="tab") — templates use this markup without Bootstrap's JS
-    document.querySelectorAll('[data-bs-toggle="tab"]').forEach((tab) => {
-        const list = tab.closest('[role="tablist"], .nav-tabs, .nav');
-        const tabs = () => Array.from(list ? list.querySelectorAll('[data-bs-toggle="tab"]') : [tab]);
-        const panelOf = (t) => document.querySelector(t.getAttribute('data-bs-target') || t.getAttribute('href'));
-        const activate = (t, focus) => {
-            tabs().forEach((other) => {
-                const on = other === t;
-                other.classList.toggle('active', on);
-                other.setAttribute('aria-selected', String(on));
-                other.tabIndex = on ? 0 : -1;
-                const p = panelOf(other);
-                if (p) { p.classList.toggle('active', on); p.classList.toggle('show', on); }
-            });
-            if (focus) t.focus();
-        };
-        const p = panelOf(tab);
-        if (p) {
-            p.setAttribute('role', 'tabpanel');
-            if (tab.id) p.setAttribute('aria-labelledby', tab.id);
-            tab.setAttribute('aria-controls', p.id);
-        }
-        tab.setAttribute('role', 'tab');
-        tab.setAttribute('aria-selected', String(tab.classList.contains('active')));
-        tab.tabIndex = tab.classList.contains('active') ? 0 : -1;
-        tab.addEventListener('click', (e) => { e.preventDefault(); activate(tab, false); });
-        tab.addEventListener('keydown', (e) => {
-            const all = tabs(), i = all.indexOf(tab);
-            const next = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: all.length - 1 }[e.key];
-            if (next === undefined) return;
-            e.preventDefault();
-            activate(all[(next + all.length) % all.length], true);
-        });
-    });
-    document.querySelectorAll('[data-bs-dismiss="alert"]').forEach((btn) => {
-        btn.addEventListener('click', () => { const a = btn.closest('.alert'); if (a) a.remove(); });
-    });
-
-    // 7. Confirmation dialog for destructive actions: <form data-confirm="..."> or <button data-confirm="...">
-    const dialog = document.getElementById('confirmDialog');
-    if (dialog) {
-        dialog.querySelectorAll('[data-dialog-value]').forEach((b) => {
-            b.addEventListener('click', () => dialog.close(b.getAttribute('data-dialog-value')));
-        });
-    }
-    const askConfirm = (message, label) => new Promise((resolve) => {
-        if (!dialog || typeof dialog.showModal !== 'function') { resolve(window.confirm(message)); return; }
-        dialog.querySelector('#confirmMessage').textContent = message;
-        dialog.querySelector('#confirmAccept').textContent = label || 'Confirm';
-        dialog.returnValue = 'cancel';
-        dialog.showModal();
-        dialog.addEventListener('close', () => resolve(dialog.returnValue === 'confirm'), { once: true });
-    });
-    document.addEventListener('submit', (e) => {
-        const form = e.target;
-        const submitter = e.submitter;
-        const source = (submitter && submitter.hasAttribute('data-confirm')) ? submitter : (form.hasAttribute('data-confirm') ? form : null);
-        if (!source || form.dataset.confirmed === '1') return;
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        askConfirm(source.getAttribute('data-confirm') || 'Are you sure?', source.getAttribute('data-confirm-label')).then((ok) => {
-            if (!ok) return;
-            form.dataset.confirmed = '1';
-            if (submitter && submitter.name) {
-                const hidden = document.createElement('input');
-                hidden.type = 'hidden';
-                hidden.name = submitter.name;
-                hidden.value = submitter.value;
-                form.appendChild(hidden);
-            }
-            form.requestSubmit ? form.requestSubmit() : form.submit();
-        });
-    }, true);
-    document.addEventListener('click', (e) => {
-        const link = e.target.closest('a[data-confirm]');
-        if (!link) return;
-        e.preventDefault();
-        askConfirm(link.getAttribute('data-confirm'), link.getAttribute('data-confirm-label')).then((ok) => { if (ok) window.location.href = link.href; });
-    });
-
-    // 8. Prevent double submission: mark the clicked button busy (POST forms only)
-    document.addEventListener('submit', (e) => {
-        const form = e.target;
-        if (e.defaultPrevented || (form.method || '').toLowerCase() !== 'post' || form.hasAttribute('data-no-busy') || form.target) return;
-        const btn = e.submitter || form.querySelector('button[type="submit"], button:not([type])');
-        if (!btn || btn.classList.contains('dropdown-item')) return;
-        // Defer so the submitter's name/value is still sent with the request.
-        setTimeout(() => {
-            btn.classList.add('is-loading');
-            btn.setAttribute('aria-busy', 'true');
-            btn.disabled = true;
-        }, 0);
-    });
-    // Restore buttons if the page is shown again from the back/forward cache.
-    window.addEventListener('pageshow', (e) => {
-        if (!e.persisted) return;
-        document.querySelectorAll('.is-loading').forEach((b) => { b.classList.remove('is-loading'); b.disabled = false; b.removeAttribute('aria-busy'); });
-    });
-
-    // 9. Client-side sorting for tables that opt in with <table data-sortable>
-    document.querySelectorAll('table[data-sortable]').forEach((table) => {
-        const tbody = table.tBodies[0];
-        if (!tbody) return;
-        table.querySelectorAll('thead th').forEach((th, idx) => {
-            if (th.hasAttribute('data-nosort')) return;
-            th.setAttribute('data-sort', '');
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.innerHTML = th.innerHTML;
-            th.innerHTML = '';
-            th.appendChild(btn);
-            btn.addEventListener('click', () => {
-                const asc = th.getAttribute('aria-sort') !== 'ascending';
-                table.querySelectorAll('thead th').forEach((h) => h.removeAttribute('aria-sort'));
-                th.setAttribute('aria-sort', asc ? 'ascending' : 'descending');
-                const key = (row) => {
-                    const cell = row.cells[idx];
-                    const raw = cell ? (cell.getAttribute('data-value') || cell.textContent.trim()) : '';
-                    const n = parseFloat(raw.replace(/[^0-9.\-]/g, ''));
-                    return raw !== '' && /^[\s\d.,%\-₹$€£]+$/.test(raw) && !isNaN(n) ? n : raw.toLowerCase();
-                };
-                const rows = Array.from(tbody.rows).filter((r) => r.cells.length > 1);
-                rows.sort((a, b) => {
-                    const x = key(a), y = key(b);
-                    return (x > y ? 1 : x < y ? -1 : 0) * (asc ? 1 : -1);
+        if (toggle) {
+            toggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                // Close others
+                dropdowns.forEach(d => {
+                    if (d !== dropdown) d.classList.remove('active');
                 });
-                rows.forEach((r) => tbody.appendChild(r));
+                dropdown.classList.toggle('active');
             });
+        }
+    });
+
+    // Close dropdowns on outside click
+    document.addEventListener('click', () => {
+        dropdowns.forEach(d => d.classList.remove('active'));
+    });
+
+    // 3. Alerts Auto-Dismiss
+    const alerts = document.querySelectorAll('.alert-dismissible');
+    alerts.forEach(alert => {
+        const closeBtn = alert.querySelector('.close-alert');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 300);
+            });
+        }
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            if (document.body.contains(alert)) {
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 300);
+            }
+        }, 5000);
+    });
+
+    // 4. Tabs Switching
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetId = btn.getAttribute('data-target');
+            const tabsContainer = btn.closest('.tabs-container') || document;
+            
+            // Remove active class from all buttons and contents in this container
+            tabsContainer.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            tabsContainer.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            // Add active class to clicked button and target content
+            btn.classList.add('active');
+            const targetContent = document.getElementById(targetId);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
         });
     });
 
-    // 9b. Stacked mobile tables: label each cell from its column header
-    document.querySelectorAll('table.table-stack').forEach((table) => {
-        const heads = Array.from(table.querySelectorAll('thead th')).map((th) => th.textContent.trim());
-        table.querySelectorAll('tbody tr').forEach((tr) => {
-            Array.from(tr.cells).forEach((td, i) => {
-                if (!td.hasAttribute('data-label') && heads[i] && td.colSpan === 1) td.setAttribute('data-label', heads[i]);
-            });
+    // 5. Confirm Delete Dialogs
+    const confirmBtns = document.querySelectorAll('[data-confirm]');
+    confirmBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const message = btn.getAttribute('data-confirm') || 'Are you sure you want to perform this action?';
+            if (!confirm(message)) {
+                e.preventDefault();
+            }
         });
     });
 
-    // 10. Score rings (evaluation)
-    document.querySelectorAll('.score-ring').forEach((ring) => {
+    // 6. Initialize Score Rings
+    const scoreRings = document.querySelectorAll('.score-ring');
+    scoreRings.forEach(ring => {
         const score = parseFloat(ring.getAttribute('data-score') || 0);
+        const percentage = score * 100; // Assuming score is 0-1 or 0-100? If 0-100:
         const pct = score <= 1 ? score * 100 : score;
         ring.style.setProperty('--score', `${pct}%`);
-        if (pct >= 80) ring.style.setProperty('--primary', 'var(--sl-success)');
-        else if (pct >= 50) ring.style.setProperty('--primary', 'var(--sl-warning)');
-        else ring.style.setProperty('--primary', 'var(--sl-error)');
+        
+        // Change color based on score
+        if (pct >= 80) ring.style.setProperty('--primary', 'var(--success)');
+        else if (pct >= 50) ring.style.setProperty('--primary', 'var(--warning)');
+        else ring.style.setProperty('--primary', 'var(--danger)');
     });
 
-    // 11. File input label preview
-    document.querySelectorAll('input[type="file"]').forEach((input) => {
+    // 7. File Input Preview
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(input => {
         input.addEventListener('change', (e) => {
             const label = input.nextElementSibling;
             if (label && label.classList.contains('custom-file-label')) {
-                label.textContent = e.target.files[0] ? e.target.files[0].name : 'Choose file...';
+                const fileName = e.target.files[0] ? e.target.files[0].name : 'Choose file...';
+                label.textContent = fileName;
             }
         });
     });
+
+    // 9. Interactive Mouse Parallax for Hero Floating Books
+    const heroCard = document.querySelector('.hero-pop-card');
+    const floatingBooks = document.querySelectorAll('.floating-book');
+    if (heroCard && floatingBooks.length > 0) {
+        heroCard.addEventListener('mousemove', (e) => {
+            const rect = heroCard.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width - 0.5;
+            const y = (e.clientY - rect.top) / rect.height - 0.5;
+            
+            floatingBooks.forEach((book, index) => {
+                const depth = (index + 1) * 14;
+                const rotateOffset = index === 0 ? -18 : (index === 1 ? 16 : 34);
+                book.style.transform = `translate(${x * depth}px, ${y * depth}px) rotate(${rotateOffset + x * 6}deg)`;
+            });
+        });
+
+        heroCard.addEventListener('mouseleave', () => {
+            floatingBooks.forEach((book, index) => {
+                const rotateOffset = index === 0 ? -18 : (index === 1 ? 16 : 34);
+                book.style.transform = `rotate(${rotateOffset}deg)`;
+            });
+        });
+    }
+
+    // 10. Sticky Navbar Blur on Scroll
+    const navbar = document.querySelector('.navbar');
+    if (navbar) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 20) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+    }
+
+    // 11. Desktop Sidebar Collapse (LPU UMS Shell)
+    const sidebarCollapseBtn = document.getElementById('sidebarCollapse');
+    const sidebarNav = document.getElementById('navLinks');
+    if (sidebarCollapseBtn) {
+        try {
+            const savedState = localStorage.getItem('ums-sidebar');
+            if (savedState === '1') {
+                document.body.classList.add('sidebar-collapsed');
+                if (sidebarNav) sidebarNav.classList.add('is-collapsed');
+                sidebarCollapseBtn.setAttribute('aria-expanded', 'false');
+                sidebarCollapseBtn.textContent = '»';
+            } else {
+                sidebarCollapseBtn.setAttribute('aria-expanded', 'true');
+                sidebarCollapseBtn.textContent = '«';
+            }
+        } catch (e) {}
+
+        sidebarCollapseBtn.addEventListener('click', () => {
+            const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
+            if (sidebarNav) sidebarNav.classList.toggle('is-collapsed', isCollapsed);
+            sidebarCollapseBtn.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+            sidebarCollapseBtn.textContent = isCollapsed ? '»' : '«';
+            try {
+                localStorage.setItem('ums-sidebar', isCollapsed ? '1' : '0');
+            } catch (e) {}
+        });
+    }
 });
 
-// CSRF token helper for fetch() calls
+// CSRF Token Helper for AJAX
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {

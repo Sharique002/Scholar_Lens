@@ -1,38 +1,122 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block title %}Research Gaps Radar — {{ paper.title }} | Scholar Lens{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <h2>Research Gaps: {{ paper.title }}</h2>
+<div class="container py-4">
+    <!-- Header & Navigation -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge" style="background-color: var(--primary-light); color: var(--primary); font-size: 0.75rem;">AI RESEARCH INTELLIGENCE</span>
+                <span class="badge bg-light text-dark border">{{ paper.get_research_area_display }}</span>
+            </div>
+            <h2 class="h3 fw-bold mb-1">Automated Research Gap Radar</h2>
+            <p class="text-secondary small mb-0">Unaddressed questions and high-impact directions detected for: <a href="{% url 'papers:detail' paper.pk %}" class="fw-semibold text-dark">{{ paper.title }}</a></p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'papers:detail' paper.pk %}" class="btn btn-sm btn-outline-secondary">
+                ← Back to Paper
+            </a>
+            <a href="{% url 'ai_engine:summary' paper.pk %}" class="btn btn-sm btn-pill-white">
+                Research Summary ➔
+            </a>
+            <a href="{% url 'ai_engine:ask_paper' paper.pk %}" class="btn btn-sm btn-pill-dark">
+                Ask Paper ➔
+            </a>
+        </div>
+    </div>
 
     {% if error %}
-    <div class="alert alert-danger">{{ error }}</div>
+    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+        <strong>Error:</strong> {{ error }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
     {% endif %}
 
     {% if not gaps %}
-    <form method="post" action="{% url 'ai_engine:gaps' paper.id %}">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-primary">Detect Gaps</button>
-    </form>
+    <div class="card border p-5 text-center my-4" style="border-radius: 12px; border-color: var(--border); background-color: #FFFFFF; box-shadow: var(--shadow-sm);">
+        <div style="font-size: 3rem;" class="mb-3">🔭</div>
+        <h3 class="h4 fw-bold">Scan for High-Impact Research Gaps</h3>
+        <p class="text-secondary max-w-md mx-auto mb-4">
+            Activate the analytical radar to identify methodological limitations, unresolved research questions, and high-impact trajectories for follow-up investigations.
+        </p>
+        <form method="post" action="{% url 'ai_engine:gaps' paper.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-pill-dark px-4 py-2 fw-bold">
+                Run Gap Detection Radar
+            </button>
+        </form>
+    </div>
     {% else %}
-    <div class="row mt-3">
+    <!-- Summary Metric Strip -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-lg-3">
+            <div class="p-3 bg-white border rounded shadow-sm">
+                <span class="small text-muted fw-bold text-uppercase d-block mb-1">Total Gaps Detected</span>
+                <span class="h4 fw-bold text-dark mb-0">{{ gaps|length }}</span>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="p-3 bg-white border rounded shadow-sm">
+                <span class="small text-muted fw-bold text-uppercase d-block mb-1">Primary Discipline</span>
+                <span class="h6 fw-bold text-primary mb-0">{{ paper.get_research_area_display }}</span>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="p-3 bg-white border rounded shadow-sm">
+                <span class="small text-muted fw-bold text-uppercase d-block mb-1">Verification Status</span>
+                <span class="h6 fw-bold text-success mb-0">✓ Synthesized</span>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3 d-flex align-items-center">
+            <form method="post" action="{% url 'ai_engine:gaps' paper.id %}" class="w-100 m-0">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-pill-white w-100 py-3 text-center fw-bold">
+                    ↻ Re-scan Gaps
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Gap Cards Grid -->
+    <div class="row row-cols-1 row-cols-lg-2 g-4 mb-4">
         {% for gap in gaps %}
-        <div class="col-md-6 mb-3">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <strong>{{ gap.title }}</strong>
+        <div class="col">
+            <div class="card h-100 border shadow-sm" style="border-radius: 12px; border-color: var(--border); background-color: #FFFFFF;">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <span class="badge-tag-pill" style="font-size: 0.725rem;">
+                        {{ gap.area|default:paper.get_research_area_display }}
+                    </span>
                     {% if gap.severity == 'HIGH' %}
-                        <span class="badge bg-danger">HIGH</span>
+                        <span class="badge bg-danger rounded-pill px-3 py-1" style="font-size: 0.725rem;">HIGH IMPACT</span>
                     {% elif gap.severity == 'MEDIUM' %}
-                        <span class="badge bg-warning text-dark">MEDIUM</span>
+                        <span class="badge bg-warning text-dark rounded-pill px-3 py-1" style="font-size: 0.725rem;">MEDIUM PRIORITY</span>
                     {% else %}
-                        <span class="badge bg-success">LOW</span>
+                        <span class="badge bg-secondary rounded-pill px-3 py-1" style="font-size: 0.725rem;">LOW PRIORITY</span>
                     {% endif %}
                 </div>
-                <div class="card-body">
-                    <p><strong>Area:</strong> {{ gap.area }}</p>
-                    <p>{{ gap.description }}</p>
-                    <p><strong>Suggestions:</strong> {{ gap.suggestions }}</p>
+                <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <h4 class="h5 fw-bold mb-3 text-dark" style="line-height: 1.35;">
+                            {{ gap.title }}
+                        </h4>
+                        <p class="text-secondary small mb-4" style="line-height: 1.6;">
+                            {{ gap.description }}
+                        </p>
+                    </div>
+
+                    {% if gap.suggestions %}
+                    <div class="p-3 rounded bg-light border">
+                        <span class="small fw-bold text-dark text-uppercase d-block mb-1">
+                            💡 Actionable Research Direction:
+                        </span>
+                        <p class="small text-muted mb-0" style="line-height: 1.5;">
+                            {{ gap.suggestions }}
+                        </p>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -40,8 +124,9 @@
     </div>
     {% endif %}
 
-    <div class="alert alert-warning mt-4 text-sm">
-        <small><strong>Disclaimer:</strong> This AI-generated assessment is an analytical aid and does not certify research originality, novelty, plagiarism status, patentability, or publication acceptance.</small>
+    <div class="p-3 rounded bg-light border text-secondary small text-center mt-4">
+        <i class="bi bi-shield-check text-muted me-1"></i>
+        <strong>Institutional Guidance:</strong> Flagged gaps highlight open opportunities for thesis proposals, grant applications, and co-author partnerships.
     </div>
 </div>
 {% endblock %}

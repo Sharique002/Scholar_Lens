@@ -5,43 +5,156 @@
 
 {% block content %}
 <div class="container py-4">
-    
-
-    <!-- 3. WORKING INTERFACE: SEARCH, FILTERS & PROJECTS DIRECTORY -->
-    <div class="module-work-header">
-        <div>
-            <h1 class="module-work-title">Projects</h1>
-            <p class="text-secondary mb-0">Explore cross-institutional lab initiatives or launch your own research workspace.</p>
+    <!-- 1. TOP METRICS STRIP -->
+    <div class="module-metrics-strip">
+        <div class="metric-strip-item">
+            <div class="metric-strip-num">3 Roles</div>
+            <div class="metric-strip-label">Leader, Researcher &amp; Contributor Tiers</div>
         </div>
-        <a href="{% url 'projects:create' %}" class="btn btn-pill-dark">
-            + Create New Project
-        </a>
+        <div class="metric-strip-item">
+            <div class="metric-strip-num">100% RBAC</div>
+            <div class="metric-strip-label">Granular Edit &amp; Ownership Boundaries</div>
+        </div>
+        <div class="metric-strip-item">
+            <div class="metric-strip-num">Instant</div>
+            <div class="metric-strip-label">Automated Team Member Onboarding</div>
+        </div>
+        <div class="metric-strip-item">
+            <div class="metric-strip-num">Cross-Lab</div>
+            <div class="metric-strip-label">Interdisciplinary Scientific Initiatives</div>
+        </div>
     </div>
 
-    <!-- Filter Bar -->
-    <div class="module-filter-bar">
-        <form method="GET" action="{% url 'projects:list' %}" class="row g-3 align-items-center">
-            <div class="col-md-5">
-                <input type="text" name="q" value="{{ query }}" class="form-control retro-input w-100" placeholder="Search projects by title or description...">
+    <!-- 2. MINT SHOWCASE CONTAINER -->
+    <div class="module-showcase-box">
+        <div class="module-showcase-grid">
+            <!-- Left Hero Column -->
+            <div class="module-hero-left">
+                <div class="module-hero-pill">
+                    <span>🚀</span> MODULE 02 &bull; RESEARCH PROJECTS &amp; LABS
+                </div>
+                <h1 class="module-hero-title">Launch High-Impact Collaborative Labs!</h1>
+                <p class="module-hero-desc">
+                    Form dynamic interdisciplinary research initiatives, assemble verified co-author teams, coordinate milestone deliverables, and share scientific literature across structured workspace environments.
+                </p>
+                <div class="flex gap-2 align-center">
+                    <a href="{% url 'projects:create' %}" class="module-hero-btn">
+                        Create Research Project ➔
+                    </a>
+                </div>
+
+                <!-- Interactive Visual Card -->
+                <div class="module-preview-card">
+                    <div class="preview-card-header">
+                        <span class="preview-tag">FEATURED RESEARCH INITIATIVE</span>
+                        <span class="preview-chip-status">ACTIVE LAB &bull; PUBLIC</span>
+                    </div>
+                    <h3 class="preview-card-title">Neural Quantum Error Mitigation Project</h3>
+                    <p class="text-secondary small mb-2">
+                        Investigating machine-learned noise suppression models for intermediate-scale quantum circuits and algorithms.
+                    </p>
+                    <div class="preview-chips-row">
+                        <span class="preview-chip coral">Leader: Dr. Elena Rostova</span>
+                        <span class="preview-chip yellow">4 Active Members</span>
+                        <span class="preview-chip">Domain: Quantum Computing</span>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-3">
-                <select name="status" class="form-select retro-input w-100">
+
+            <!-- Right 5 Feature Cards Stack -->
+            <div class="module-feature-stack">
+                <div class="module-feature-item accent-coral">
+                    <div class="module-feature-icon">🚀</div>
+                    <div class="module-feature-info">
+                        <h4>Project Lifecycle Tracking</h4>
+                        <p>Move research seamlessly from hypothesis formulation and literature indexing to final publication.</p>
+                    </div>
+                </div>
+
+                <div class="module-feature-item">
+                    <div class="module-feature-icon">👥</div>
+                    <div class="module-feature-info">
+                        <h4>Granular Team Permissions</h4>
+                        <p>Distinct leader, researcher, and contributor permission boundaries preventing unauthorized modifications.</p>
+                    </div>
+                </div>
+
+                <div class="module-feature-item">
+                    <div class="module-feature-icon">🤝</div>
+                    <div class="module-feature-info">
+                        <h4>Automated Collaboration Onboarding</h4>
+                        <p>Send formal invitations; accepted researchers are automatically added as verified team members.</p>
+                    </div>
+                </div>
+
+                <div class="module-feature-item">
+                    <div class="module-feature-icon">🔒</div>
+                    <div class="module-feature-info">
+                        <h4>Public &amp; Private Workspace Controls</h4>
+                        <p>Toggle project visibility between public open-access initiatives and confidential lab workspaces.</p>
+                    </div>
+                </div>
+
+                <div class="module-feature-item">
+                    <div class="module-feature-icon">📊</div>
+                    <div class="module-feature-info">
+                        <h4>Integrated Activity Auditing</h4>
+                        <p>Track all member additions, paper linkages, and project milestones directly in the central activity feed.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. WORKING INTERFACE: SEARCH, FILTERS & PROJECTS DIRECTORY -->
+    <div class="module-work-header mb-4">
+        <div>
+            <h2 class="module-work-title">Active Research Projects</h2>
+            <p class="text-secondary mb-0">Explore cross-institutional lab initiatives or launch your own research workspace.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'projects:create' %}" class="btn btn-pill-dark">
+                + Create New Project
+            </a>
+        </div>
+    </div>
+
+    <!-- Professional Institutional Filter Bar -->
+    <div class="module-filter-bar mb-4 p-4" style="background: #FFFFFF; border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-sm);">
+        <form method="GET" action="{% url 'projects:list' %}" class="row g-4 align-items-end">
+            <div class="col-lg-4 col-md-6">
+                <label class="form-label small fw-bold text-muted mb-2">Project Keywords or Title</label>
+                <div class="position-relative">
+                    <input type="text" name="q" value="{{ query }}" class="form-control" style="border-radius: 8px; padding: 0.65rem 1rem; border: 1px solid var(--border-dark); font-size: 0.925rem;" placeholder="Search projects by title, scope, or methodology...">
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label small fw-bold text-muted mb-2">Lifecycle Status</label>
+                <select name="status" class="form-select" style="border-radius: 8px; padding: 0.65rem 1rem; border: 1px solid var(--border-dark); font-size: 0.925rem;">
                     <option value="">All Project Statuses</option>
                     {% for code, label in status_choices %}
                     <option value="{{ code }}" {% if status == code %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-3">
-                <select name="area" class="form-select retro-input w-100">
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label small fw-bold text-muted mb-2">Research Discipline</label>
+                <select name="area" class="form-select" style="border-radius: 8px; padding: 0.65rem 1rem; border: 1px solid var(--border-dark); font-size: 0.925rem;">
                     <option value="">All Research Disciplines</option>
                     {% for code, label in area_choices %}
                     <option value="{{ code }}" {% if area == code %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-1">
-                <button type="submit" class="btn btn-pill-yellow w-100">Filter</button>
+            <div class="col-lg-2 col-md-6 d-flex gap-2">
+                <button type="submit" class="btn btn-pill-yellow flex-fill" style="padding: 0.65rem 1rem; font-weight: 700;">
+                    Filter
+                </button>
+                {% if query or status or area %}
+                <a href="{% url 'projects:list' %}" class="btn btn-pill-white" style="padding: 0.65rem 0.85rem;" title="Reset filters">
+                    ✕
+                </a>
+                {% endif %}
             </div>
         </form>
     </div>

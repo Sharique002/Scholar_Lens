@@ -5,12 +5,111 @@
 
 {% block content %}
 <div class="container py-4">
-    
+    <!-- 1. TOP METRICS STRIP -->
+    <div class="module-metrics-strip">
+        <div class="metric-strip-item">
+            <div class="metric-strip-num">1-Click</div>
+            <div class="metric-strip-label">Direct Collaboration Invite Dispatch</div>
+        </div>
+        <div class="metric-strip-item">
+            <div class="metric-strip-num">M:N Graph</div>
+            <div class="metric-strip-label">Cross-Disciplinary Skill Matchmaking</div>
+        </div>
+        <div class="metric-strip-item">
+            <div class="metric-strip-num">Verified</div>
+            <div class="metric-strip-label">ORCID &amp; Institutional Credentials</div>
+        </div>
+        <div class="metric-strip-item">
+            <div class="metric-strip-num">100% Open</div>
+            <div class="metric-strip-label">Peer-to-Peer Scholarly Network</div>
+        </div>
+    </div>
+
+    <!-- 2. MINT SHOWCASE CONTAINER -->
+    <div class="module-showcase-box">
+        <div class="module-showcase-grid">
+            <!-- Left Hero Column -->
+            <div class="module-hero-left">
+                <div class="module-hero-pill">
+                    <span>👥</span> MODULE 03 &bull; RESEARCHERS DIRECTORY &amp; NETWORK
+                </div>
+                <h1 class="module-hero-title">Connect With Leading Scholarly Minds!</h1>
+                <p class="module-hero-desc">
+                    Explore verified faculty, postdocs, and student researchers across global institutions. Discover shared research interests, complementary technical skills, and initiate high-impact research partnerships with 1-click proposals.
+                </p>
+                <div class="flex gap-2 align-center">
+                    <a href="{% url 'collaboration:recommendations' %}" class="module-hero-btn">
+                        Smart Match Recommendations ➔
+                    </a>
+                </div>
+
+                <!-- Interactive Visual Card -->
+                <div class="module-preview-card">
+                    <div class="preview-card-header">
+                        <span class="preview-tag">VERIFIED FACULTY PROFILE</span>
+                        <span class="preview-chip-status">COLLABORATION OPEN 🟢</span>
+                    </div>
+                    <h3 class="preview-card-title">Dr. Elena Rostova &bull; MIT Dept. of EECS</h3>
+                    <p class="text-secondary small mb-2">
+                        Associate Professor specializing in machine learning evaluation benchmarks, academic peer-review integrity, and neuro-symbolic systems.
+                    </p>
+                    <div class="preview-chips-row">
+                        <span class="preview-chip coral">Skills: Python &bull; PyTorch &bull; NLP</span>
+                        <span class="preview-chip yellow">Interests: Machine Learning</span>
+                        <span class="preview-chip">ORCID: 0009-0002-8192-3491</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right 5 Feature Cards Stack -->
+            <div class="module-feature-stack">
+                <div class="module-feature-item accent-coral">
+                    <div class="module-feature-icon">🧠</div>
+                    <div class="module-feature-info">
+                        <h4>Smart Matchmaking Engine</h4>
+                        <p>Qualitative recommendation engine scoring compatibility based on shared interests and complementary skills.</p>
+                    </div>
+                </div>
+
+                <div class="module-feature-item">
+                    <div class="module-feature-icon">🏷️</div>
+                    <div class="module-feature-info">
+                        <h4>Categorized Skills &amp; Interests</h4>
+                        <p>Granular taxonomy covering programming languages, frameworks, methodologies, and research domains.</p>
+                    </div>
+                </div>
+
+                <div class="module-feature-item">
+                    <div class="module-feature-icon">📬</div>
+                    <div class="module-feature-info">
+                        <h4>Formal Collaboration Requests</h4>
+                        <p>Send structured collaboration invitations with personalized proposals and project associations.</p>
+                    </div>
+                </div>
+
+                <div class="module-feature-item">
+                    <div class="module-feature-icon">🌐</div>
+                    <div class="module-feature-info">
+                        <h4>Public Academic Showcases</h4>
+                        <p>Showcase authored papers, active projects, bio, ORCID identifiers, and verified institution affiliations.</p>
+                    </div>
+                </div>
+
+                <div class="module-feature-item">
+                    <div class="module-feature-icon">🟢</div>
+                    <div class="module-feature-info">
+                        <h4>Live Collaboration Availability</h4>
+                        <p>Filter researchers actively seeking co-authors, lab members, and academic partners.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- 3. WORKING INTERFACE: SEARCH, FILTERS & RESEARCHERS DIRECTORY -->
     <div class="module-work-header">
         <div>
-            <h1 class="module-work-title">Researchers</h1>
+            <h2 class="module-work-title">Scholarly Researchers Directory</h2>
             <p class="text-secondary mb-0">Discover potential research partners, co-authors, and mentors across academic disciplines.</p>
         </div>
         <div class="d-flex gap-2">

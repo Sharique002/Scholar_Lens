@@ -1,36 +1,56 @@
 {% extends 'base.html' %}
 
-{% block title %}Edit Project - {{ project.title }}{% endblock %}
+{% block title %}Edit Project — {{ project.title }} | Scholar Lens{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="m-0">Edit Project</h4>
-                    <a href="{% url 'projects:detail' project.pk %}" class="btn btn-sm btn-outline-secondary">Back</a>
+        <div class="col-lg-8 col-md-10">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="h3 fw-bold mb-1">Edit Research Project</h2>
+                    <p class="text-secondary small mb-0">Update metadata, milestones, or visibility settings for this workspace.</p>
                 </div>
-                <div class="card-body">
+                <a href="{% url 'projects:detail' project.pk %}" class="btn btn-sm btn-outline-secondary">
+                    ← Back to Project
+                </a>
+            </div>
+
+            <div class="card shadow-sm border" style="border-radius: 12px; border-color: var(--border);">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <span class="small fw-bold text-muted text-uppercase">Workspace Settings</span>
+                    <span class="badge bg-light text-dark border">{{ project.get_status_display }}</span>
+                </div>
+                <div class="card-body p-4 p-md-5">
                     <form method="post">
                         {% csrf_token %}
-                        {{ form.non_field_errors }}
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger mb-4">
+                            {% for error in form.non_field_errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                         
                         {% for field in form %}
-                        <div class="mb-3">
-                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold text-dark mb-2" for="{{ field.id_for_label }}">
+                                {{ field.label }}
+                                {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                            </label>
                             {{ field }}
                             {% if field.help_text %}
-                            <small class="form-text text-muted">{{ field.help_text }}</small>
+                            <small class="form-text text-muted d-block mt-1">{{ field.help_text }}</small>
                             {% endif %}
                             {% for error in field.errors %}
-                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            <div class="invalid-feedback d-block mt-1">{{ error }}</div>
                             {% endfor %}
                         </div>
                         {% endfor %}
                         
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <div class="d-flex justify-content-end gap-3 pt-3 border-top mt-4">
+                            <a href="{% url 'projects:detail' project.pk %}" class="btn btn-pill-white px-4">Cancel</a>
+                            <button type="submit" class="btn btn-pill-dark px-4 fw-bold">Save Changes</button>
                         </div>
                     </form>
                 </div>

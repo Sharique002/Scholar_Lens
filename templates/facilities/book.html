@@ -20,13 +20,18 @@
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="card border rounded-3 shadow-sm bg-white">
-                <div class="card-header bg-white border-bottom py-3">
-                    <span class="badge mb-1" style="background-color: var(--ums-maroon-tint); color: var(--ums-maroon); font-weight: 600;">
-                        {{ facility.get_kind_display }}
-                    </span>
-                    <h1 class="h4 fw-bold mb-1" style="color: var(--ums-maroon);">Book {{ facility.name }}</h1>
-                    <p class="text-secondary small mb-0">
-                        <span>🏢 {{ facility.department }}</span> &bull; <span>📍 {{ facility.location }}</span>
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <span class="badge mb-1" style="background-color: var(--ums-maroon-tint); color: var(--ums-maroon); font-weight: 600;">
+                            {{ facility.get_kind_display }}
+                        </span>
+                        <h1 class="h4 fw-bold mb-1" style="color: var(--ums-maroon);">Book {{ facility.name }}</h1>
+                        <p class="text-secondary small mb-0">
+                            <span>🏢 {{ facility.department }}</span> &bull; <span>📍 {{ facility.location }}</span>
+                        </p>
+                    </div>
+                    <a href="{% url 'facilities:detail' facility.pk %}" class="btn btn-sm btn-outline-secondary">← Back to Facility</a>
+                </div>
                         {% if facility.requires_approval %}
                         &bull; <span class="text-warning">Approval Required</span>
                         {% else %}

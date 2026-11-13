@@ -96,13 +96,27 @@
                 {% endfor %}
             {% endif %}
         </div>
-        <div class="card-footer bg-white border-top p-3">
+        <div class="card-footer bg-white border-top p-3 p-md-4">
+            <!-- Quick prompt suggestions -->
+            <div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
+                <span class="small text-muted fw-bold">Suggested Inquiries:</span>
+                <button type="button" class="badge bg-light text-dark border py-2 px-3 fw-normal" onclick="document.getElementById('ragQuestionInput').value='What is the core methodology and theoretical model proposed?';" style="cursor: pointer;">
+                    Methodology &amp; Model
+                </button>
+                <button type="button" class="badge bg-light text-dark border py-2 px-3 fw-normal" onclick="document.getElementById('ragQuestionInput').value='What empirical datasets and benchmarks are evaluated?';" style="cursor: pointer;">
+                    Datasets &amp; Benchmarks
+                </button>
+                <button type="button" class="badge bg-light text-dark border py-2 px-3 fw-normal" onclick="document.getElementById('ragQuestionInput').value='What are the main stated limitations and assumptions?';" style="cursor: pointer;">
+                    Limitations &amp; Scope
+                </button>
+            </div>
+
             <form method="post" action="{% url 'ai_engine:ask_paper' paper.id %}">
                 {% csrf_token %}
                 <div class="input-group">
-                    <input type="text" name="question" class="form-control" placeholder="Ask a specific question about methodology, evidence, or conclusions..." required>
-                    <button class="btn btn-primary px-4" type="submit">
-                        <i class="bi bi-send-fill me-1"></i> Ask
+                    <input type="text" id="ragQuestionInput" name="question" class="form-control" style="padding: 0.75rem 1rem; border-radius: 8px 0 0 8px;" placeholder="Ask a specific question about methodology, evidence, or conclusions..." required>
+                    <button class="btn btn-pill-dark px-4" style="border-radius: 0 8px 8px 0;" type="submit">
+                        Ask Paper ➔
                     </button>
                 </div>
             </form>
