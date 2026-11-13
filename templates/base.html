@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Scholar Lens — Research Intelligence & Collaboration Hub{% endblock %}</title>
     {% load static %}
+    <link rel="icon" type="image/png" href="{% static 'images/scholar_lens_icon.png' %}">
     <!-- Google Fonts: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,19 +21,18 @@
     <header class="ums-header">
         <div class="ums-header-inner flex justify-between align-center">
             <div class="ums-header-left flex align-center">
-                {% if user.is_authenticated %}
+                {% if user.is_authenticated and request.resolver_match.url_name != 'landing' %}
                 <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation">
                     <span class="hamburger"></span>
                 </button>
                 {% endif %}
-                <a href="{% if user.is_authenticated %}{% url 'dashboard:home' %}{% else %}{% url 'dashboard:landing' %}{% endif %}" class="ums-brand">
-                    <span class="ums-brand-icon">🔬</span>
-                    <span class="ums-brand-text">Scholar <span class="ums-brand-accent">Lens</span></span>
+                <a href="{% if user.is_authenticated %}{% url 'dashboard:home' %}{% else %}{% url 'dashboard:landing' %}{% endif %}" class="ums-brand brand-logo-link" style="display: flex; align-items: center; text-decoration: none;">
+                    <img src="{% static 'images/scholar_lens_logo.png' %}" alt="Scholar Lens — Research Intelligence" class="site-header-logo" style="height: 38px; width: auto; max-width: 210px; object-fit: contain; display: block;">
                 </a>
             </div>
 
             <div class="ums-header-center">
-                {% if user.is_authenticated %}
+                {% if user.is_authenticated and request.resolver_match.url_name != 'landing' %}
                 <form action="{% url 'search:search' %}" method="get" class="ums-header-search" role="search">
                     <input type="text" name="q" placeholder="Search papers…" aria-label="Search papers">
                     <button type="submit" aria-label="Submit search">🔍</button>
@@ -40,7 +40,7 @@
                 {% endif %}
             </div>
 
-            <div class="ums-header-right flex align-center">
+            <div class="ums-header-right flex align-center" style="gap: 12px;">
                 {% if user.is_authenticated %}
                 <a href="{% if pending_bookings_count > 0 %}{% url 'facilities:manage' %}{% else %}{% url 'dashboard:notifications' %}{% endif %}" class="ums-bell" aria-label="Notifications" title="{% if pending_bookings_count > 0 %}{{ pending_bookings_count }} pending booking request{{ pending_bookings_count|pluralize }}{% else %}Notifications{% endif %}">
                     <span class="ums-bell-icon">🔔</span>
@@ -71,8 +71,8 @@
                     </div>
                 </div>
                 {% else %}
-                <a href="{% url 'accounts:login' %}" class="nav-pill-link">Sign In</a>
-                <a href="{% url 'accounts:register' %}" class="btn btn-pill-primary">Register</a>
+                <a href="{% url 'accounts:login' %}" class="nav-btn-signin">Sign In</a>
+                <a href="{% url 'accounts:register' %}" class="nav-btn-register">Register</a>
                 {% endif %}
             </div>
         </div>
@@ -92,7 +92,7 @@
 
     <!-- Main Application Shell Layout -->
     <div class="ums-layout">
-        {% if user.is_authenticated %}
+        {% if user.is_authenticated and request.resolver_match.url_name != 'landing' %}
         <aside class="ums-sidebar" id="navLinks" aria-label="Main sidebar navigation">
             <button id="sidebarCollapse" class="ums-sidebar-collapse" aria-label="Collapse menu" title="Collapse menu" aria-expanded="true">«</button>
             <nav class="ums-sidebar-nav">
@@ -112,7 +112,8 @@
         </aside>
         {% endif %}
 
-        <main class="ums-main{% if not user.is_authenticated %} ums-main--full{% endif %}">
+        <main class="ums-main{% if not user.is_authenticated or request.resolver_match.url_name == 'landing' %} ums-main--full{% endif %}" style="{% if request.resolver_match.url_name == 'landing' %}margin-left: 0 !important; padding: 0 !important; max-width: 100% !important;{% endif %}">
+            {% if request.resolver_match.url_name != 'landing' and request.path != '/' %}
             {% block breadcrumb %}
             <nav class="ums-breadcrumb ums-breadcrumbs" aria-label="Breadcrumb">
                 <a href="{% if user.is_authenticated %}{% url 'dashboard:home' %}{% else %}{% url 'dashboard:landing' %}{% endif %}">Home</a>
@@ -135,6 +136,7 @@
                 </span>
             </nav>
             {% endblock %}
+            {% endif %}
 
             <!-- Global Messages Container -->
             <div class="messages-container container">
