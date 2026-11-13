@@ -78,12 +78,17 @@ button.btn-secondary,
 a.btn-primary,
 a.btn-secondary,
 .btn-primary,
+.btn-ums-primary,
 .btn-secondary,
 .btn-maroon,
 .btn-pill-primary,
 .btn-pill-dark,
 .btn-pill-white,
 .btn-pill-yellow,
+.btn-pill-orange,
+.btn-pill-pink,
+.btn-dark,
+.btn-light,
 .btn-outline,
 .btn-outline-primary,
 .btn-outline-secondary,
@@ -91,6 +96,7 @@ a.btn-secondary,
 .btn-outline-success,
 .btn-outline-danger,
 .btn-outline-warning,
+.btn-outline-info,
 .btn-success,
 .btn-danger,
 .btn-warning,
@@ -102,30 +108,36 @@ a.btn-secondary,
     justify-content: center !important;
     gap: 8px !important;
     font-family: 'Plus Jakarta Sans', var(--font-body, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif) !important;
-    font-size: 13.5px !important;
-    font-weight: 600 !important;
-    line-height: 1.2 !important;
+    font-size: 0.9rem !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
     letter-spacing: -0.01em !important;
-    padding: 7px 16px !important;
-    min-height: 36px;
-    border-radius: var(--radius-sm) !important;
-    border: 1px solid transparent;
+    padding: 0.55rem 1.25rem !important;
+    min-height: 38px;
+    border-radius: 8px !important;
+    border: 1.5px solid transparent;
     cursor: pointer !important;
     text-decoration: none !important;
     user-select: none;
     white-space: nowrap;
     transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    box-sizing: border-box !important;
 }
 
 .btn:hover,
 .btn-primary:hover,
+.btn-ums-primary:hover,
 .btn-secondary:hover,
 .btn-maroon:hover,
 .btn-pill-primary:hover,
 .btn-pill-dark:hover,
 .btn-pill-white:hover,
 .btn-pill-yellow:hover,
+.btn-pill-orange:hover,
+.btn-pill-pink:hover,
+.btn-dark:hover,
+.btn-light:hover,
 .btn-outline:hover,
 .btn-outline-primary:hover,
 .btn-outline-secondary:hover,
@@ -133,6 +145,7 @@ a.btn-secondary,
 .btn-outline-success:hover,
 .btn-outline-danger:hover,
 .btn-outline-warning:hover,
+.btn-outline-info:hover,
 .btn-success:hover,
 .btn-danger:hover,
 .btn-warning:hover,
@@ -140,17 +153,22 @@ a.btn-secondary,
 .module-hero-btn:hover,
 .back-nav-btn:hover {
     transform: translateY(-1px) !important;
-    box-shadow: 0 3px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.06) !important;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.1) !important;
 }
 
 .btn:active,
 .btn-primary:active,
+.btn-ums-primary:active,
 .btn-secondary:active,
 .btn-maroon:active,
 .btn-pill-primary:active,
 .btn-pill-dark:active,
 .btn-pill-white:active,
 .btn-pill-yellow:active,
+.btn-pill-orange:active,
+.btn-pill-pink:active,
+.btn-dark:active,
+.btn-light:active,
 .btn-outline:active,
 .btn-outline-primary:active,
 .btn-outline-secondary:active,
@@ -158,19 +176,20 @@ a.btn-secondary,
 .btn-outline-success:active,
 .btn-outline-danger:active,
 .btn-outline-warning:active,
+.btn-outline-info:active,
 .btn-success:active,
 .btn-danger:active,
 .btn-warning:active,
 .btn-info:active,
 .module-hero-btn:active,
 .back-nav-btn:active {
-    transform: translateY(1px) scale(0.985) !important;
+    transform: translateY(1px) scale(0.99) !important;
     box-shadow: 0 1px 1px rgba(15, 23, 42, 0.04) !important;
 }
 
 .btn:focus-visible,
 .back-nav-btn:focus-visible {
-    outline: 2px solid var(--primary) !important;
+    outline: 2px solid #0F172A !important;
     outline-offset: 2px !important;
 }
 
@@ -189,6 +208,8 @@ button[disabled] {
 .btn i,
 .btn-primary svg,
 .btn-primary i,
+.btn-ums-primary svg,
+.btn-ums-primary i,
 .btn-secondary svg,
 .btn-secondary i,
 .btn-pill-primary svg,
@@ -200,42 +221,73 @@ button[disabled] {
     flex-shrink: 0 !important;
 }
 
-/* Primary Action Buttons (Institutional Maroon) */
+/* Primary Action Buttons (Institutional Deep Maroon) */
 .btn-primary,
-.btn-maroon,
-.btn-pill-dark {
-    background: linear-gradient(180deg, #A8273B 0%, #901F30 100%) !important;
+.btn-ums-primary,
+.btn-maroon {
+    background: #9B2335 !important;
     color: #FFFFFF !important;
-    border: 1px solid #7E1A29 !important;
-    box-shadow: 0 1px 2px rgba(155, 35, 53, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+    border: 1.5px solid #801C2B !important;
+    box-shadow: 0 1px 3px rgba(155, 35, 53, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
 }
 
 .btn-primary:hover,
-.btn-maroon:hover,
-.btn-pill-dark:hover {
-    background: linear-gradient(180deg, #B52D42 0%, #831B2A 100%) !important;
+.btn-ums-primary:hover,
+.btn-maroon:hover {
+    background: #801C2B !important;
     color: #FFFFFF !important;
-    box-shadow: 0 4px 10px rgba(155, 35, 53, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+    border-color: #671622 !important;
+    box-shadow: 0 4px 12px rgba(155, 35, 53, 0.35) !important;
 }
 
-/* High-Impact Action Buttons */
+/* Dark Action Buttons */
+.btn-dark,
+.btn-pill-dark {
+    background: #0F172A !important;
+    color: #FFFFFF !important;
+    border: 1.5px solid #0F172A !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+.btn-dark:hover,
+.btn-pill-dark:hover {
+    background: #1E293B !important;
+    color: #FFFFFF !important;
+    border-color: #1E293B !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.28) !important;
+}
+
+/* High-Impact Retro Warm Orange Action Buttons */
 .btn-pill-primary,
 .btn-pill-yellow,
+.btn-pill-orange,
 .module-hero-btn,
 .btn-warning {
-    background: linear-gradient(180deg, #F37021 0%, #E0601A 100%) !important;
+    background: #F37021 !important;
     color: #FFFFFF !important;
-    border: 1px solid #C44E10 !important;
-    box-shadow: 0 1px 2px rgba(224, 96, 26, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+    border: 1.5px solid #D65A10 !important;
+    box-shadow: 0 1px 3px rgba(243, 112, 33, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
 }
 
 .btn-pill-primary:hover,
 .btn-pill-yellow:hover,
+.btn-pill-orange:hover,
 .module-hero-btn:hover,
 .btn-warning:hover {
-    background: linear-gradient(180deg, #FA7E32 0%, #D45412 100%) !important;
+    background: #EA580C !important;
     color: #FFFFFF !important;
-    box-shadow: 0 4px 10px rgba(224, 96, 26, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+    border-color: #C2410C !important;
+    box-shadow: 0 4px 12px rgba(243, 112, 33, 0.35) !important;
+}
+
+/* Pill Geometry Overrides for .btn-pill-* */
+.btn-pill-primary,
+.btn-pill-yellow,
+.btn-pill-orange,
+.btn-pill-pink,
+.btn-pill-dark,
+.btn-pill-white {
+    border-radius: 9999px !important;
 }
 
 /* Secondary & Neutral Light Buttons */
@@ -243,8 +295,8 @@ button[disabled] {
 .btn-light,
 .btn-pill-white {
     background: #FFFFFF !important;
-    color: #334155 !important;
-    border: 1px solid #CBD5E1 !important;
+    color: #1E293B !important;
+    border: 1.5px solid #CBD5E1 !important;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
 }
 
@@ -252,104 +304,196 @@ button[disabled] {
 .btn-light:hover,
 .btn-pill-white:hover {
     background: #F8FAFC !important;
-    color: var(--primary) !important;
+    color: #0F172A !important;
     border-color: #94A3B8 !important;
-    box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+    box-shadow: 0 3px 8px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
 }
 
 /* Outline Buttons */
 .btn-outline,
 .btn-outline-primary {
     background: #FFFFFF !important;
-    color: var(--primary) !important;
-    border: 1.5px solid var(--primary) !important;
-    box-shadow: 0 1px 2px rgba(155, 35, 53, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+    color: #9B2335 !important;
+    border: 1.5px solid #9B2335 !important;
+    box-shadow: 0 1px 2px rgba(155, 35, 53, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
 }
 
 .btn-outline:hover,
 .btn-outline-primary:hover {
-    background: var(--primary-light) !important;
-    color: var(--primary-dark) !important;
-    border-color: var(--primary-dark) !important;
-    box-shadow: 0 2px 5px rgba(155, 35, 53, 0.15) !important;
+    background: #9B2335 !important;
+    color: #FFFFFF !important;
+    border-color: #9B2335 !important;
+    box-shadow: 0 4px 12px rgba(155, 35, 53, 0.25) !important;
 }
 
 .btn-outline-secondary {
     background: #FFFFFF !important;
-    color: #475569 !important;
-    border: 1px solid #CBD5E1 !important;
+    color: #334155 !important;
+    border: 1.5px solid #CBD5E1 !important;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
 }
 
 .btn-outline-secondary:hover {
-    background: #F8FAFC !important;
-    color: var(--primary) !important;
+    background: #F1F5F9 !important;
+    color: #0F172A !important;
     border-color: #94A3B8 !important;
-    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.06) !important;
+    box-shadow: 0 3px 8px rgba(15, 23, 42, 0.08) !important;
 }
 
 .btn-outline-dark {
     background: #FFFFFF !important;
-    color: #1E293B !important;
-    border: 1px solid #CBD5E1 !important;
+    color: #0F172A !important;
+    border: 1.5px solid #0F172A !important;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
 }
 
 .btn-outline-dark:hover {
-    background: #F1F5F9 !important;
-    color: #0F172A !important;
-    border-color: #64748B !important;
+    background: #0F172A !important;
+    color: #FFFFFF !important;
+    border-color: #0F172A !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.22) !important;
 }
 
 /* Semantic Status Action Buttons */
-.btn-success,
+.btn-success {
+    background: #16A34A !important;
+    color: #FFFFFF !important;
+    border: 1.5px solid #15803D !important;
+    box-shadow: 0 1px 3px rgba(22, 163, 74, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.btn-success:hover {
+    background: #15803D !important;
+    color: #FFFFFF !important;
+    border-color: #166534 !important;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.32) !important;
+}
+
 .btn-outline-success {
-    background: linear-gradient(180deg, #16A34A 0%, #15803D 100%) !important;
-    color: #FFFFFF !important;
-    border: 1px solid #166534 !important;
-    box-shadow: 0 1px 2px rgba(22, 163, 74, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+    background: #FFFFFF !important;
+    color: #16A34A !important;
+    border: 1.5px solid #16A34A !important;
+    box-shadow: 0 1px 2px rgba(22, 163, 74, 0.06) !important;
 }
 
-.btn-success:hover,
 .btn-outline-success:hover {
-    background: linear-gradient(180deg, #22C55E 0%, #16A34A 100%) !important;
+    background: #16A34A !important;
     color: #FFFFFF !important;
-    box-shadow: 0 4px 10px rgba(22, 163, 74, 0.3) !important;
+    border-color: #16A34A !important;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25) !important;
 }
 
-.btn-danger,
+.btn-danger {
+    background: #DC2626 !important;
+    color: #FFFFFF !important;
+    border: 1.5px solid #B91C1C !important;
+    box-shadow: 0 1px 3px rgba(220, 38, 38, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.btn-danger:hover {
+    background: #B91C1C !important;
+    color: #FFFFFF !important;
+    border-color: #991B1B !important;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.32) !important;
+}
+
 .btn-outline-danger {
-    background: linear-gradient(180deg, #DC2626 0%, #B91C1C 100%) !important;
-    color: #FFFFFF !important;
-    border: 1px solid #991B1B !important;
-    box-shadow: 0 1px 2px rgba(220, 38, 38, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+    background: #FFFFFF !important;
+    color: #DC2626 !important;
+    border: 1.5px solid #DC2626 !important;
+    box-shadow: 0 1px 2px rgba(220, 38, 38, 0.06) !important;
 }
 
-.btn-danger:hover,
 .btn-outline-danger:hover {
-    background: linear-gradient(180deg, #EF4444 0%, #DC2626 100%) !important;
+    background: #DC2626 !important;
     color: #FFFFFF !important;
-    box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3) !important;
+    border-color: #DC2626 !important;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25) !important;
+}
+
+.btn-outline-warning {
+    background: #FFFFFF !important;
+    color: #D97706 !important;
+    border: 1.5px solid #D97706 !important;
+    box-shadow: 0 1px 2px rgba(217, 119, 6, 0.06) !important;
+}
+
+.btn-outline-warning:hover {
+    background: #D97706 !important;
+    color: #FFFFFF !important;
+    border-color: #D97706 !important;
+    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25) !important;
+}
+
+.btn-info {
+    background: #0284C7 !important;
+    color: #FFFFFF !important;
+    border: 1.5px solid #0369A1 !important;
+    box-shadow: 0 1px 3px rgba(2, 132, 199, 0.25) !important;
+}
+
+.btn-info:hover {
+    background: #0369A1 !important;
+    color: #FFFFFF !important;
+    border-color: #075985 !important;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.32) !important;
+}
+
+.btn-outline-info {
+    background: #FFFFFF !important;
+    color: #0284C7 !important;
+    border: 1.5px solid #0284C7 !important;
+    box-shadow: 0 1px 2px rgba(2, 132, 199, 0.06) !important;
+}
+
+.btn-outline-info:hover {
+    background: #0284C7 !important;
+    color: #FFFFFF !important;
+    border-color: #0284C7 !important;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25) !important;
 }
 
 /* Button Sizing Variations */
 .btn-sm {
-    padding: 4px 11px !important;
-    font-size: 12.5px !important;
-    min-height: 30px !important;
-    height: 30px;
-    border-radius: 5px !important;
-    font-weight: 600 !important;
-    gap: 5px !important;
+    padding: 0.45rem 1rem !important;
+    font-size: 0.825rem !important;
+    min-height: 34px !important;
+    height: auto !important;
+    border-radius: 6px !important;
+    font-weight: 700 !important;
+    gap: 6px !important;
 }
 
 .btn-lg {
-    padding: 10px 22px !important;
-    font-size: 15px !important;
-    min-height: 44px !important;
-    border-radius: 8px !important;
+    padding: 0.85rem 1.75rem !important;
+    font-size: 1rem !important;
+    min-height: 48px !important;
+    border-radius: 10px !important;
     font-weight: 700 !important;
     gap: 10px !important;
+}
+
+.flex-fill {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+}
+
+.btn-group,
+.btn-group-sm {
+    display: inline-flex !important;
+    vertical-align: middle !important;
+    border-radius: 8px !important;
+}
+
+.btn-group > .btn:not(:last-child) {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border-right: none !important;
+}
+
+.btn-group > .btn:not(:first-child) {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
 }
 
 /* 3. Neutralize Neo-Brutalist Offset Shadows & Heavy Borders */
@@ -1497,6 +1641,25 @@ body.sidebar-collapsed .ums-footer {
     transform: none !important;
     pointer-events: none !important;
 }
+
+/* Card Header & Footer Layout Utilities */
+.card-footer {
+    background: #FFFFFF !important;
+    border-top: 1px solid #E2E8F0 !important;
+    padding: 0.85rem 1.25rem !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    box-sizing: border-box !important;
+}
+
+.card-header {
+    background: #FFFFFF !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+    padding: 0.85rem 1.25rem !important;
+    box-sizing: border-box !important;
+}
+
 
 
 

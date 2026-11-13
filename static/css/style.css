@@ -385,7 +385,7 @@ h4 { font-size: 1.25rem; }
 }
 
 /* Button Themes */
-.btn-primary, .btn-pill-primary {
+.btn-primary, .btn-ums-primary, .btn-pill-primary {
     background-color: var(--color-pink);
     color: #FFFFFF;
 }
@@ -2522,6 +2522,11 @@ h4 { font-size: 1.25rem; }
     box-shadow: none !important;
     transform: none !important;
     pointer-events: none !important;
+}
+
+.flex-fill {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
 }
 
 
