@@ -2,6 +2,8 @@
 Comprehensive test suite for Scholar Lens.
 Tests cover authentication, models, forms, views, search, and AI service handling.
 """
+from datetime import timedelta
+from django.utils import timezone
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
@@ -234,6 +236,7 @@ class ResearchPaperModelTest(ScholarLensTestMixin, TestCase):
 
     def test_paper_ordering(self):
         """Papers should be ordered by -created_at by default."""
+        ResearchPaper.objects.filter(pk=self.paper.pk).update(created_at=timezone.now() - timedelta(minutes=5))
         paper2 = self.create_paper(self.user, title='Newer Paper')
         papers = list(ResearchPaper.objects.all())
         self.assertEqual(papers[0], paper2)

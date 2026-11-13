@@ -15,6 +15,7 @@ from projects.models import ResearchProject, ProjectMember, Milestone
 from facilities.models import Facility, FacilitySlot
 from funding.models import FundingCall
 from opportunities.models import ResearchOpening
+from evaluation.models import EvaluationReport, ResearchScore
 from researchers.search_index import refresh_search_document
 from collaboration.suggestions import compute_suggestions
 
@@ -23,16 +24,37 @@ class Command(BaseCommand):
     help = 'Reset and seed the deterministic E2E database for Cypress tests'
 
     def handle(self, *args, **options):
-        # 1. Safety check
+        # 1. Multi-layered fail-closed safety checks
         if not getattr(settings, 'E2E', False):
-            raise CommandError("e2e_reset can only run when settings.E2E is True (set E2E=1).")
+            raise CommandError("CRITICAL SECURITY: e2e_reset can only run when settings.E2E is True (set E2E=1).")
 
-        db_name = settings.DATABASES['default']['NAME']
-        if not str(db_name).endswith('_e2e'):
+        # Refuse to run if running with production settings (DEBUG=False and not testing)
+        if not getattr(settings, 'DEBUG', True) and not getattr(settings, 'TESTING', False):
+            raise CommandError("CRITICAL SECURITY: e2e_reset is permanently disabled in production (DEBUG=False).")
+
+        db_config = settings.DATABASES.get('default', {})
+        db_name = str(db_config.get('NAME', ''))
+        db_host = str(db_config.get('HOST', ''))
+
+        # Database name validation: must explicitly end with _e2e
+        if not db_name.endswith('_e2e'):
             raise CommandError(
-                f"e2e_reset refuses to run against '{db_name}'. Database name must end in '_e2e'."
+                f"CRITICAL SECURITY: e2e_reset refuses to run against '{db_name}'. Database name must explicitly end with '_e2e'."
             )
 
+        # Database host validation: reject known cloud/production database domains
+        prohibited_hosts = ['.render.com', 'neon.tech', 'supabase.co', 'rds.amazonaws.com', 'cloudsql', 'azure.com']
+        for bad_host in prohibited_hosts:
+            if bad_host in db_host.lower():
+                raise CommandError(
+                    f"CRITICAL SECURITY: e2e_reset refuses to run against remote cloud database host '{db_host}'."
+                )
+
+        self.stdout.write(
+            self.style.WARNING(
+                f"AUDIT LOG [{timezone.now().isoformat()}]: Initiating deterministic E2E database reset on '{db_name}' (host: {db_host or 'localhost'})."
+            )
+        )
         self.stdout.write(f"Flushing database '{db_name}'...")
         call_command('flush', interactive=False)
 
@@ -401,6 +423,35 @@ class Command(BaseCommand):
             match_status=PaperAuthor.MatchStatus.CONFIRMED,
             match_score=100.0,
         )
+
+        # Pre-seed canonical 7-dimension evaluation report for p1
+        eval_report = EvaluationReport.objects.create(
+            paper=p1,
+            overall_score=84.5,
+            summary="Strong edge-native neural architecture addressing constrained memory overhead with novel quantized pruning techniques.",
+            strengths=["Low memory footprint", "High inference speed on ARM Cortex-M"],
+            weaknesses=["Limited evaluation on non-vision tasks"],
+            recommendations=["ACCEPT with minor revisions"],
+            confidence="High",
+        )
+        dimensions = [
+            ('NOVELTY', 88.0, 0.20, "Novel quantized pruning technique specifically tailored for edge devices."),
+            ('RESEARCH_GAP', 82.0, 0.15, "Addresses critical memory constraint gap in microcontrollers."),
+            ('METHODOLOGY', 86.0, 0.15, "Sound empirical benchmarking across multiple hardware platforms."),
+            ('CONTRIBUTION', 85.0, 0.15, "Substantial open-source artifact and benchmark contribution."),
+            ('EVIDENCE_QUALITY', 83.0, 0.15, "High quality experimental measurements with repeated trials."),
+            ('TECHNICAL_STRENGTH', 87.0, 0.10, "Mathematically rigorous quantization analysis."),
+            ('CLARITY', 80.0, 0.10, "Well-structured paper with clear architectural schematics."),
+        ]
+        for dim, score_val, weight, expl in dimensions:
+            ResearchScore.objects.create(
+                report=eval_report,
+                dimension=dim,
+                score=score_val,
+                weight=weight,
+                explanation=expl,
+                confidence='High',
+            )
 
         p2 = ResearchPaper.objects.create(
             title='Genomic Variant Interpretation via Graph Transformers',

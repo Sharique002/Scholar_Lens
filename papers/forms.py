@@ -33,6 +33,17 @@ class PaperUploadForm(forms.ModelForm):
             max_size = getattr(settings, 'MAX_UPLOAD_SIZE', 10 * 1024 * 1024) # Default 10MB
             if file.size > max_size:
                 raise ValidationError(f"File size must be under {max_size / (1024 * 1024)} MB.")
+
+            # Content validation: verify magic bytes to prevent spoofed extensions/MIME types
+            try:
+                header = file.read(5)
+                file.seek(0)
+                if not header.startswith(b'%PDF-'):
+                    raise ValidationError("Invalid file format. Uploaded file is not a valid PDF document.")
+            except ValidationError:
+                raise
+            except Exception:
+                raise ValidationError("Unable to verify PDF file contents.")
                 
         return file
 

@@ -60,6 +60,7 @@
                         <td>
                             {% if b.status == 'APPROVED' %}
                             <span class="badge bg-success">Approved</span>
+                            <a href="{% url 'facilities:booking_ics' b.pk %}" class="small ms-1">Add to calendar</a>
                             {% elif b.status == 'PENDING' %}
                             <span class="badge bg-warning text-dark">Pending Approval</span>
                             {% elif b.status == 'REJECTED' %}

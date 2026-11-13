@@ -163,12 +163,109 @@ class GoogleAuthUnitTests(TestCase):
             'sub': 'google_sub_valid',
             'email': 'unverified@google.com',
             'email_verified': 'false',
+            'exp': 9999999999,
         }
         mock_get.return_value = mock_resp
 
         with self.assertRaises(ValueError) as ctx:
             verify_id_token_server_side('dummy_id_token', 'expected-client-id')
         self.assertIn("not verified", str(ctx.exception))
+
+    @patch('accounts.google_auth.requests.get')
+    def test_verify_id_token_invalid_issuer_rejected(self, mock_get):
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {
+            'iss': 'https://attacker-identity-provider.com',
+            'aud': 'expected-client-id',
+            'sub': 'google_sub_valid',
+            'email': 'user@example.com',
+            'email_verified': True,
+            'exp': 9999999999,
+        }
+        mock_get.return_value = mock_resp
+
+        with self.assertRaises(ValueError) as ctx:
+            verify_id_token_server_side('dummy_id_token', 'expected-client-id')
+        self.assertIn("Invalid ID token issuer", str(ctx.exception))
+
+    @patch('accounts.google_auth.requests.get')
+    def test_verify_id_token_expired_rejected(self, mock_get):
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {
+            'iss': 'https://accounts.google.com',
+            'aud': 'expected-client-id',
+            'sub': 'google_sub_valid',
+            'email': 'user@example.com',
+            'email_verified': True,
+            'exp': 1000000000,  # Far past timestamp
+        }
+        mock_get.return_value = mock_resp
+
+        with self.assertRaises(ValueError) as ctx:
+            verify_id_token_server_side('dummy_id_token', 'expected-client-id')
+        self.assertIn("expired", str(ctx.exception))
+
+    @patch('accounts.google_auth.requests.get')
+    def test_verify_id_token_missing_exp_rejected(self, mock_get):
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {
+            'iss': 'https://accounts.google.com',
+            'aud': 'expected-client-id',
+            'sub': 'google_sub_valid',
+            'email': 'user@example.com',
+            'email_verified': True,
+        }
+        mock_get.return_value = mock_resp
+
+        with self.assertRaises(ValueError) as ctx:
+            verify_id_token_server_side('dummy_id_token', 'expected-client-id')
+        self.assertIn("missing required 'exp'", str(ctx.exception))
+
+    def test_conflicting_google_subject_rejected(self):
+        # Create user already linked to sub A
+        user = User.objects.create_user('conflict_user', email='conflict@example.com')
+        user.profile.google_sub = 'google_sub_A'
+        user.profile.save()
+
+        # Attempt to link user to sub B with same email
+        with self.assertRaises(ValueError) as ctx:
+            get_or_create_google_user({
+                'sub': 'google_sub_B',
+                'email': 'conflict@example.com',
+                'name': 'Conflict User'
+            })
+        self.assertIn("already linked to a different Google identity", str(ctx.exception))
+
+    @patch('accounts.google_auth.requests.post')
+    def test_failed_token_exchange_handled(self, mock_post):
+        mock_resp = MagicMock()
+        mock_resp.status_code = 400
+        mock_resp.text = "invalid_grant"
+        mock_post.return_value = mock_resp
+
+        from accounts.google_auth import exchange_code_for_user_info
+        with self.assertRaises(ValueError) as ctx:
+            exchange_code_for_user_info('bad_code', 'http://localhost:8000/callback/')
+        self.assertIn("Failed to exchange authorization code", str(ctx.exception))
+
+    @patch('accounts.google_auth.verify_id_token_server_side', side_effect=ValueError("Invalid signature"))
+    @patch('accounts.google_auth.requests.post')
+    def test_invalid_id_token_with_access_token_fails_fast(self, mock_post, mock_verify):
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {
+            'id_token': 'tampered_id_token',
+            'access_token': 'valid_access_token',
+        }
+        mock_post.return_value = mock_resp
+
+        from accounts.google_auth import exchange_code_for_user_info
+        with self.assertRaises(ValueError) as ctx:
+            exchange_code_for_user_info('test_code', 'http://localhost:8000/callback/')
+        self.assertIn("Invalid signature", str(ctx.exception))
 
 
 class GoogleAuthViewTests(TestCase):
@@ -210,6 +307,31 @@ class GoogleAuthViewTests(TestCase):
         resp = self.client.get(f"{self.google_callback_url}?code=fake_code&state=forged_state_xyz")
         self.assertEqual(resp.status_code, 302)
         self.assertRedirects(resp, self.login_url)
+
+    @override_settings(GOOGLE_CLIENT_ID='test-client-id', GOOGLE_CLIENT_SECRET='test-secret')
+    @patch('accounts.views.exchange_code_for_user_info')
+    def test_state_replay_rejected(self, mock_exchange):
+        mock_exchange.return_value = {
+            'sub': 'google_replay_sub',
+            'email': 'replay@gmail.com',
+            'name': 'Replay User',
+        }
+
+        session = self.client.session
+        session['google_oauth_state'] = 'single_use_state_999'
+        session.save()
+
+        # First use succeeds
+        resp1 = self.client.get(f"{self.google_callback_url}?code=code1&state=single_use_state_999")
+        self.assertEqual(resp1.status_code, 302)
+        self.assertRedirects(resp1, reverse('dashboard:home'))
+
+        self.client.logout()
+
+        # Second use (replay with same state) must be rejected because state was popped
+        resp2 = self.client.get(f"{self.google_callback_url}?code=code2&state=single_use_state_999")
+        self.assertEqual(resp2.status_code, 302)
+        self.assertRedirects(resp2, self.login_url)
 
     @override_settings(GOOGLE_CLIENT_ID='test-client-id', GOOGLE_CLIENT_SECRET='test-secret')
     @patch('accounts.views.exchange_code_for_user_info')

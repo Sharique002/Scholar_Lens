@@ -68,3 +68,25 @@ Scholar Lens is a unified institutional research intelligence portal built with 
 - **Departmental Productivity:** Aggregates publications count, funding success rate, and facility utilization hours.
 - **Dean Confidential Privacy:** Per-researcher individual productivity metrics are strictly restricted to the Dean of Research and redacted for all other viewers.
 - **Research Office Hub:** Unified administrative command centre aggregating verification queues, deduplication reviews, author match queues, at-risk milestones, and immutable audit logs.
+
+---
+
+## 3. JSON API (spec section 8)
+Read-only, session-authenticated (401 JSON when logged out). `?limit=` caps at 100.
+
+| Endpoint | Notes |
+|---|---|
+| `GET /api/researchers/` | `?department=<code>` |
+| `GET /api/publications/` | Active (non-merged) papers, `?year=` |
+| `GET /api/search/expertise/?q=` | Full-text ranked, `?department=<code>` |
+| `GET /api/openings/` | Open openings only |
+| `GET /api/projects/` | Public + own/member projects (staff see all), with milestones and risk |
+| `GET /api/facilities/` | Active facilities with opening hours |
+| `GET /api/bookings/` | Own and custodian bookings (staff see all) |
+| `GET /api/funding-calls/` | Published calls, `?open=true` |
+| `GET /api/analytics/research/?year=` | Office/Dean only; per-researcher metrics Dean only |
+
+## 4. Integrations and notifications added
+- **Scopus import:** `python manage.py import_publications --source scopus --scopus-author <id>` or the Import page. Needs `SCOPUS_API_KEY` (Elsevier licence); malformed entries are skipped like ORCID/Crossref.
+- **Calendar export:** approved bookings offer an "Add to calendar" `.ics` download (`/facilities/bookings/<id>/calendar.ics`) that Google Calendar and Outlook import.
+- **Notifications:** posting an opening alerts researchers whose skills match; a newly computed collaboration suggestion alerts the researcher once (recomputes do not re-notify).

@@ -222,13 +222,27 @@ def paper_download(request, pk):
     if not paper.pdf_file:
         raise Http404("PDF file not found.")
 
-    file_path = paper.pdf_file.path
-    if os.path.exists(file_path):
-        response = FileResponse(open(file_path, 'rb'), content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_path)}"'
-        return response
-    else:
-        raise Http404("PDF file not found on server.")
+    try:
+        file_path = paper.pdf_file.path
+        if os.path.exists(file_path):
+            response = FileResponse(open(file_path, 'rb'), content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_path)}"'
+            return response
+        else:
+            raise Http404("PDF file not found on server.")
+    except (NotImplementedError, AttributeError):
+        # Remote storage (e.g. Cloudflare R2 / S3-compatible backend)
+        try:
+            return redirect(paper.pdf_file.url)
+        except Exception:
+            try:
+                f = paper.pdf_file.open('rb')
+                response = FileResponse(f, content_type='application/pdf')
+                filename = os.path.basename(paper.pdf_file.name)
+                response['Content-Disposition'] = f'attachment; filename="{filename}"'
+                return response
+            except Exception:
+                raise Http404("PDF file could not be retrieved from storage.")
 
 
 @login_required
@@ -296,13 +310,15 @@ def import_publications_view(request):
     if request.method == 'POST':
         source = request.POST.get('source', '').lower()
         query_val = request.POST.get('query', '').strip()
-        from .importers import fetch_orcid_works, fetch_crossref, import_records
+        from .importers import fetch_orcid_works, fetch_crossref, fetch_scopus, import_records
 
         try:
             if source == 'orcid':
                 raw_items = fetch_orcid_works(query_val)
             elif source == 'crossref':
                 raw_items = fetch_crossref(query_val, rows=int(request.POST.get('rows', 20)))
+            elif source == 'scopus':
+                raw_items = fetch_scopus(query_val)
             else:
                 messages.error(request, "Invalid import source specified.")
                 return redirect('papers:import_publications')

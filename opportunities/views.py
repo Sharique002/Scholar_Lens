@@ -10,6 +10,28 @@ from .models import ResearchOpening, OpportunityApplication
 from .forms import ResearchOpeningForm, OpportunityApplicationForm
 from projects.models import ProjectMember
 from dashboard.audit import record as audit_record
+from dashboard.models import ResearchActivity
+from django.contrib.auth.models import User
+
+
+def _notify_matching_researchers(opening):
+    """Spec section 11: alert users whose skills overlap the opening's required skills."""
+    skill_ids = list(opening.required_skills.values_list('pk', flat=True))
+    if not skill_ids:
+        return 0
+    users = (
+        User.objects.filter(researcher_profile__skills__in=skill_ids)
+        .exclude(pk=opening.created_by_id)
+        .distinct()
+    )
+    ResearchActivity.objects.bulk_create([
+        ResearchActivity(
+            user=u,
+            activity_type='OPENING',
+            description=f"New research opening matching your skills: {opening.title}",
+        ) for u in users
+    ])
+    return len(users)
 
 
 def openings_list(request):
@@ -94,6 +116,7 @@ def opening_create(request):
             opening.created_by = request.user
             opening.save()
             form.save_m2m()
+            _notify_matching_researchers(opening)
             messages.success(request, f"Opportunity '{opening.title}' posted successfully.")
             return redirect('opportunities:detail', pk=opening.pk)
     else:

@@ -1,5 +1,5 @@
 import csv
-from datetime import datetime, time, timedelta, date
+from datetime import datetime, time, timedelta, date, timezone as dt_timezone
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -355,3 +355,38 @@ def utilisation_report(request):
         'next_week': next_week,
     }
     return render(request, 'facilities/utilisation.html', context)
+
+
+def _ics_escape(text):
+    # RFC 5545 text escaping
+    return str(text).replace('\\', '\\\\').replace(';', '\\;').replace(',', '\\,').replace('\n', '\\n')
+
+
+@login_required
+def booking_ics(request, pk):
+    """iCalendar export of one approved booking, importable into Google or Outlook calendar."""
+    booking = get_object_or_404(Booking.objects.select_related('facility'), pk=pk)
+    if booking.user != request.user and not booking.facility.can_manage(request.user):
+        return HttpResponseForbidden("Not authorized to export this booking")
+    if booking.status != 'APPROVED':
+        return HttpResponseForbidden("Only approved bookings can be exported")
+    fmt = '%Y%m%dT%H%M%SZ'
+    utc = dt_timezone.utc
+    lines = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Scholar Lens//Facility Booking//EN',
+        'BEGIN:VEVENT',
+        f'UID:booking-{booking.pk}@scholar-lens',
+        f'DTSTAMP:{timezone.now().astimezone(utc).strftime(fmt)}',
+        f'DTSTART:{booking.start.astimezone(utc).strftime(fmt)}',
+        f'DTEND:{booking.end.astimezone(utc).strftime(fmt)}',
+        f'SUMMARY:{_ics_escape(booking.facility.name)}',
+        f'LOCATION:{_ics_escape(booking.facility.location)}',
+        f'DESCRIPTION:{_ics_escape(booking.purpose)}',
+        'END:VEVENT',
+        'END:VCALENDAR',
+    ]
+    response = HttpResponse('\r\n'.join(lines) + '\r\n', content_type='text/calendar; charset=utf-8')
+    response['Content-Disposition'] = f'attachment; filename="booking-{booking.pk}.ics"'
+    return response

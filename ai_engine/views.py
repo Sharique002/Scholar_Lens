@@ -2,7 +2,14 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from papers.models import ResearchPaper
-from ai_engine.services import PaperSummarizer, ResearchGapDetector, ResearchQuestionAnswerer, PaperProcessor, AIServiceNotConfigured
+from ai_engine.services import (
+    AIService,
+    PaperSummarizer,
+    ResearchGapDetector,
+    ResearchQuestionAnswerer,
+    PaperProcessor,
+    AIServiceNotConfigured,
+)
 from ai_engine.models import ChatMessage
 
 @login_required

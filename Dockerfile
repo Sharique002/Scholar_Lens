@@ -23,12 +23,11 @@ COPY . .
 # Create directories for media and staticfiles
 RUN mkdir -p /app/media /app/staticfiles
 
-# Collect static files
-RUN python manage.py collectstatic --noinput 2>/dev/null || true
+# Collect static files (fails build fast if staticfiles collection fails)
+RUN python manage.py collectstatic --noinput
 
 # Expose port
 EXPOSE 8000
 
-# Run migrations, initialize accounts, and start production server with Gunicorn
-CMD ["sh", "-c", "python manage.py migrate && python manage.py init_admin && gunicorn scholar_lens.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 3 --timeout 120"]
-
+# Run migrations and start production server with Gunicorn (respects $PORT, binds to 0.0.0.0)
+CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn scholar_lens.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 120"]

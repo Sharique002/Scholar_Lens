@@ -1,6 +1,6 @@
 """Tests for M6 Funding Call Register."""
 from io import StringIO
-from datetime import timedelta, date
+from datetime import timedelta, date, datetime, time
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.contrib.auth.models import User
@@ -16,6 +16,7 @@ class FundingRegisterTests(TestCase):
         self.student = User.objects.create_user('student_user', password='password123')
         self.staff = User.objects.create_user('staff_user', password='password123', is_staff=True)
         now = timezone.now()
+        today = timezone.localdate()
 
         # Open call (12 days)
         self.call_open = FundingCall.objects.create(
@@ -25,7 +26,7 @@ class FundingRegisterTests(TestCase):
             eligibility="Faculty and postdocs.",
             research_area="AI",
             amount="Up to 25 Lakhs",
-            deadline=now + timedelta(days=12),
+            deadline=timezone.make_aware(datetime.combine(today + timedelta(days=12), time(23, 59, 59))),
             is_published=True,
             created_by=self.staff
         )
@@ -38,7 +39,7 @@ class FundingRegisterTests(TestCase):
             eligibility="All researchers.",
             research_area="AI",
             amount="Up to 10 Lakhs",
-            deadline=now + timedelta(days=1),
+            deadline=timezone.make_aware(datetime.combine(today + timedelta(days=1), time(23, 59, 59))),
             is_published=True,
             created_by=self.staff
         )
@@ -51,7 +52,7 @@ class FundingRegisterTests(TestCase):
             eligibility="Lab leads.",
             research_area="BIO",
             amount="Up to 50 Lakhs",
-            deadline=now + timedelta(hours=3),
+            deadline=timezone.make_aware(datetime.combine(today, time(23, 59, 59))),
             is_published=True,
             created_by=self.staff
         )
@@ -64,7 +65,7 @@ class FundingRegisterTests(TestCase):
             eligibility="Closed.",
             research_area="SE",
             amount="Up to 5 Lakhs",
-            deadline=now - timedelta(days=2),
+            deadline=timezone.make_aware(datetime.combine(today - timedelta(days=2), time(23, 59, 59))),
             is_published=True,
             created_by=self.staff
         )
