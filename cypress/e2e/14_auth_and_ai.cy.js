@@ -54,12 +54,12 @@ describe('14 - Registration, Google OAuth, Paper PDF Upload & AI RAG Workflows',
     cy.url().should('include', '/dashboard/');
   });
 
-  it('completes Mock Google SSO flow in development environment', () => {
+  it('[MOCK DEV ONLY] completes Mock Google SSO flow in development environment (does not represent live Google OAuth)', () => {
     cy.visit('/accounts/logout/');
     cy.visit('/accounts/login/');
     cy.contains(/Sign In with Google|Continue with Google/i).should('exist');
 
-    // Visit google mock endpoint
+    // Visit google mock endpoint (strictly accessible only in DEBUG=True)
     cy.visit('/accounts/google/mock/');
     cy.contains(/Google Single Sign-On/i).should('exist');
     cy.get('input[name="email"]').clear().type('sharique_sso@example.com');
@@ -99,7 +99,7 @@ describe('14 - Registration, Google OAuth, Paper PDF Upload & AI RAG Workflows',
     cy.contains(/Paper uploaded and processed successfully/i).should('exist');
   });
 
-  it('interacts with paper RAG assistant and verifies citations', () => {
+  it('handles paper RAG assistant in initial and degraded mode gracefully without unhandled exceptions', () => {
     cy.loginAs('faculty');
     cy.visit('/papers/');
     // Open the first available active paper via retro-card title link
@@ -110,23 +110,55 @@ describe('14 - Registration, Google OAuth, Paper PDF Upload & AI RAG Workflows',
     cy.contains('a', /Ask Paper/i).click();
     cy.url().should('include', '/ask/');
 
-    // Submit question
-    cy.get('input[name="question"]').first().type('What is the main methodology?{enter}');
-
-    // Verify answer or RAG response renders cleanly
-    cy.contains(/Cited Document Sources|Source Citations|References|Based on|AI service not configured|Scholar Lens RAG Synthesis|No questions asked yet/i).should('exist');
+    // Verify assistant interface loads cleanly
+    cy.contains(/Ask Paper|Research Assistant|Scholar Lens/i).should('exist');
+    cy.contains(/No questions asked yet|Ask a question about this paper/i).should('exist');
   });
 
-  it('views 7-dimension evaluation report with multi-criteria scores', () => {
+  it('submits question to paper RAG assistant and verifies citations or graceful degradation', () => {
     cy.loginAs('faculty');
     cy.visit('/papers/');
     cy.get('.retro-card h4 a').first().click();
     cy.url().should('match', /\/papers\/\d+\/$/);
 
+    // Click Ask Paper / AI assistant
+    cy.contains('a', /Ask Paper/i).click();
+    cy.url().should('include', '/ask/');
+
+    // Submit question
+    cy.get('input[name="question"]').first().type('What is the main methodology?{enter}');
+
+    // Verify answer or RAG response renders cleanly (either live RAG response with citations or graceful fallback)
+    cy.contains(/Cited Document Sources|Source Citations|References|Based on|AI service not configured|Scholar Lens RAG Synthesis/i).should('exist');
+  });
+
+  it('views 7-dimension evaluation report asserting all canonical criteria', () => {
+    cy.loginAs('faculty');
+    cy.visit('/papers/');
+    // Target the seeded paper with evaluation report
+    cy.contains('a', 'Edge-Native Neural Networks for IoT Devices').click();
+    cy.url().should('match', /\/papers\/\d+\/$/);
+
     // Open evaluation page
     cy.contains('a', /Evaluate/i).first().click();
     cy.url().should('include', '/evaluation/');
-    cy.contains(/Evaluate Research|Novelty|Evaluation|Score|Report/i).should('exist');
-    cy.contains(/Disclaimer/i).should('exist');
+    cy.contains(/Evaluation Report Available|Evaluate Research/i).should('exist');
+
+    // Click View Full Report
+    cy.contains('a', /View Full Report/i).click();
+    cy.url().should('include', '/evaluation/report/');
+
+    // Verify report header and academic disclaimer
+    cy.contains(/AI Research Evaluation & Novelty Assessment/i).should('exist');
+    cy.contains(/Academic Evaluation Disclaimer/i).should('exist');
+
+    // Assert all 7 canonical evaluation dimensions explicitly
+    cy.contains('Potential Novelty').should('exist');
+    cy.contains('Research Gap').should('exist');
+    cy.contains('Methodology').should('exist');
+    cy.contains('Contribution').should('exist');
+    cy.contains('Evidence Quality').should('exist');
+    cy.contains('Technical Strength').should('exist');
+    cy.contains('Clarity').should('exist');
   });
 });
