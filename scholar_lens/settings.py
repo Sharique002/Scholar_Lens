@@ -3,6 +3,7 @@ Django settings for scholar_lens project.
 """
 import os
 from pathlib import Path
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,26 +40,43 @@ def get_bool_env(key, default=False):
 
 E2E = get_bool_env('E2E', False)
 
-# Security
-SECRET_KEY = get_str_env(
-    'SECRET_KEY',
-    'django-insecure-dev-key-change-this-in-production-abc123xyz'
-)
-DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
+# Environment & Debug Configuration
+raw_debug = os.environ.get('DEBUG', None)
+if raw_debug is not None:
+    DEBUG = raw_debug.strip().lower() in ('true', '1', 'yes')
+elif os.environ.get('RENDER') or os.environ.get('RENDER_EXTERNAL_HOSTNAME') or os.environ.get('ENVIRONMENT') == 'production':
+    DEBUG = False
+else:
+    DEBUG = True
+
+# Security: SECRET_KEY
+SECRET_KEY = get_str_env('SECRET_KEY', None)
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = 'django-insecure-dev-key-change-this-in-production-abc123xyz'
+    else:
+        raise ImproperlyConfigured("SECRET_KEY must be configured via environment variable in production (DEBUG=False).")
+
+if not DEBUG:
+    if SECRET_KEY.startswith('django-insecure') or len(SECRET_KEY) < 32:
+        raise ImproperlyConfigured("Production SECRET_KEY must be a cryptographically secure key of at least 32 characters.")
 
 
-# Allowed Hosts
-raw_hosts = os.environ.get('ALLOWED_HOSTS', '*,localhost,127.0.0.1,.onrender.com,.vercel.app').split(',')
-clean_hosts = []
-for h in raw_hosts:
-    h = h.strip()
-    if not h:
-        continue
-    if h.startswith('*.'):
-        clean_hosts.append('.' + h[2:])
-    clean_hosts.append(h)
-
-ALLOWED_HOSTS = clean_hosts if clean_hosts else ['*']
+# Allowed Hosts Configuration
+raw_hosts = os.environ.get('ALLOWED_HOSTS', '')
+if raw_hosts:
+    clean_hosts = []
+    for h in raw_hosts.split(','):
+        h = h.strip()
+        if not h:
+            continue
+        if h.startswith('*.'):
+            clean_hosts.append('.' + h[2:])
+        else:
+            clean_hosts.append(h)
+    ALLOWED_HOSTS = clean_hosts
+else:
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1'] if DEBUG else []
 
 render_host = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if render_host and render_host not in ALLOWED_HOSTS:
@@ -68,28 +86,27 @@ vercel_host = os.environ.get('VERCEL_URL')
 if vercel_host and vercel_host not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(vercel_host)
 
-# Ensure common deployment domains and wildcards are always permitted
-for default_host in ['.onrender.com', '.vercel.app', 'localhost', '127.0.0.1', 'scholar-lens.onrender.com']:
-    if default_host not in ALLOWED_HOSTS and '*' not in ALLOWED_HOSTS:
-        ALLOWED_HOSTS.append(default_host)
+if not DEBUG:
+    if '*' in ALLOWED_HOSTS:
+        raise ImproperlyConfigured("Wildcard '*' in ALLOWED_HOSTS is strictly forbidden in production (DEBUG=False).")
+    if not ALLOWED_HOSTS:
+        raise ImproperlyConfigured("ALLOWED_HOSTS must be explicitly defined when DEBUG=False.")
+else:
+    for default_host in ['localhost', '127.0.0.1', '.onrender.com', 'scholar-lens.onrender.com']:
+        if default_host not in ALLOWED_HOSTS and '*' not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(default_host)
 
-# CSRF Trusted Origins (required for HTTPS in Django 4+)
+# CSRF Trusted Origins Configuration
 raw_csrf = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
 if raw_csrf:
     CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in raw_csrf.split(',') if origin.strip()]
 else:
     CSRF_TRUSTED_ORIGINS = []
 
-default_origins = [
-    'https://*.onrender.com',
-    'https://scholar-lens.onrender.com',
-    'https://*.vercel.app',
-    'http://localhost:8000',
-    'http://127.0.0.1:8000',
-]
-for origin in default_origins:
-    if origin not in CSRF_TRUSTED_ORIGINS:
-        CSRF_TRUSTED_ORIGINS.append(origin)
+if DEBUG:
+    for origin in ['http://localhost:8000', 'http://127.0.0.1:8000', 'http://localhost:8001', 'http://127.0.0.1:8001']:
+        if origin not in CSRF_TRUSTED_ORIGINS:
+            CSRF_TRUSTED_ORIGINS.append(origin)
 
 if render_host:
     rendered_origin = render_host if render_host.startswith(('http://', 'https://')) else f"https://{render_host}"
@@ -169,7 +186,6 @@ IS_SERVERLESS = bool(
     or os.environ.get('VERCEL_REGION')
     or os.environ.get('NOW_REGION')
     or os.environ.get('AWS_LAMBDA_FUNCTION_NAME')
-    or not os.access(str(BASE_DIR), os.W_OK)
 )
 
 # Database
@@ -198,6 +214,8 @@ elif USE_POSTGRES:
         }
     }
 else:
+    if not DEBUG:
+        raise ImproperlyConfigured("SQLite fallback is strictly forbidden in production (DEBUG=False). Please configure a PostgreSQL DATABASE_URL.")
     # On Vercel serverless, root filesystem is read-only; use /tmp
     db_file = Path('/tmp/db.sqlite3') if IS_SERVERLESS else (BASE_DIR / 'db.sqlite3')
     DATABASES = {
@@ -230,9 +248,57 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 # In serverless environments, allow WhiteNoise to serve directly from finders if collectstatic wasn't run
 WHITENOISE_USE_FINDERS = True
 
-# Media files
-MEDIA_URL = '/media/'
-MEDIA_ROOT = Path('/tmp/media') if IS_SERVERLESS else (BASE_DIR / 'media')
+# Persistent Storage (Cloudflare R2 / S3-compatible backend)
+USE_R2_STORAGE = get_bool_env('USE_R2_STORAGE', False) or get_bool_env('USE_S3_STORAGE', False)
+
+if USE_R2_STORAGE:
+    if 'storages' not in INSTALLED_APPS:
+        INSTALLED_APPS.append('storages')
+
+    AWS_ACCESS_KEY_ID = os.environ.get('R2_ACCESS_KEY_ID') or os.environ.get('AWS_ACCESS_KEY_ID', '')
+    AWS_SECRET_ACCESS_KEY = os.environ.get('R2_SECRET_ACCESS_KEY') or os.environ.get('AWS_SECRET_ACCESS_KEY', '')
+    AWS_STORAGE_BUCKET_NAME = os.environ.get('R2_BUCKET_NAME') or os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
+    AWS_S3_ENDPOINT_URL = os.environ.get('R2_ENDPOINT_URL') or os.environ.get('AWS_S3_ENDPOINT_URL', '')
+    AWS_S3_REGION_NAME = os.environ.get('R2_REGION_NAME', 'auto')
+    AWS_S3_SIGNATURE_VERSION = 's3v4'
+    AWS_DEFAULT_ACL = None
+    AWS_QUERYSTRING_AUTH = get_bool_env('AWS_QUERYSTRING_AUTH', True)
+    AWS_QUERYSTRING_EXPIRE = get_int_env('AWS_QUERYSTRING_EXPIRE', 3600)
+    AWS_S3_FILE_OVERWRITE = False
+    AWS_LOCATION = os.environ.get('R2_MEDIA_LOCATION', 'media')
+
+    r2_custom_domain = os.environ.get('R2_CUSTOM_DOMAIN') or os.environ.get('AWS_S3_CUSTOM_DOMAIN', '')
+    if r2_custom_domain:
+        AWS_S3_CUSTOM_DOMAIN = r2_custom_domain
+        MEDIA_URL = f"https://{r2_custom_domain}/{AWS_LOCATION}/"
+    elif AWS_S3_ENDPOINT_URL and AWS_STORAGE_BUCKET_NAME:
+        MEDIA_URL = f"{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/{AWS_LOCATION}/"
+    else:
+        MEDIA_URL = '/media/'
+
+    MEDIA_ROOT = Path('/tmp/media') if IS_SERVERLESS else (BASE_DIR / 'media')
+    STORAGES = {
+        "default": {
+            "BACKEND": "scholar_lens.storage.R2MediaStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        },
+    }
+    DEFAULT_FILE_STORAGE = 'scholar_lens.storage.R2MediaStorage'
+else:
+    # Media files (Local filesystem fallback for local development and offline tests)
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = Path('/tmp/media') if IS_SERVERLESS else (BASE_DIR / 'media')
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        },
+    }
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -263,11 +329,11 @@ if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
-    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'True').lower() in ('true', '1', 'yes')
+    SECURE_SSL_REDIRECT = get_bool_env('SECURE_SSL_REDIRECT', True)
     if SECURE_SSL_REDIRECT:
         SECURE_HSTS_SECONDS = get_int_env('SECURE_HSTS_SECONDS', 31536000)
-        SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-        SECURE_HSTS_PRELOAD = True
+        SECURE_HSTS_INCLUDE_SUBDOMAINS = get_bool_env('SECURE_HSTS_INCLUDE_SUBDOMAINS', True)
+        SECURE_HSTS_PRELOAD = get_bool_env('SECURE_HSTS_PRELOAD', False)
 
 # File upload settings
 MAX_UPLOAD_SIZE_MB = get_int_env('MAX_UPLOAD_SIZE_MB', 20)
