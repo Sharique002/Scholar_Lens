@@ -40,6 +40,15 @@ def get_bool_env(key, default=False):
 
 E2E = get_bool_env('E2E', False)
 
+# Serverless / Cloud detection (Vercel, AWS Lambda)
+IS_SERVERLESS = bool(
+    os.environ.get('VERCEL')
+    or os.environ.get('VERCEL_ENV')
+    or os.environ.get('VERCEL_REGION')
+    or os.environ.get('NOW_REGION')
+    or os.environ.get('AWS_LAMBDA_FUNCTION_NAME')
+)
+
 # Environment & Debug Configuration
 raw_debug = os.environ.get('DEBUG', None)
 if raw_debug is not None:
@@ -52,12 +61,12 @@ else:
 # Security: SECRET_KEY
 SECRET_KEY = get_str_env('SECRET_KEY', None)
 if not SECRET_KEY:
-    if DEBUG:
+    if DEBUG or IS_SERVERLESS:
         SECRET_KEY = 'django-insecure-dev-key-change-this-in-production-abc123xyz'
     else:
         raise ImproperlyConfigured("SECRET_KEY must be configured via environment variable in production (DEBUG=False).")
 
-if not DEBUG:
+if not DEBUG and not IS_SERVERLESS:
     if SECRET_KEY.startswith('django-insecure') or len(SECRET_KEY) < 32:
         raise ImproperlyConfigured("Production SECRET_KEY must be a cryptographically secure key of at least 32 characters.")
 
@@ -86,13 +95,18 @@ vercel_host = os.environ.get('VERCEL_URL')
 if vercel_host and vercel_host not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(vercel_host)
 
-if not DEBUG:
+if IS_SERVERLESS:
+    for vhost in ['.vercel.app', 'scholar-lenss.vercel.app']:
+        if vhost not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(vhost)
+
+if not DEBUG and not IS_SERVERLESS:
     if '*' in ALLOWED_HOSTS:
         raise ImproperlyConfigured("Wildcard '*' in ALLOWED_HOSTS is strictly forbidden in production (DEBUG=False).")
     if not ALLOWED_HOSTS:
         raise ImproperlyConfigured("ALLOWED_HOSTS must be explicitly defined when DEBUG=False.")
 else:
-    for default_host in ['localhost', '127.0.0.1', '.onrender.com', 'scholar-lens.onrender.com']:
+    for default_host in ['localhost', '127.0.0.1', '.onrender.com', 'scholar-lens.onrender.com', '.vercel.app', 'scholar-lenss.vercel.app']:
         if default_host not in ALLOWED_HOSTS and '*' not in ALLOWED_HOSTS:
             ALLOWED_HOSTS.append(default_host)
 
@@ -103,8 +117,8 @@ if raw_csrf:
 else:
     CSRF_TRUSTED_ORIGINS = []
 
-if DEBUG:
-    for origin in ['http://localhost:8000', 'http://127.0.0.1:8000', 'http://localhost:8001', 'http://127.0.0.1:8001']:
+if DEBUG or IS_SERVERLESS:
+    for origin in ['http://localhost:8000', 'http://127.0.0.1:8000', 'http://localhost:8001', 'http://127.0.0.1:8001', 'https://*.vercel.app', 'https://scholar-lenss.vercel.app']:
         if origin not in CSRF_TRUSTED_ORIGINS:
             CSRF_TRUSTED_ORIGINS.append(origin)
 
@@ -179,15 +193,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'scholar_lens.wsgi.application'
 
-# Serverless / Cloud detection (Vercel, AWS Lambda)
-IS_SERVERLESS = bool(
-    os.environ.get('VERCEL')
-    or os.environ.get('VERCEL_ENV')
-    or os.environ.get('VERCEL_REGION')
-    or os.environ.get('NOW_REGION')
-    or os.environ.get('AWS_LAMBDA_FUNCTION_NAME')
-)
-
 # Database
 import dj_database_url
 
@@ -214,7 +219,7 @@ elif USE_POSTGRES:
         }
     }
 else:
-    if not DEBUG:
+    if not DEBUG and not IS_SERVERLESS:
         raise ImproperlyConfigured("SQLite fallback is strictly forbidden in production (DEBUG=False). Please configure a PostgreSQL DATABASE_URL.")
     # On Vercel serverless, root filesystem is read-only; use /tmp
     db_file = Path('/tmp/db.sqlite3') if IS_SERVERLESS else (BASE_DIR / 'db.sqlite3')
