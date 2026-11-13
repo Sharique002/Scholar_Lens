@@ -18,7 +18,7 @@
     <!-- Header -->
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom gap-3">
         <div>
-            <h1 class="h3 fw-bold mb-1" style="color: var(--ums-maroon);">⚙️ Custodian Booking Management Queue</h1>
+            <h1 class="h3 fw-bold mb-1" style="color: var(--ums-maroon);">Custodian Booking Management Queue</h1>
             <p class="text-secondary mb-0">Review pending facility reservation requests and record completed usage.</p>
         </div>
         <div class="d-flex gap-2">
@@ -31,7 +31,7 @@
     <div class="card border rounded-3 shadow-sm bg-white mb-4">
         <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
             <h2 class="h5 fw-bold mb-0" style="color: var(--ums-maroon);">
-                ⏳ Pending Approval Requests
+                Pending Approval Requests
                 <span class="badge bg-warning text-dark ms-2">{{ pending_bookings.count }}</span>
             </h2>
             <span class="text-muted small">Oldest first</span>
@@ -39,7 +39,7 @@
         <div class="card-body p-0">
             {% if pending_bookings %}
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table table-hover align-middle mb-0 table-stack">
                     <thead class="table-light">
                         <tr>
                             <th>Facility</th>
@@ -104,7 +104,7 @@
     <div class="card border rounded-3 shadow-sm bg-white">
         <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
             <h2 class="h5 fw-bold mb-0" style="color: var(--ums-maroon);">
-                📝 Usage Logging &amp; Attendance
+                Usage Logging &amp; Attendance
                 <span class="badge bg-secondary ms-2">{{ awaiting_log.count }}</span>
             </h2>
             <span class="text-muted small">Approved sessions that have concluded</span>
@@ -112,7 +112,7 @@
         <div class="card-body p-0">
             {% if awaiting_log %}
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table table-hover align-middle mb-0 table-stack">
                     <thead class="table-light">
                         <tr>
                             <th>Facility</th>

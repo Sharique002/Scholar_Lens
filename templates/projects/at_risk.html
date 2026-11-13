@@ -41,7 +41,7 @@
   {% for group in grouped_projects %}
   {% with project=group.project %}
   <div class="ums-card" style="background: #fff; border: 1px solid var(--border-dark); border-radius: 8px; overflow: hidden;">
-    <div style="background: #F9FAFB; padding: 16px 20px; border-bottom: 1px solid var(--border-dark); display: flex; justify-content: space-between; align-items: center;">
+    <div style="background: var(--sl-bg); padding: 16px 20px; border-bottom: 1px solid var(--border-dark); display: flex; justify-content: space-between; align-items: center;">
       <div>
         <h2 style="font-size: 16px; font-weight: 700; margin: 0;">
           <a href="{% url 'projects:detail' project.pk %}" style="color: var(--primary); text-decoration: none;">
@@ -75,13 +75,13 @@
         <tr style="border-bottom: 1px solid var(--border-dark);">
           <td style="padding: 12px 16px; font-weight: 600; color: var(--color-ink);">
             {{ m.title }}
-            {% if m.is_deliverable %}<span style="background: #EBF5FF; color: #0052CC; padding: 1px 6px; border-radius: 3px; font-size: 11px; margin-left: 6px;">Deliverable</span>{% endif %}
+            {% if m.is_deliverable %}<span style="background: var(--sl-primary-soft); color: var(--sl-primary); padding: 1px 6px; border-radius: 3px; font-size: 11px; margin-left: 6px;">Deliverable</span>{% endif %}
           </td>
           <td style="padding: 12px 16px;">
             {% if m.risk == 'OVERDUE' %}
-              <span style="background: #FFEBE6; color: var(--color-danger); padding: 2px 8px; border-radius: 4px; font-weight: 600;">Overdue</span>
+              <span style="background: var(--sl-error-soft); color: var(--color-danger); padding: 2px 8px; border-radius: 4px; font-weight: 600;">Overdue</span>
             {% else %}
-              <span style="background: #FFF0B3; color: #172B4D; padding: 2px 8px; border-radius: 4px; font-weight: 600;">At Risk</span>
+              <span style="background: var(--sl-warning-soft); color: var(--sl-text); padding: 2px 8px; border-radius: 4px; font-weight: 600;">At Risk</span>
             {% endif %}
           </td>
           <td style="padding: 12px 16px; color: var(--color-danger); font-weight: 500;">
