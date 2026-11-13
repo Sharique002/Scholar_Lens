@@ -5,111 +5,12 @@
 
 {% block content %}
 <div class="container py-4">
-    <!-- 1. TOP METRICS STRIP -->
-    <div class="module-metrics-strip">
-        <div class="metric-strip-item">
-            <div class="metric-strip-num">100% Extracted</div>
-            <div class="metric-strip-label">Pure Text, Headings &amp; Citations</div>
-        </div>
-        <div class="metric-strip-item">
-            <div class="metric-strip-num">1,536-dim</div>
-            <div class="metric-strip-label">Vector Embeddings Per Chunk</div>
-        </div>
-        <div class="metric-strip-item">
-            <div class="metric-strip-num">7 Criteria</div>
-            <div class="metric-strip-label">Novelty, Rigor &amp; Evidence Scoring</div>
-        </div>
-        <div class="metric-strip-item">
-            <div class="metric-strip-num">&lt; 10 ms</div>
-            <div class="metric-strip-label">Average Similarity Retrieval Latency</div>
-        </div>
-    </div>
-
-    <!-- 2. MINT SHOWCASE CONTAINER -->
-    <div class="module-showcase-box">
-        <div class="module-showcase-grid">
-            <!-- Left Hero Column -->
-            <div class="module-hero-left">
-                <div class="module-hero-pill">
-                    <span>📄</span> MODULE 01 &bull; LITERATURE INTELLIGENCE
-                </div>
-                <h1 class="module-hero-title">Unlock Deep Literature Intelligence!</h1>
-                <p class="module-hero-desc">
-                    Say goodbye to superficial literature reviews. Ingest complete research PDFs, automatically extract methodologies and datasets, evaluate academic novelty across 7 weighted dimensions, and interact directly with your literature through source-aware RAG.
-                </p>
-                <div class="flex gap-2 align-center">
-                    <a href="{% url 'papers:upload' %}" class="module-hero-btn">
-                        Upload Research Paper ➔
-                    </a>
-                </div>
-
-                <!-- Interactive Visual Card -->
-                <div class="module-preview-card">
-                    <div class="preview-card-header">
-                        <span class="preview-tag">SAMPLE INGESTED PAPER</span>
-                        <span class="preview-chip-status">INDEXED &bull; 16 PAGES</span>
-                    </div>
-                    <h3 class="preview-card-title">Attention Is All You Need: Transformer Architecture</h3>
-                    <p class="text-secondary small mb-2">
-                        Eliminates recurrence through multi-head self-attention mechanisms with positional encodings.
-                    </p>
-                    <div class="preview-chips-row">
-                        <span class="preview-chip coral">Novelty Score: 94.8 / 100</span>
-                        <span class="preview-chip yellow">2 Research Gaps Flagged</span>
-                        <span class="preview-chip">12 Chunks Grounded</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right 5 Feature Cards Stack -->
-            <div class="module-feature-stack">
-                <div class="module-feature-item accent-coral">
-                    <div class="module-feature-icon">📄</div>
-                    <div class="module-feature-info">
-                        <h4>Synchronous PDF Ingestion</h4>
-                        <p>Fast page-by-page extraction via PyMuPDF with text normalization and character null-byte cleaning.</p>
-                    </div>
-                </div>
-
-                <div class="module-feature-item">
-                    <div class="module-feature-icon">⚖️</div>
-                    <div class="module-feature-info">
-                        <h4>7-Dimension Novelty Scoring</h4>
-                        <p>Multi-criteria evaluation assessing Novelty (20%), Gap (15%), Methodology (15%), and Evidence Quality.</p>
-                    </div>
-                </div>
-
-                <div class="module-feature-item">
-                    <div class="module-feature-icon">💬</div>
-                    <div class="module-feature-info">
-                        <h4>Grounded "Ask Your Paper" RAG</h4>
-                        <p>Interactive Q&amp;A citing exact section names and page numbers directly from your uploaded document.</p>
-                    </div>
-                </div>
-
-                <div class="module-feature-item">
-                    <div class="module-feature-icon">🔭</div>
-                    <div class="module-feature-info">
-                        <h4>Automated Research Gap Detection</h4>
-                        <p>Identifies unaddressed limitations, unexplored edge cases, and future directions categorized by severity.</p>
-                    </div>
-                </div>
-
-                <div class="module-feature-item">
-                    <div class="module-feature-icon">🔗</div>
-                    <div class="module-feature-info">
-                        <h4>Similar Literature Discovery</h4>
-                        <p>Vector similarity clustering maps conceptual connections and surfaces related research across the repository.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 
     <!-- 3. WORKING INTERFACE: SEARCH, FILTERS & PAPERS DIRECTORY -->
     <div class="module-work-header">
         <div>
-            <h2 class="module-work-title">Indexed Research Literature</h2>
+            <h1 class="module-work-title">Publications</h1>
             <p class="text-secondary mb-0">Browse peer-reviewed papers, view AI novelty assessments, and ask questions.</p>
         </div>
         <a href="{% url 'papers:upload' %}" class="btn btn-pill-dark">
