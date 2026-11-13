@@ -5,12 +5,111 @@
 
 {% block content %}
 <div class="container py-4">
-    
+    <!-- 1. TOP METRICS STRIP -->
+    <div class="module-metrics-strip">
+        <div class="metric-strip-item">
+            <div class="metric-strip-num">60% Semantic</div>
+            <div class="metric-strip-label">1,536-dim Embedding Vector Cosine Similarity</div>
+        </div>
+        <div class="metric-strip-item">
+            <div class="metric-strip-num">25% Lexical</div>
+            <div class="metric-strip-label">Full-Text BM25 Keyword &amp; Title Precision</div>
+        </div>
+        <div class="metric-strip-item">
+            <div class="metric-strip-num">10% Domain</div>
+            <div class="metric-strip-label">Academic Discipline &amp; Topic Affinity</div>
+        </div>
+        <div class="metric-strip-item">
+            <div class="metric-strip-num">5% Recency</div>
+            <div class="metric-strip-label">Publication Freshness Calibration</div>
+        </div>
+    </div>
+
+    <!-- 2. MINT SHOWCASE CONTAINER -->
+    <div class="module-showcase-box">
+        <div class="module-showcase-grid">
+            <!-- Left Hero Column -->
+            <div class="module-hero-left">
+                <div class="module-hero-pill">
+                    <span>🔍</span> MODULE 04 &bull; HYBRID SEMANTIC SEARCH
+                </div>
+                <h1 class="module-hero-title">Search Across Deep Semantic Embeddings!</h1>
+                <p class="module-hero-desc">
+                    Go beyond naive string matching. Our hybrid search engine blends 1,536-dimensional conceptual embeddings with lexical precision to discover deeply relevant scientific literature even when papers use different specialized terminology.
+                </p>
+                <div class="flex gap-2 align-center">
+                    <a href="#search-engine-form" class="module-hero-btn">
+                        Explore Search Engine ➔
+                    </a>
+                </div>
+
+                <!-- Interactive Visual Card -->
+                <div class="module-preview-card">
+                    <div class="preview-card-header">
+                        <span class="preview-tag">LIVE HYBRID QUERY SIMULATION</span>
+                        <span class="preview-chip-status">96.4% MATCH ⚡</span>
+                    </div>
+                    <h3 class="preview-card-title">Query: "neural attention mechanisms in sequence models"</h3>
+                    <p class="text-secondary small mb-2">
+                        Top match: <em>Attention Is All You Need</em> &bull; Identified through semantic chunk correlation.
+                    </p>
+                    <div class="preview-chips-row">
+                        <span class="preview-chip coral">Semantic: 0.941 Cosine</span>
+                        <span class="preview-chip yellow">Lexical: Exact Keyword Match</span>
+                        <span class="preview-chip">Domain: Computer Science</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right 5 Feature Cards Stack -->
+            <div class="module-feature-stack">
+                <div class="module-feature-item accent-coral">
+                    <div class="module-feature-icon">⚡</div>
+                    <div class="module-feature-info">
+                        <h4>Hybrid 4-Factor Ranking</h4>
+                        <p>Multi-factor scoring formula: 0.60 semantic + 0.25 lexical + 0.10 research area + 0.05 recency.</p>
+                    </div>
+                </div>
+
+                <div class="module-feature-item">
+                    <div class="module-feature-icon">🎯</div>
+                    <div class="module-feature-info">
+                        <h4>Dynamic Threshold Filtering</h4>
+                        <p>Adjust minimum match thresholds to fine-tune precision and eliminate low-confidence results.</p>
+                    </div>
+                </div>
+
+                <div class="module-feature-item">
+                    <div class="module-feature-icon">📚</div>
+                    <div class="module-feature-info">
+                        <h4>Multi-Faceted Filters</h4>
+                        <p>Narrow searches simultaneously across research domains, publication year, and specific authors.</p>
+                    </div>
+                </div>
+
+                <div class="module-feature-item">
+                    <div class="module-feature-icon">🔬</div>
+                    <div class="module-feature-info">
+                        <h4>Conceptual Search Expansion</h4>
+                        <p>Search by scientific hypotheses and questions without needing exact keyword overlap.</p>
+                    </div>
+                </div>
+
+                <div class="module-feature-item">
+                    <div class="module-feature-icon">📑</div>
+                    <div class="module-feature-info">
+                        <h4>Transparent Match Breakdowns</h4>
+                        <p>Every search result displays transparent contribution percentages from semantic and lexical signals.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- 3. WORKING INTERFACE: SEARCH CONTROLS & RESULTS -->
     <div class="module-work-header" id="search-engine-form">
         <div>
-            <h1 class="module-work-title">Search</h1>
+            <h2 class="module-work-title">Hybrid Literature Search Engine</h2>
             <p class="text-secondary mb-0">Hybrid Ranking Formula: 60% Semantic Vectors &bull; 25% Lexical &bull; 10% Research Area &bull; 5% Recency</p>
         </div>
         <span class="badge-tag-pill" style="font-size: 0.8rem; padding: 0.35rem 0.9rem;">

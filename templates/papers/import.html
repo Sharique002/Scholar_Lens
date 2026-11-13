@@ -5,7 +5,7 @@
 
 {% block breadcrumbs %}
 <div class="ums-breadcrumbs mb-3">
-    <a href="{% url 'dashboard:home' %}">Dashboard</a> &rsaquo;
+    <a href="{% url 'dashboard:index' %}">Dashboard</a> &rsaquo;
     <span>Research Office</span> &rsaquo;
     <span>Import Publications</span>
 </div>
@@ -15,7 +15,7 @@
 <div class="container py-3">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 fw-bold mb-1" style="color: var(--ums-maroon-dark, var(--sl-primary-hover));">Import Publications</h1>
+            <h1 class="h3 fw-bold mb-1" style="color: var(--ums-maroon-dark, #7A1B29);">Import Publications</h1>
             <p class="text-muted mb-0">Batch import research metadata directly from ORCID Record API and Crossref REST API.</p>
         </div>
     </div>
@@ -70,32 +70,6 @@
             </div>
         </div>
 
-        <!-- Institutional Repository (OAI-PMH) Import Form -->
-        <div class="col-md-6">
-            <div class="card shadow-sm border h-100">
-                <div class="card-header bg-light">
-                    <h5 class="fw-bold mb-0">Import from Institutional Repository</h5>
-                </div>
-                <div class="card-body">
-                    <form method="POST">
-                        {% csrf_token %}
-                        <input type="hidden" name="source" value="repository">
-                        <div class="mb-3">
-                            <label for="oai-url" class="form-label fw-bold small text-uppercase">OAI-PMH Endpoint</label>
-                            <input type="url" id="oai-url" name="query" class="form-control" placeholder="https://repository.example.edu/oai/request">
-                            <div class="form-text">DSpace, EPrints and most repositories expose OAI-PMH. Leave blank to use INSTITUTIONAL_REPOSITORY_OAI_URL.</div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="oai-set" class="form-label fw-bold small text-uppercase">Set (optional)</label>
-                            <input type="text" id="oai-set" name="oai_set" class="form-control" placeholder="e.g. com_123456789_1">
-                        </div>
-                        <input type="hidden" name="rows" value="50">
-                        <button type="submit" class="btn btn-primary">Harvest &amp; Import</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
         <!-- Scopus Import Form (licence-dependent) -->
         <div class="col-md-6">
             <div class="card shadow-sm border h-100">
@@ -124,7 +98,7 @@
             <h5 class="fw-bold mb-0">Recent Import Runs</h5>
         </div>
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0 table-stack">
+            <table class="table table-hover align-middle mb-0">
                 <thead class="table-light small text-uppercase">
                     <tr>
                         <th>Date</th>
