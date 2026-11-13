@@ -133,25 +133,37 @@ class PaperProcessor:
         if not paper.pdf_file:
             raise AIServiceError("No PDF file attached to paper.")
 
-        pdf_path = paper.pdf_file.path
-        if not os.path.exists(pdf_path):
-            paper.status = 'FAILED'
-            paper.save()
-            raise AIServiceError(f"PDF file does not exist at {pdf_path}")
-
         max_upload = getattr(settings, 'MAX_UPLOAD_SIZE', 20 * 1024 * 1024)
-        if os.path.getsize(pdf_path) > max_upload:
-            paper.status = 'FAILED'
-            paper.save()
-            raise AIServiceError(f"PDF exceeds maximum allowed file size of {max_upload // (1024 * 1024)}MB.")
 
         try:
-            try:
-                import pymupdf as fitz
-            except ImportError:
-                import fitz
+            import pymupdf as fitz
+        except ImportError:
+            import fitz
+
+        try:
+            pdf_path = paper.pdf_file.path
+            if not os.path.exists(pdf_path):
+                paper.status = 'FAILED'
+                paper.save()
+                raise AIServiceError(f"PDF file does not exist at {pdf_path}")
+
+            if os.path.getsize(pdf_path) > max_upload:
+                paper.status = 'FAILED'
+                paper.save()
+                raise AIServiceError(f"PDF exceeds maximum allowed file size of {max_upload // (1024 * 1024)}MB.")
 
             doc = fitz.open(pdf_path)
+        except (NotImplementedError, AttributeError):
+            # Remote storage (e.g. Cloudflare R2 / S3-compatible backend)
+            paper.pdf_file.open('rb')
+            content = paper.pdf_file.read()
+            if len(content) > max_upload:
+                paper.status = 'FAILED'
+                paper.save()
+                raise AIServiceError(f"PDF exceeds maximum allowed file size of {max_upload // (1024 * 1024)}MB.")
+            doc = fitz.open(stream=content, filetype="pdf")
+
+        try:
             if doc.is_encrypted and not doc.authenticate(''):
                 raise AIServiceError("PDF is password-encrypted and cannot be processed.")
 
@@ -211,7 +223,11 @@ class PaperProcessor:
 
             try:
                 import pymupdf as fitz
-                doc = fitz.open(paper.pdf_file.path)
+                try:
+                    doc = fitz.open(paper.pdf_file.path)
+                except (NotImplementedError, AttributeError):
+                    paper.pdf_file.open('rb')
+                    doc = fitz.open(stream=paper.pdf_file.read(), filetype="pdf")
             except Exception:
                 doc = None
 

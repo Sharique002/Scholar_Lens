@@ -222,13 +222,27 @@ def paper_download(request, pk):
     if not paper.pdf_file:
         raise Http404("PDF file not found.")
 
-    file_path = paper.pdf_file.path
-    if os.path.exists(file_path):
-        response = FileResponse(open(file_path, 'rb'), content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_path)}"'
-        return response
-    else:
-        raise Http404("PDF file not found on server.")
+    try:
+        file_path = paper.pdf_file.path
+        if os.path.exists(file_path):
+            response = FileResponse(open(file_path, 'rb'), content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_path)}"'
+            return response
+        else:
+            raise Http404("PDF file not found on server.")
+    except (NotImplementedError, AttributeError):
+        # Remote storage (e.g. Cloudflare R2 / S3-compatible backend)
+        try:
+            return redirect(paper.pdf_file.url)
+        except Exception:
+            try:
+                f = paper.pdf_file.open('rb')
+                response = FileResponse(f, content_type='application/pdf')
+                filename = os.path.basename(paper.pdf_file.name)
+                response['Content-Disposition'] = f'attachment; filename="{filename}"'
+                return response
+            except Exception:
+                raise Http404("PDF file could not be retrieved from storage.")
 
 
 @login_required
