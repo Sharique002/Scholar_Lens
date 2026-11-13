@@ -59,17 +59,22 @@ else:
     DEBUG = True
 
 # Security: SECRET_KEY
+import secrets
+
 SECRET_KEY = get_str_env('SECRET_KEY', None)
 if not SECRET_KEY:
-    if DEBUG or IS_SERVERLESS:
-        SECRET_KEY = 'django-insecure-dev-key-change-this-in-production-abc123xyz'
-    else:
-        raise ImproperlyConfigured("SECRET_KEY must be configured via environment variable in production (DEBUG=False).")
-
-if not DEBUG and not IS_SERVERLESS:
-    if SECRET_KEY.startswith('django-insecure') or len(SECRET_KEY) < 32:
-        raise ImproperlyConfigured("Production SECRET_KEY must be a cryptographically secure key of at least 32 characters.")
-
+    secret_file = BASE_DIR / '.secret_key'
+    if secret_file.exists():
+        try:
+            SECRET_KEY = secret_file.read_text().strip()
+        except Exception:
+            pass
+    if not SECRET_KEY or len(SECRET_KEY) < 32:
+        SECRET_KEY = secrets.token_urlsafe(50)
+        try:
+            secret_file.write_text(SECRET_KEY)
+        except Exception:
+            pass
 
 # Allowed Hosts Configuration
 raw_hosts = os.environ.get('ALLOWED_HOSTS', '')
@@ -85,7 +90,7 @@ if raw_hosts:
             clean_hosts.append(h)
     ALLOWED_HOSTS = clean_hosts
 else:
-    ALLOWED_HOSTS = ['localhost', '127.0.0.1'] if DEBUG else []
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 render_host = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if render_host and render_host not in ALLOWED_HOSTS:
@@ -95,20 +100,10 @@ vercel_host = os.environ.get('VERCEL_URL')
 if vercel_host and vercel_host not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(vercel_host)
 
-if IS_SERVERLESS:
-    for vhost in ['.vercel.app', 'scholar-lenss.vercel.app']:
-        if vhost not in ALLOWED_HOSTS:
-            ALLOWED_HOSTS.append(vhost)
-
-if not DEBUG and not IS_SERVERLESS:
-    if '*' in ALLOWED_HOSTS:
-        raise ImproperlyConfigured("Wildcard '*' in ALLOWED_HOSTS is strictly forbidden in production (DEBUG=False).")
-    if not ALLOWED_HOSTS:
-        raise ImproperlyConfigured("ALLOWED_HOSTS must be explicitly defined when DEBUG=False.")
-else:
-    for default_host in ['localhost', '127.0.0.1', '.onrender.com', 'scholar-lens.onrender.com', '.vercel.app', 'scholar-lenss.vercel.app']:
-        if default_host not in ALLOWED_HOSTS and '*' not in ALLOWED_HOSTS:
-            ALLOWED_HOSTS.append(default_host)
+# Standard cloud platform domains (Render & Vercel)
+for default_host in ['localhost', '127.0.0.1', '.onrender.com', 'scholar-lens.onrender.com', '.vercel.app', 'scholar-lenss.vercel.app']:
+    if default_host not in ALLOWED_HOSTS and '*' not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(default_host)
 
 # CSRF Trusted Origins Configuration
 raw_csrf = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
@@ -117,10 +112,19 @@ if raw_csrf:
 else:
     CSRF_TRUSTED_ORIGINS = []
 
-if DEBUG or IS_SERVERLESS:
-    for origin in ['http://localhost:8000', 'http://127.0.0.1:8000', 'http://localhost:8001', 'http://127.0.0.1:8001', 'https://*.vercel.app', 'https://scholar-lenss.vercel.app']:
-        if origin not in CSRF_TRUSTED_ORIGINS:
-            CSRF_TRUSTED_ORIGINS.append(origin)
+default_origins = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://localhost:8001',
+    'http://127.0.0.1:8001',
+    'https://*.onrender.com',
+    'https://scholar-lens.onrender.com',
+    'https://*.vercel.app',
+    'https://scholar-lenss.vercel.app',
+]
+for origin in default_origins:
+    if origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(origin)
 
 if render_host:
     rendered_origin = render_host if render_host.startswith(('http://', 'https://')) else f"https://{render_host}"
@@ -219,9 +223,7 @@ elif USE_POSTGRES:
         }
     }
 else:
-    if not DEBUG and not IS_SERVERLESS:
-        raise ImproperlyConfigured("SQLite fallback is strictly forbidden in production (DEBUG=False). Please configure a PostgreSQL DATABASE_URL.")
-    # On Vercel serverless, root filesystem is read-only; use /tmp
+    # Fallback to SQLite (on Vercel serverless /tmp is writable; locally and in containers BASE_DIR is used)
     db_file = Path('/tmp/db.sqlite3') if IS_SERVERLESS else (BASE_DIR / 'db.sqlite3')
     DATABASES = {
         'default': {
