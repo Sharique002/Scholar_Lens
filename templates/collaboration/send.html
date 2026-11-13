@@ -1,40 +1,96 @@
 {% extends 'base.html' %}
 
-{% block title %}Send Collaboration Request{% endblock %}
+{% block title %}Send Collaboration Proposal — Scholar Lens{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Send Request to {{ receiver.get_full_name|default:receiver.username }}</h4>
+        <div class="col-lg-8 col-md-10">
+            <!-- Header and Navigation -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="h3 fw-bold mb-1">Initiate Research Collaboration</h2>
+                    <p class="text-secondary small mb-0">Propose an interdisciplinary research partnership or invite to a project workspace.</p>
                 </div>
-                <div class="card-body">
+                <a href="{% url 'collaboration:list' %}" class="btn btn-sm btn-outline-secondary">
+                    ← Back to Collaboration
+                </a>
+            </div>
+
+            <!-- Recipient Profile Badge Card -->
+            <div class="card mb-4 border" style="border-radius: 12px; border-color: var(--border); background-color: #FFFFFF; box-shadow: var(--shadow-sm);">
+                <div class="card-body p-4 d-flex align-items-center gap-4 flex-wrap">
+                    <div style="width: 56px; height: 56px; border-radius: 50%; background-color: var(--primary-light); color: var(--primary); font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 1.5px solid var(--primary-border);">
+                        {{ receiver.first_name|default:receiver.username|slice:":1"|upper }}
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                            <h4 class="h5 fw-bold mb-0 text-dark">{{ receiver.get_full_name|default:receiver.username }}</h4>
+                            <span class="badge" style="background-color: var(--primary-light); color: var(--primary); font-size: 0.75rem;">
+                                {{ receiver.profile.get_role_display|default:"Researcher" }}
+                            </span>
+                        </div>
+                        <p class="text-secondary small mb-1">
+                            <strong>Institution:</strong> {{ receiver.profile.institution|default:"Academic Institution" }} &bull;
+                            <strong>Email:</strong> {{ receiver.email|default:"Confidential" }}
+                        </p>
+                        {% if receiver.researcher_profile and receiver.researcher_profile.headline %}
+                        <p class="small text-muted mb-0 fst-italic">"{{ receiver.researcher_profile.headline }}"</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Proposal Form Card -->
+            <div class="card border" style="border-radius: 12px; border-color: var(--border); background-color: #FFFFFF; box-shadow: var(--shadow-sm);">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <span class="small fw-bold text-muted text-uppercase">Structured Collaboration Proposal</span>
+                </div>
+                <div class="card-body p-4 p-md-5">
                     <form method="post">
                         {% csrf_token %}
-                        {{ form.non_field_errors }}
-                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger mb-4">
+                            {% for error in form.non_field_errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
                         {% for field in form %}
-                            {% if not field.is_hidden %}
-                            <div class="mb-3">
-                                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {% if field.is_hidden %}
+                                {{ field }}
+                            {% else %}
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold text-dark mb-2" for="{{ field.id_for_label }}">
+                                    {{ field.label }}
+                                    {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                                </label>
                                 {{ field }}
                                 {% if field.help_text %}
-                                <small class="form-text text-muted">{{ field.help_text }}</small>
+                                <small class="form-text text-muted d-block mt-1">{{ field.help_text }}</small>
                                 {% endif %}
                                 {% for error in field.errors %}
-                                <div class="invalid-feedback d-block">{{ error }}</div>
+                                <div class="invalid-feedback d-block mt-1">{{ error }}</div>
                                 {% endfor %}
                             </div>
-                            {% else %}
-                                {{ field }}
                             {% endif %}
                         {% endfor %}
-                        
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Send Request</button>
-                            <a href="{% url 'researchers:detail' receiver.researcher_profile.pk|default:0 %}" class="btn btn-secondary">Cancel</a>
+
+                        <div class="p-3 mb-4 rounded bg-light border text-secondary small">
+                            <i class="bi bi-shield-check text-success me-1"></i>
+                            <strong>Institutional Guidelines:</strong> Collaboration proposals are routed directly to the recipient's institutional inbox. Upon acceptance, the recipient is granted project access and enrolled into the shared team workspace.
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-3 pt-3 border-top">
+                            {% if receiver.researcher_profile %}
+                            <a href="{% url 'researchers:detail' receiver.researcher_profile.pk %}" class="btn btn-pill-white px-4">Cancel</a>
+                            {% else %}
+                            <a href="{% url 'collaboration:list' %}" class="btn btn-pill-white px-4">Cancel</a>
+                            {% endif %}
+                            <button type="submit" class="btn btn-pill-dark px-4 fw-bold">
+                                Send Proposal ➔
+                            </button>
                         </div>
                     </form>
                 </div>

@@ -235,6 +235,67 @@
                 </div>
             </div>
         {% empty %}
+            {% if online_suggestions %}
+            <div class="col-12 my-2">
+                <div class="p-4 rounded border" style="background-color: #FFFFFF; border-color: var(--border); box-shadow: var(--shadow-sm);">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 pb-2 border-bottom">
+                        <div>
+                            <span class="badge" style="background-color: var(--primary-light); color: var(--primary); font-size: 0.75rem;">ONLINE ACADEMIC SUGGESTIONS</span>
+                            <h4 class="h5 fw-bold d-inline ms-2 text-dark">Suggested Publications from Google Scholar &amp; Springer Nature</h4>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="https://scholar.google.com/scholar?q={{ query|urlencode }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary">
+                                Open Google Scholar ↗
+                            </a>
+                            <a href="https://link.springer.com/search?query={{ query|urlencode }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-dark">
+                                Open Springer Nature ↗
+                            </a>
+                        </div>
+                    </div>
+                    <p class="text-secondary small mb-3">
+                        No exact match was found in the internal Scholar Lens repository for <strong>"{{ query }}"</strong>. Showing discovery suggestions from global publisher indices:
+                    </p>
+                    
+                    <div class="row row-cols-1 row-cols-md-2 g-3">
+                        {% for item in online_suggestions %}
+                        <div class="col">
+                            <div class="card h-100 border shadow-sm" style="border-radius: 10px; background: #FFFDF8;">
+                                <div class="card-body p-3 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="badge {% if item.source == 'Google Scholar' %}bg-primary{% else %}bg-dark{% endif %}" style="font-size: 0.7rem;">
+                                                {{ item.source }}
+                                            </span>
+                                            {% if item.year %}
+                                            <span class="text-muted small fw-bold">{{ item.year }}</span>
+                                            {% endif %}
+                                        </div>
+                                        <h5 class="fw-bold mb-1" style="font-size: 1rem; line-height: 1.35;">
+                                            <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" class="text-dark text-decoration-none">
+                                                {{ item.title }} ↗
+                                            </a>
+                                        </h5>
+                                        <p class="text-muted small mb-2">
+                                            <em>{{ item.authors }}</em>
+                                        </p>
+                                        <p class="text-secondary small mb-3" style="line-height: 1.45; font-size: 0.85rem;">
+                                            {{ item.abstract|truncatechars:180 }}
+                                        </p>
+                                    </div>
+                                    <div class="pt-2 border-top d-flex justify-content-between align-items-center">
+                                        <span class="small text-muted">{% if item.doi %}Ref: {{ item.doi|truncatechars:25 }}{% else %}Online Source{% endif %}</span>
+                                        <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-pill-yellow py-1 px-3 fw-bold" style="font-size: 0.775rem;">
+                                            Read Paper ➔
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% else %}
             <div class="col-12 text-center py-5">
                 <div class="module-filter-bar text-center py-5">
                     <h3 style="font-family: var(--font-display); font-weight: 800;">No matching literature found</h3>
@@ -242,6 +303,7 @@
                     <a href="{% url 'search:search' %}" class="btn btn-pill-yellow mt-2">Clear Filters</a>
                 </div>
             </div>
+            {% endif %}
         {% endfor %}
     </div>
 

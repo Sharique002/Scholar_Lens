@@ -113,12 +113,49 @@
             <p class="text-secondary mb-0">Review pending collaboration requests, accept lab invitations, and monitor sent proposals.</p>
         </div>
         <div class="d-flex gap-2">
-            <a href="{% url 'researchers:list' %}" class="btn btn-pill-dark">
+            <button type="button" class="btn btn-pill-dark" onclick="toggleQuickProposal()" id="btnNewProposal">
                 + New Proposal
-            </a>
+            </button>
             <a href="{% url 'collaboration:recommendations' %}" class="btn btn-pill-white">
                 ⚡ AI Recommendations
             </a>
+        </div>
+    </div>
+
+    <!-- Quick Collaboration Proposal Panel -->
+    <div id="quickProposalPanel" class="card mb-4 border" style="display: none; border-radius: 12px; border-color: var(--border); box-shadow: var(--shadow-sm); background: #FFFFFF;">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+            <span class="small fw-bold text-muted text-uppercase">New Collaboration Proposal</span>
+            <button type="button" class="btn-close" onclick="toggleQuickProposal()" aria-label="Close"></button>
+        </div>
+        <div class="card-body p-4">
+            <form method="post" action="{% url 'collaboration:list' %}">
+                {% csrf_token %}
+                <input type="hidden" name="quick_send" value="1">
+                <div class="row g-4 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold text-dark mb-2">Select Researcher / Colleague <span class="text-danger">*</span></label>
+                        <select name="receiver" class="form-select" required style="border-radius: 8px; padding: 0.65rem 1rem;">
+                            <option value="">-- Choose a scholar --</option>
+                            {% for u in available_researchers %}
+                            <option value="{{ u.id }}">{{ u.get_full_name|default:u.username }} ({{ u.profile.institution|default:u.profile.get_role_display }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold text-dark mb-2">Attach Research Project (Optional)</label>
+                        {{ quick_form.project }}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold text-dark mb-2">Proposal Message <span class="text-danger">*</span></label>
+                    <textarea name="message" class="form-control" rows="3" required placeholder="Describe your proposed research partnership, shared objectives, and expected contribution..." style="border-radius: 8px;"></textarea>
+                </div>
+                <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+                    <button type="button" class="btn btn-pill-white" onclick="toggleQuickProposal()">Cancel</button>
+                    <button type="submit" class="btn btn-pill-dark px-4 fw-bold">Send Proposal ➔</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -342,6 +379,17 @@
 </div>
 
 <script>
+function toggleQuickProposal() {
+    var p = document.getElementById('quickProposalPanel');
+    if (!p) return;
+    if (p.style.display === 'none' || p.style.display === '') {
+        p.style.display = 'block';
+        p.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else {
+        p.style.display = 'none';
+    }
+}
+
 function switchCollabTab(tabName) {
     const paneReceived = document.getElementById('paneReceived');
     const paneSent = document.getElementById('paneSent');
