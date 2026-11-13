@@ -1,0 +1,15 @@
+# Vercel Deployment Ignore Rules
+.git/
+.github/
+cypress/
+cypress.env.json
+tests/
+docs/
+media/
+*.log
+Dockerfile
+docker-compose*.yml
+build.sh
+render.yaml
+__pycache__/
+*.pyc

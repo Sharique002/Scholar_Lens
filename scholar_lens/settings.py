@@ -249,7 +249,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 # In serverless environments, allow WhiteNoise to serve directly from finders if collectstatic wasn't run
 WHITENOISE_USE_FINDERS = True
 
@@ -290,7 +289,6 @@ if USE_R2_STORAGE:
             "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
         },
     }
-    DEFAULT_FILE_STORAGE = 'scholar_lens.storage.R2MediaStorage'
 else:
     # Media files (Local filesystem fallback for local development and offline tests)
     MEDIA_URL = '/media/'
@@ -303,7 +301,6 @@ else:
             "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
         },
     }
-    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
