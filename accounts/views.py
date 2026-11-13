@@ -1,3 +1,4 @@
+import secrets
 from django.shortcuts import render, redirect
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.urls import reverse
@@ -191,7 +192,7 @@ def google_callback_view(request):
     else:
         next_url = 'dashboard:home'
 
-    if not state or state != expected_state:
+    if not state or not expected_state or not secrets.compare_digest(state, expected_state):
         messages.error(request, "Authentication state mismatch. For security, please try signing in again.")
         return redirect('accounts:login')
 

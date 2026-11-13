@@ -33,21 +33,29 @@ def is_google_auth_configured() -> bool:
 def get_redirect_uri(request=None) -> str:
     """Build the callback URI for Google OAuth.
     
-    Dynamically prioritizes the request host so authentication works
-    consistently on local dev (localhost, 127.0.0.1) and Vercel production.
+    In production (DEBUG=False), strictly uses configured GOOGLE_OAUTH_REDIRECT_URI
+    or SITE_URL callback, never trusting client-supplied Host headers.
+    In development (DEBUG=True), dynamically prioritizes request host for local testing.
     """
     configured_uri = getattr(settings, 'GOOGLE_OAUTH_REDIRECT_URI', '').strip()
-    if request is not None:
+    is_debug = getattr(settings, 'DEBUG', True)
+
+    if not is_debug and configured_uri and 'localhost' not in configured_uri and '127.0.0.1' not in configured_uri:
+        return configured_uri
+
+    if request is not None and is_debug:
         try:
             dynamic_uri = request.build_absolute_uri(reverse('accounts:google_callback'))
-            # If no override configured or configured as local development URI, use dynamic request host
             if not configured_uri or 'localhost' in configured_uri or '127.0.0.1' in configured_uri:
                 return dynamic_uri
         except Exception:
             pass
+
     if configured_uri:
         return configured_uri
-    return "http://localhost:8000/accounts/google/callback/"
+
+    site_url = getattr(settings, 'SITE_URL', 'http://localhost:8000').rstrip('/')
+    return f"{site_url}/accounts/google/callback/"
 
 
 def get_google_auth_url(request, next_url: str = None) -> tuple[str, str]:
@@ -117,12 +125,15 @@ def verify_id_token_server_side(id_token: str, expected_client_id: str) -> dict:
 
     # 3. Validate expiration (exp)
     exp = claims.get('exp')
-    if exp:
-        try:
-            if float(exp) < time.time() - 10:  # 10s leeway for clock skew
-                raise ValueError("Google ID token has expired.")
-        except (ValueError, TypeError):
-            pass
+    if not exp:
+        raise ValueError("Google ID token is missing required 'exp' claim.")
+    try:
+        exp_timestamp = float(exp)
+    except (ValueError, TypeError):
+        raise ValueError("Google ID token has an invalid 'exp' claim format.")
+
+    if exp_timestamp < time.time() - 10:  # 10s leeway for clock skew
+        raise ValueError("Google ID token has expired.")
 
     # 4. Check email verification
     email_verified = claims.get('email_verified')
@@ -147,7 +158,7 @@ def exchange_code_for_user_info(code: str, redirect_uri: str) -> dict:
     headers = {'Accept': 'application/json'}
     token_resp = requests.post(GOOGLE_TOKEN_URL, data=data, headers=headers, timeout=10)
     if token_resp.status_code != 200:
-        logger.error("Google token exchange error: %s", token_resp.text)
+        logger.error("Google token exchange returned HTTP status %d", token_resp.status_code)
         raise ValueError(f"Failed to exchange authorization code with Google (HTTP {token_resp.status_code}).")
 
     token_data = token_resp.json()
@@ -160,24 +171,18 @@ def exchange_code_for_user_info(code: str, redirect_uri: str) -> dict:
     user_info = {}
     # Prioritize server-side ID token verification
     if id_token:
-        try:
-            user_info = verify_id_token_server_side(id_token, client_id)
-        except Exception as e:
-            logger.warning("Google ID token verification error: %s", e)
-            if not access_token:
-                raise
-
-    # Supplement with userinfo endpoint if access token is available
-    if access_token and (not user_info.get('email') or not user_info.get('sub')):
+        # Strict validation: If ID token verification fails, do NOT silently swallow or downgrade to access_token
+        user_info = verify_id_token_server_side(id_token, client_id)
+    elif access_token:
+        # Fallback only when id_token is not issued (non-OIDC standard response)
         userinfo_resp = requests.get(
             GOOGLE_USERINFO_URL,
             headers={'Authorization': f"Bearer {access_token}"},
             timeout=10
         )
-        if userinfo_resp.status_code == 200:
-            userinfo_data = userinfo_resp.json()
-            userinfo_data.update(user_info)  # Preserve verified claims
-            user_info = userinfo_data
+        if userinfo_resp.status_code != 200:
+            raise ValueError(f"Failed to fetch userinfo from Google using access token (HTTP {userinfo_resp.status_code}).")
+        user_info = userinfo_resp.json()
 
     if not user_info.get('sub'):
         raise ValueError("Verified Google profile missing unique subject ID (sub).")
@@ -206,6 +211,7 @@ def get_or_create_google_user(user_info: dict) -> tuple[User, bool]:
         family_name = parts[1] if len(parts) > 1 else ''
 
     # 1. Primary lookup: Match by immutable Google Subject ID (sub)
+    from django.db import transaction
     from accounts.models import UserProfile
     if sub:
         existing_profile = UserProfile.objects.filter(google_sub=sub).select_related('user').first()
@@ -223,10 +229,16 @@ def get_or_create_google_user(user_info: dict) -> tuple[User, bool]:
                 user.save(update_fields=['first_name', 'last_name'])
             return user, False
 
-    # 2. Secondary lookup: Match existing user by verified email and link google_sub
+    # 2. Secondary lookup: Match existing user by verified email and link google_sub safely
     user = User.objects.filter(email__iexact=email).first()
     if user:
         if hasattr(user, 'profile'):
+            # Security: If account is already linked to a different Google Subject ID, reject!
+            if user.profile.google_sub and user.profile.google_sub != sub:
+                raise ValueError(
+                    f"Account with email '{email}' is already linked to a different Google identity. "
+                    "Cannot overwrite existing identity association."
+                )
             if sub and user.profile.google_sub != sub:
                 user.profile.google_sub = sub
                 user.profile.save(update_fields=['google_sub'])
@@ -242,43 +254,44 @@ def get_or_create_google_user(user_info: dict) -> tuple[User, bool]:
             user.save(update_fields=['first_name', 'last_name'])
         return user, False
 
-    # 3. New User Provisioning
-    base_username = email.split('@')[0]
-    clean_username = re.sub(r'[^a-zA-Z0-9_]', '', base_username) or 'google_user'
-    username = clean_username
-    counter = 1
-    while User.objects.filter(username__iexact=username).exists():
-        username = f"{clean_username}_{counter}"
-        counter += 1
+    # 3. New User Provisioning (Atomic transaction to prevent race conditions)
+    with transaction.atomic():
+        base_username = email.split('@')[0]
+        clean_username = re.sub(r'[^a-zA-Z0-9_]', '', base_username) or 'google_user'
+        username = clean_username
+        counter = 1
+        while User.objects.filter(username__iexact=username).exists():
+            username = f"{clean_username}_{counter}"
+            counter += 1
 
-    user = User.objects.create_user(
-        username=username,
-        email=email,
-        first_name=given_name,
-        last_name=family_name
-    )
-    user.set_unusable_password()
-    user.save()
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            first_name=given_name,
+            last_name=family_name
+        )
+        user.set_unusable_password()
+        user.save()
 
-    # Configure profile with linked google_sub
-    if hasattr(user, 'profile'):
-        profile = user.profile
-        if sub:
-            profile.google_sub = sub
-        if not profile.institution:
-            domain = email.split('@')[1] if '@' in email else 'google.com'
-            profile.institution = f"{domain.split('.')[0].upper()} Academic"
-        profile.role = 'STUDENT'
-        profile.save()
+        # Configure profile with linked google_sub and enforce strict STUDENT default role
+        if hasattr(user, 'profile'):
+            profile = user.profile
+            if sub:
+                profile.google_sub = sub
+            if not profile.institution:
+                domain = email.split('@')[1] if '@' in email else 'google.com'
+                profile.institution = f"{domain.split('.')[0].upper()} Academic"
+            profile.role = 'STUDENT'
+            profile.save()
 
-    # Ensure ResearcherProfile exists for collaboration & directory
-    try:
-        from researchers.models import ResearcherProfile
-        r_profile, _ = ResearcherProfile.objects.get_or_create(user=user)
-        if not r_profile.headline and full_name:
-            r_profile.headline = f"Researcher, {user.profile.institution if hasattr(user, 'profile') else 'Institution'}"
-            r_profile.save(update_fields=['headline'])
-    except Exception as e:
-        logger.warning("Could not create/update ResearcherProfile for Google user: %s", e)
+        # Ensure ResearcherProfile exists for collaboration & directory
+        try:
+            from researchers.models import ResearcherProfile
+            r_profile, _ = ResearcherProfile.objects.get_or_create(user=user)
+            if not r_profile.headline and full_name:
+                r_profile.headline = f"Researcher, {user.profile.institution if hasattr(user, 'profile') else 'Institution'}"
+                r_profile.save(update_fields=['headline'])
+        except Exception as e:
+            logger.warning("Could not create/update ResearcherProfile for Google user: %s", e)
 
-    return user, True
+        return user, True
