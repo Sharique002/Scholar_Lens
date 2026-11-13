@@ -82,9 +82,24 @@ def app(environ, start_response):
     except Exception as exc:
         import traceback
         traceback.print_exc()
-        raise exc
+        try:
+            status = '500 Internal Server Error'
+            headers = [('Content-Type', 'text/html; charset=utf-8')]
+            start_response(status, headers)
+            body = (
+                "<!DOCTYPE html><html><head><title>Scholar Lens Error</title></head>"
+                "<body style='font-family:sans-serif;padding:2rem;max-width:800px;margin:auto;'>"
+                "<h2>Scholar Lens Server Notice</h2>"
+                f"<p>An unexpected exception occurred: <code>{exc}</code></p>"
+                "</body></html>"
+            )
+            return [body.encode('utf-8')]
+        except Exception:
+            raise exc
 
 
 application = app
+handler = app
+
 
 
