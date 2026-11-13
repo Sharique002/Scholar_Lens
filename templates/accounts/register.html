@@ -17,11 +17,8 @@
             {% endif %}
 
             <div class="card shadow">
-                <div class="card-header bg-primary text-white text-center" style="background-color: var(--color-navy) !important; padding: 1.5rem 1rem;">
-                    <div style="margin-bottom: 8px;">
-                        <img src="{% static 'images/scholar_lens_logo_white.png' %}" alt="Scholar Lens" style="height: 38px; width: auto; object-fit: contain;">
-                    </div>
-                    <h3 class="card-title mb-0" style="font-weight: 800; font-family: var(--font-display);">Create an Account</h3>
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Create an Account</h3>
                 </div>
                 <div class="card-body">
                     {% if form.non_field_errors %}
