@@ -74,7 +74,6 @@ def dashboard_view(request):
     ).prefetch_related('authors').order_by('-publication_date', '-created_at')[:4]
 
     context = {
-        **_dashboard_overview(user),
         'total_papers': total_papers,
         'total_projects': total_projects,
         'ai_analyses': ai_analyses,
@@ -91,95 +90,6 @@ def dashboard_view(request):
         'research_areas_data': research_areas_data,
     }
     return render(request, 'dashboard/home.html', context)
-
-
-def _dashboard_overview(user):
-    """Institution summary, deadlines, risks and recommendations for the dashboard.
-    Everything is read from the database and limited to what this user may see."""
-    from datetime import timedelta
-    from django.db.models import IntegerField
-    from django.db.models.functions import Coalesce, ExtractYear
-    from django.urls import reverse
-    from django.utils import timezone
-    from facilities.models import Booking
-    from funding.models import FundingCall
-    from opportunities.models import ResearchOpening
-    from projects.models import Milestone
-    from researchers.models import ResearcherProfile
-    from collaboration.models import CollaborationSuggestion
-
-    now = timezone.now()
-    today = timezone.localdate()
-    horizon = today + timedelta(days=30)
-
-    my_project_ids = list(
-        ResearchProject.objects.filter(Q(leader=user) | Q(members__user=user)).values_list('id', flat=True).distinct()
-    )
-    visible_projects = ResearchProject.objects.filter(Q(is_public=True) | Q(id__in=my_project_ids))
-    open_openings = ResearchOpening.objects.filter(status='OPEN').filter(Q(deadline__isnull=True) | Q(deadline__gte=today))
-    open_funding = FundingCall.objects.filter(is_published=True, deadline__gte=now)
-
-    summary = {
-        'researchers': ResearcherProfile.objects.count(),
-        'publications': ResearchPaper.objects.filter(is_external=False).count(),
-        'active_projects': visible_projects.filter(status='ACTIVE').count(),
-        'open_openings': open_openings.count(),
-        'my_bookings': Booking.objects.filter(
-            user=user, status__in=['PENDING', 'APPROVED'], during__endswith__gte=now
-        ).count(),
-        'open_funding': open_funding.count(),
-    }
-
-    # Institutional publications per year (last 8 years that have data).
-    years = (
-        ResearchPaper.objects.filter(is_external=False)
-        .annotate(pub_year=Coalesce('year', ExtractYear('publication_date'), ExtractYear('created_at'), output_field=IntegerField()))
-        .values('pub_year').annotate(count=Count('id')).order_by('pub_year')
-    )
-    years = [y for y in years if y['pub_year'] and y['pub_year'] <= today.year][-8:]
-    publication_trend = {'labels': [str(y['pub_year']) for y in years], 'values': [y['count'] for y in years]}
-
-    # Upcoming deadlines over the next 30 days, merged across modules.
-    deadlines = []
-    for call in open_funding.filter(deadline__lte=now + timedelta(days=30)).order_by('deadline')[:5]:
-        deadlines.append({'date': timezone.localdate(call.deadline), 'title': call.title, 'kind': 'Funding call',
-                          'icon': 'bi-cash-coin', 'url': reverse('funding:detail', args=[call.pk])})
-    for op in open_openings.filter(deadline__isnull=False, deadline__lte=horizon).order_by('deadline')[:5]:
-        deadlines.append({'date': op.deadline, 'title': op.title, 'kind': 'Research opening',
-                          'icon': 'bi-briefcase', 'url': reverse('opportunities:detail', args=[op.pk])})
-    for m in (Milestone.objects.filter(project_id__in=my_project_ids, status__in=['PLANNED', 'IN_PROGRESS'],
-                                       due_date__gte=today, due_date__lte=horizon)
-              .select_related('project').order_by('due_date')[:5]):
-        deadlines.append({'date': m.due_date, 'title': m.title, 'kind': f'Milestone · {m.project.title}',
-                          'icon': 'bi-flag', 'url': reverse('projects:milestones', args=[m.project_id])})
-    deadlines.sort(key=lambda d: d['date'])
-    for d in deadlines:
-        d['days_left'] = (d['date'] - today).days
-
-    at_risk = Milestone.objects.filter(risk__in=['AT_RISK', 'OVERDUE'], status__in=['PLANNED', 'IN_PROGRESS'])
-    if not user.is_staff:
-        at_risk = at_risk.filter(project_id__in=my_project_ids)
-    at_risk = at_risk.select_related('project').order_by('due_date')[:5]
-
-    profile = ResearcherProfile.objects.filter(user=user).first()
-    suggestions = []
-    relevant_openings = open_openings.select_related('department').order_by('deadline', '-created_at')
-    if profile:
-        suggestions = (CollaborationSuggestion.objects.filter(researcher=profile, is_dismissed=False)
-                       .select_related('suggested__user', 'suggested__department').order_by('-score')[:3])
-        relevant_openings = relevant_openings.annotate(
-            skill_matches=Count('required_skills', filter=Q(required_skills__researchers=profile), distinct=True)
-        ).order_by('-skill_matches', 'deadline', '-created_at')
-
-    return {
-        'summary': summary,
-        'publication_trend': publication_trend,
-        'publication_trend_rows': list(zip(publication_trend['labels'], publication_trend['values'])),
-        'upcoming_deadlines': deadlines[:6],
-        'at_risk_milestones': at_risk,
-        'collab_suggestions': suggestions,
-        'relevant_openings': relevant_openings[:3],
-    }
 
 
 @login_required
@@ -257,22 +167,12 @@ def error_403(request, exception):
 
 
 def error_500(request):
-    """Custom 500 error page; the traceback is never shown outside DEBUG."""
-    from scholar_lens.middleware import render_server_error
-    return render_server_error(request)
+    """Custom 500 error page with error trace capture."""
+    import sys, traceback
+    exc_type, exc_value, tb = sys.exc_info()
+    error_trace = "".join(traceback.format_exception(exc_type, exc_value, tb)) if exc_type else getattr(request, '_exception_trace', "")
+    if error_trace:
+        print("=== DJANGO 500 ERROR TRACEBACK ===")
+        print(error_trace)
+    return render(request, 'errors/500.html', {'error_trace': error_trace}, status=500)
 
-
-
-def healthz(request):
-    """Liveness/readiness probe for the platform (Render healthCheckPath): 200 if the DB answers."""
-    from django.db import connection
-    from django.http import JsonResponse
-    try:
-        with connection.cursor() as cur:
-            cur.execute("SELECT 1")
-            cur.fetchone()
-    except Exception:  # noqa: BLE001
-        import logging
-        logging.getLogger(__name__).exception("health check: database unavailable")
-        return JsonResponse({'status': 'error', 'database': 'unavailable'}, status=503)
-    return JsonResponse({'status': 'ok', 'database': 'ok'})

@@ -55,7 +55,7 @@
     <div class="card border rounded-3 shadow-sm bg-white">
         <div class="card-header bg-white border-bottom py-3 d-flex flex-wrap justify-content-between align-items-center gap-3">
             <div>
-                <h2 class="h5 fw-bold mb-0" style="color: var(--ums-maroon);">Weekly Availability &amp; Schedule</h2>
+                <h2 class="h5 fw-bold mb-0" style="color: var(--ums-maroon);">📅 Weekly Availability &amp; Schedule</h2>
                 <span class="text-muted small">Week of Monday, {{ week_start|date:"F d, Y" }}</span>
             </div>
             <div class="d-flex gap-2 align-items-center">
@@ -66,7 +66,7 @@
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0 table-stack">
+                <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
                             <th style="width: 25%;">Day &amp; Date</th>
@@ -77,11 +77,11 @@
                     <tbody>
                         {% for day in days %}
                         <tr>
-                            <td data-label="Day">
+                            <td>
                                 <strong>{{ day.weekday_name }}</strong><br>
                                 <span class="text-muted small">{{ day.date|date:"M d, Y" }}</span>
                             </td>
-                            <td data-label="Open hours">
+                            <td>
                                 {% if day.slots %}
                                     {% for slot in day.slots %}
                                     <span class="badge bg-light text-dark border me-1">
@@ -92,12 +92,12 @@
                                     <span class="badge bg-light text-secondary border">Closed</span>
                                 {% endif %}
                             </td>
-                            <td data-label="Booked">
+                            <td>
                                 {% if day.bookings %}
                                     <div class="d-flex flex-column gap-1">
                                         {% for b in day.bookings %}
                                         <div class="p-2 rounded bg-light border-start border-3 d-flex justify-content-between align-items-center"
-                                             style="border-left-color: {% if b.status == 'APPROVED' %}var(--ums-maroon){% else %}var(--sl-warning){% endif %} !important;">
+                                             style="border-left-color: {% if b.status == 'APPROVED' %}var(--ums-maroon){% else %}#f59e0b{% endif %} !important;">
                                             <div>
                                                 <span class="fw-bold small">{{ b.start|time:"H:i" }} – {{ b.end|time:"H:i" }}</span>:
                                                 <span class="small text-secondary">{{ b.purpose }}</span>

@@ -3,212 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#4338CA">
     <title>{% block title %}Scholar Lens — Research Intelligence & Collaboration Hub{% endblock %}</title>
     {% load static %}
-    {# Restore the sidebar preference before first paint so it never flashes open. #}
-    <script>try { if (localStorage.getItem('ums-sidebar') === '1') document.documentElement.classList.add('sb-collapsed'); } catch (e) {}</script>
+    <!-- Google Fonts: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500;1,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v=1.7">
-    <link rel="stylesheet" href="{% static 'css/ums.css' %}?v=2.0">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="{% static 'css/ums.css' %}?v=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     {% block extra_head %}{% endblock %}
     {% block extra_css %}{% endblock %}
 </head>
 <body class="ums-body">
-    <a href="#main" class="skip-link">Skip to main content</a>
-    {% with app=request.resolver_match.app_name url_name=request.resolver_match.url_name %}
-    <div class="app{% if user.is_authenticated %} app--with-sidebar{% endif %}">
-        {% if user.is_authenticated %}
-        <aside class="ums-sidebar" id="navLinks" aria-label="Main navigation">
-            <div class="sb-head">
-                <a href="{% url 'dashboard:home' %}" class="ums-brand" aria-label="Scholar Lens home">
-                    <span class="ums-brand-mark" aria-hidden="true"><i class="bi bi-mortarboard-fill"></i></span>
+    <!-- University Top Header -->
+    <header class="ums-header">
+        <div class="ums-header-inner flex justify-between align-center">
+            <div class="ums-header-left flex align-center">
+                {% if user.is_authenticated %}
+                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation">
+                    <span class="hamburger"></span>
+                </button>
+                {% endif %}
+                <a href="{% if user.is_authenticated %}{% url 'dashboard:home' %}{% else %}{% url 'dashboard:landing' %}{% endif %}" class="ums-brand">
+                    <span class="ums-brand-icon">🔬</span>
                     <span class="ums-brand-text">Scholar <span class="ums-brand-accent">Lens</span></span>
                 </a>
-                <button type="button" id="sidebarCollapse" class="ums-sidebar-collapse" aria-label="Collapse sidebar" aria-controls="navLinks" aria-expanded="true"><i class="bi bi-chevron-double-left" aria-hidden="true"></i></button>
             </div>
-            <nav class="ums-sidebar-nav" aria-label="Modules">
-                <div class="sb-group">
-                    <a href="{% url 'dashboard:home' %}" class="ums-nav-link{% if app == 'dashboard' and url_name == 'home' %} is-active{% endif %}" data-tip="Dashboard"{% if app == 'dashboard' and url_name == 'home' %} aria-current="page"{% endif %}><span class="ums-nav-icon" aria-hidden="true"><i class="bi bi-grid-1x2"></i></span><span class="ums-nav-label">Dashboard</span></a>
-                </div>
-                <div class="sb-group" role="group" aria-labelledby="sbg-research">
-                    <div class="sb-group-label" id="sbg-research">Research</div>
-                    <a href="{% url 'papers:list' %}" class="ums-nav-link{% if app == 'papers' or app == 'ai_engine' or app == 'evaluation' %} is-active{% endif %}" data-tip="Papers"><span class="ums-nav-icon" aria-hidden="true"><i class="bi bi-journal-text"></i></span><span class="ums-nav-label">Papers</span></a>
-                    {% if nav.can_import %}<a href="{% url 'papers:import_publications' %}" class="ums-subnav-link{% if url_name == 'import_publications' %} is-active{% endif %}">Import publications</a>{% endif %}
-                    {% if nav.is_office %}
-                    <a href="{% url 'papers:author_queue' %}" class="ums-subnav-link{% if url_name == 'author_queue' %} is-active{% endif %}">Author matching</a>
-                    <a href="{% url 'papers:dedup_queue' %}" class="ums-subnav-link{% if url_name == 'dedup_queue' %} is-active{% endif %}">Duplicate review</a>
+
+            <div class="ums-header-center">
+                {% if user.is_authenticated %}
+                <form action="{% url 'search:search' %}" method="get" class="ums-header-search" role="search">
+                    <input type="text" name="q" placeholder="Search papers…" aria-label="Search papers">
+                    <button type="submit" aria-label="Submit search">🔍</button>
+                </form>
+                {% endif %}
+            </div>
+
+            <div class="ums-header-right flex align-center">
+                {% if user.is_authenticated %}
+                <a href="{% if pending_bookings_count > 0 %}{% url 'facilities:manage' %}{% else %}{% url 'dashboard:notifications' %}{% endif %}" class="ums-bell" aria-label="Notifications" title="{% if pending_bookings_count > 0 %}{{ pending_bookings_count }} pending booking request{{ pending_bookings_count|pluralize }}{% else %}Notifications{% endif %}">
+                    <span class="ums-bell-icon">🔔</span>
+                    {% if pending_bookings_count > 0 %}
+                    <span class="badge bg-danger rounded-pill ums-bell-badge" style="font-size: 0.65rem; position: absolute; top: 4px; right: 4px;">{{ pending_bookings_count }}</span>
                     {% endif %}
-                    <a href="{% url 'projects:list' %}" class="ums-nav-link{% if app == 'projects' %} is-active{% endif %}" data-tip="Projects"><span class="ums-nav-icon" aria-hidden="true"><i class="bi bi-kanban"></i></span><span class="ums-nav-label">Projects</span></a>
-                    {% if nav.is_office %}<a href="{% url 'projects:at_risk' %}" class="ums-subnav-link{% if url_name == 'at_risk' %} is-active{% endif %}">At-risk milestones</a>{% endif %}
-                    <a href="{% url 'opportunities:list' %}" class="ums-nav-link{% if app == 'opportunities' %} is-active{% endif %}" data-tip="Openings"><span class="ums-nav-icon" aria-hidden="true"><i class="bi bi-briefcase"></i></span><span class="ums-nav-label">Openings</span></a>
+                </a>
+
+                <div class="nav-dropdown ums-account-dropdown">
+                    <button class="nav-pill-link user-pill-btn dropdown-toggle" aria-haspopup="true" aria-expanded="false">
+                        <span class="avatar-dot"></span>
+                        <span class="ums-user-name">{{ user.get_full_name|default:user.username }}</span>
+                        <span class="dropdown-chevron">▾</span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <a href="{% url 'accounts:profile' %}" class="dropdown-item">👤 My Profile</a>
+                        <a href="{% url 'researchers:edit_profile' %}" class="dropdown-item">🎓 Researcher Profile</a>
+                        <a href="{% url 'dashboard:settings' %}" class="dropdown-item">⚙️ Settings</a>
+                        <a href="{% url 'accounts:change_password' %}" class="dropdown-item">🔑 Change Password</a>
+                        {% if user.is_staff %}
+                        <hr class="dropdown-divider">
+                        <a href="{% url 'dashboard:office' %}" class="dropdown-item">🏛️ Research Office</a>
+                        <a href="{% url 'projects:at_risk' %}" class="dropdown-item">⚠️ At-risk Projects</a>
+                        <a href="{% url 'admin:index' %}" class="dropdown-item">🛡️ Admin Panel</a>
+                        {% endif %}
+                        <hr class="dropdown-divider">
+                        <a href="{% url 'accounts:logout' %}" class="dropdown-item text-danger">🚪 Logout</a>
+                    </div>
                 </div>
-                <div class="sb-group" role="group" aria-labelledby="sbg-people">
-                    <div class="sb-group-label" id="sbg-people">People</div>
-                    <a href="{% url 'researchers:list' %}" class="ums-nav-link{% if app == 'researchers' %} is-active{% endif %}" data-tip="Researchers"><span class="ums-nav-icon" aria-hidden="true"><i class="bi bi-people"></i></span><span class="ums-nav-label">Researchers</span></a>
-                    <a href="{% url 'search:expertise' %}" class="ums-subnav-link{% if url_name == 'expertise' %} is-active{% endif %}">Expertise search</a>
-                    {% if nav.is_office %}<a href="{% url 'researchers:verification_queue' %}" class="ums-subnav-link{% if url_name == 'verification_queue' %} is-active{% endif %}">Verifications</a>{% endif %}
-                    <a href="{% url 'collaboration:list' %}" class="ums-nav-link{% if app == 'collaboration' %} is-active{% endif %}" data-tip="Collaboration"><span class="ums-nav-icon" aria-hidden="true"><i class="bi bi-diagram-3"></i></span><span class="ums-nav-label">Collaboration</span></a>
-                </div>
-                <div class="sb-group" role="group" aria-labelledby="sbg-resources">
-                    <div class="sb-group-label" id="sbg-resources">Resources</div>
-                    <a href="{% url 'facilities:list' %}" class="ums-nav-link{% if app == 'facilities' %} is-active{% endif %}" data-tip="Facilities"><span class="ums-nav-icon" aria-hidden="true"><i class="bi bi-building"></i></span><span class="ums-nav-label">Facilities</span></a>
-                    <a href="{% url 'facilities:my_bookings' %}" class="ums-subnav-link{% if url_name == 'my_bookings' %} is-active{% endif %}">My bookings</a>
-                    {% if nav.can_manage_facilities %}<a href="{% url 'facilities:manage' %}" class="ums-subnav-link{% if url_name == 'manage' %} is-active{% endif %}">Booking approvals{% if pending_bookings_count %}<span class="ums-nav-count" aria-label="{{ pending_bookings_count }} pending">{{ pending_bookings_count }}</span>{% endif %}</a>{% endif %}
-                    <a href="{% url 'funding:list' %}" class="ums-nav-link{% if app == 'funding' %} is-active{% endif %}" data-tip="Funding"><span class="ums-nav-icon" aria-hidden="true"><i class="bi bi-cash-coin"></i></span><span class="ums-nav-label">Funding</span></a>
-                </div>
-                <div class="sb-group" role="group" aria-labelledby="sbg-insights">
-                    <div class="sb-group-label" id="sbg-insights">Discover</div>
-                    <a href="{% url 'search:search' %}" class="ums-nav-link{% if app == 'search' and url_name != 'expertise' %} is-active{% endif %}" data-tip="Search"><span class="ums-nav-icon" aria-hidden="true"><i class="bi bi-search"></i></span><span class="ums-nav-label">Search</span></a>
-                    {% if nav.can_reports %}
-                    <a href="{% url 'analytics:research' %}" class="ums-nav-link{% if app == 'analytics' %} is-active{% endif %}" data-tip="Reports"><span class="ums-nav-icon" aria-hidden="true"><i class="bi bi-bar-chart-line"></i></span><span class="ums-nav-label">Reports</span></a>
-                    {% endif %}
-                    {% if nav.can_office_hub %}<a href="{% url 'dashboard:office' %}" class="ums-subnav-link{% if url_name == 'office' %} is-active{% endif %}">Research office</a>{% endif %}
-                </div>
+                {% else %}
+                <a href="{% url 'accounts:login' %}" class="nav-pill-link">Sign In</a>
+                <a href="{% url 'accounts:register' %}" class="btn btn-pill-primary">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- Top Announcement / Marquee Strip -->
+    <div class="top-marquee-strip">
+        <div class="marquee-track">
+            {% for item in marquee_items %}
+                <span>{{ item }}</span>
+            {% endfor %}
+            {% for item in marquee_items %}
+                <span>{{ item }}</span>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Main Application Shell Layout -->
+    <div class="ums-layout">
+        {% if user.is_authenticated %}
+        <aside class="ums-sidebar" id="navLinks" aria-label="Main sidebar navigation">
+            <button id="sidebarCollapse" class="ums-sidebar-collapse" aria-label="Collapse menu" title="Collapse menu" aria-expanded="true">«</button>
+            <nav class="ums-sidebar-nav">
+                <a href="{% url 'dashboard:home' %}" class="ums-nav-link{% if request.resolver_match.app_name == 'dashboard' %} is-active{% endif %}" title="Dashboard" aria-label="Dashboard"><span class="ums-nav-icon" aria-hidden="true">🏠</span><span class="ums-nav-label">Dashboard</span></a>
+                <a href="{% url 'papers:list' %}" class="ums-nav-link{% if request.resolver_match.app_name == 'papers' or request.resolver_match.app_name == 'ai_engine' or request.resolver_match.app_name == 'evaluation' %} is-active{% endif %}" title="Papers" aria-label="Papers"><span class="ums-nav-icon" aria-hidden="true">📄</span><span class="ums-nav-label">Papers</span></a>
+                <a href="{% url 'projects:list' %}" class="ums-nav-link{% if request.resolver_match.app_name == 'projects' %} is-active{% endif %}" title="Projects" aria-label="Projects"><span class="ums-nav-icon" aria-hidden="true">📁</span><span class="ums-nav-label">Projects</span></a>
+                <a href="{% url 'opportunities:list' %}" class="ums-nav-link{% if request.resolver_match.app_name == 'opportunities' %} is-active{% endif %}" title="Openings" aria-label="Openings"><span class="ums-nav-icon" aria-hidden="true">🎯</span><span class="ums-nav-label">Openings</span></a>
+                <a href="{% url 'researchers:list' %}" class="ums-nav-link{% if request.resolver_match.app_name == 'researchers' %} is-active{% endif %}" title="Researchers" aria-label="Researchers"><span class="ums-nav-icon" aria-hidden="true">👩‍🔬</span><span class="ums-nav-label">Researchers</span></a>
+                <a href="{% url 'collaboration:list' %}" class="ums-nav-link{% if request.resolver_match.app_name == 'collaboration' %} is-active{% endif %}" title="Collaboration" aria-label="Collaboration"><span class="ums-nav-icon" aria-hidden="true">🤝</span><span class="ums-nav-label">Collaboration</span></a>
+                <a href="{% url 'facilities:list' %}" class="ums-nav-link{% if request.resolver_match.app_name == 'facilities' %} is-active{% endif %}" title="Facilities" aria-label="Facilities"><span class="ums-nav-icon" aria-hidden="true">🏛</span><span class="ums-nav-label">Facilities</span></a>
+                <a href="{% url 'funding:list' %}" class="ums-nav-link{% if request.resolver_match.app_name == 'funding' %} is-active{% endif %}" title="Funding" aria-label="Funding"><span class="ums-nav-icon" aria-hidden="true">💰</span><span class="ums-nav-label">Funding</span></a>
+                <a href="{% url 'search:search' %}" class="ums-nav-link{% if request.resolver_match.app_name == 'search' %} is-active{% endif %}" title="Search" aria-label="Search"><span class="ums-nav-icon" aria-hidden="true">🔎</span><span class="ums-nav-label">Search</span></a>
+                {% if user.is_staff or user.is_superuser or 'dean' in user.username.lower %}
+                <a href="{% url 'analytics:research' %}" class="ums-nav-link{% if request.resolver_match.app_name == 'analytics' %} is-active{% endif %}" title="Reports" aria-label="Reports"><span class="ums-nav-icon" aria-hidden="true">📊</span><span class="ums-nav-label">Reports</span></a>
+                {% endif %}
             </nav>
-            <div class="sb-foot">
-                <a href="{% url 'dashboard:notifications' %}" class="ums-subnav-link{% if url_name == 'notifications' %} is-active{% endif %}" data-tip="Notifications"><span class="ums-nav-icon" aria-hidden="true"><i class="bi bi-bell"></i></span><span class="ums-nav-label">Notifications</span></a>
-                <a href="{% url 'dashboard:settings' %}" class="ums-subnav-link{% if url_name == 'settings' %} is-active{% endif %}" data-tip="Settings"><span class="ums-nav-icon" aria-hidden="true"><i class="bi bi-gear"></i></span><span class="ums-nav-label">Settings</span></a>
-            </div>
         </aside>
-        <div class="sb-backdrop" id="sidebarBackdrop" hidden></div>
         {% endif %}
 
-        <div class="app-main">
-            <header class="ums-header">
-                <div class="ums-header-inner">
-                    <div class="ums-header-left">
-                        {% if user.is_authenticated %}
-                        <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open navigation" aria-controls="navLinks" aria-expanded="false"><i class="bi bi-list" aria-hidden="true"></i></button>
-                        {% endif %}
-                        <a href="{% if user.is_authenticated %}{% url 'dashboard:home' %}{% else %}{% url 'dashboard:landing' %}{% endif %}" class="ums-brand" aria-label="Scholar Lens home">
-                            <span class="ums-brand-mark" aria-hidden="true"><i class="bi bi-mortarboard-fill"></i></span>
-                            <span class="ums-brand-text">Scholar <span class="ums-brand-accent">Lens</span></span>
-                        </a>
-                    </div>
+        <main class="ums-main{% if not user.is_authenticated %} ums-main--full{% endif %}">
+            {% block breadcrumb %}
+            <nav class="ums-breadcrumb ums-breadcrumbs" aria-label="Breadcrumb">
+                <a href="{% if user.is_authenticated %}{% url 'dashboard:home' %}{% else %}{% url 'dashboard:landing' %}{% endif %}">Home</a>
+                <span class="ums-breadcrumb-sep">›</span>
+                <span class="ums-breadcrumb-current">
+                    {% if request.resolver_match.app_name == 'dashboard' %}Dashboard
+                    {% elif request.resolver_match.app_name == 'papers' %}Papers
+                    {% elif request.resolver_match.app_name == 'projects' %}Projects
+                    {% elif request.resolver_match.app_name == 'researchers' %}Researchers
+                    {% elif request.resolver_match.app_name == 'collaboration' %}Collaboration
+                    {% elif request.resolver_match.app_name == 'facilities' %}Facilities
+                    {% elif request.resolver_match.app_name == 'funding' %}Funding
+                    {% elif request.resolver_match.app_name == 'opportunities' %}Openings
+                    {% elif request.resolver_match.app_name == 'analytics' %}Reports
+                    {% elif request.resolver_match.app_name == 'search' %}Search
+                    {% elif request.resolver_match.app_name == 'ai_engine' %}AI Tools
+                    {% elif request.resolver_match.app_name == 'evaluation' %}Evaluation
+                    {% elif request.resolver_match.app_name == 'accounts' %}My Account
+                    {% else %}Portal{% endif %}
+                </span>
+            </nav>
+            {% endblock %}
 
-                    <div class="ums-header-center">
-                        {% if user.is_authenticated %}
-                        <form action="{% url 'search:search' %}" method="get" class="ums-header-search" role="search">
-                            <i class="bi bi-search" aria-hidden="true"></i>
-                            <input type="search" name="q" id="globalSearch" placeholder="Search papers and researchers…" aria-label="Search papers and researchers" autocomplete="off">
-                            <kbd class="ums-kbd" aria-hidden="true">/</kbd>
-                        </form>
-                        {% endif %}
-                    </div>
-
-                    <div class="ums-header-right">
-                        {% if user.is_authenticated %}
-                        <span class="ums-role-badge" title="Your role">{{ nav.role }}</span>
-                        <a href="{% if pending_bookings_count > 0 %}{% url 'facilities:manage' %}{% else %}{% url 'dashboard:notifications' %}{% endif %}" class="ums-bell" aria-label="Notifications{% if pending_bookings_count > 0 %}: {{ pending_bookings_count }} pending booking request{{ pending_bookings_count|pluralize }}{% endif %}" title="{% if pending_bookings_count > 0 %}{{ pending_bookings_count }} pending booking request{{ pending_bookings_count|pluralize }}{% else %}Notifications{% endif %}">
-                            <i class="bi bi-bell" aria-hidden="true"></i>
-                            {% if pending_bookings_count > 0 %}<span class="ums-bell-badge" aria-hidden="true">{{ pending_bookings_count }}</span>{% endif %}
-                        </a>
-                        <div class="nav-dropdown ums-account-dropdown">
-                            <button type="button" class="user-pill-btn dropdown-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="accountMenu">
-                                <span class="ums-avatar" aria-hidden="true">{{ user.first_name|default:user.username|slice:":1" }}{{ user.last_name|slice:":1" }}</span>
-                                <span class="ums-user-name">{{ user.get_full_name|default:user.username }}</span>
-                                <i class="bi bi-chevron-down dropdown-chevron" aria-hidden="true"></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-right" id="accountMenu">
-                                <div class="dropdown-header">
-                                    <strong>{{ user.get_full_name|default:user.username }}</strong>
-                                    <span>{{ nav.role }}{% if user.email %} · {{ user.email }}{% endif %}</span>
-                                </div>
-                                <a href="{% url 'accounts:profile' %}" class="dropdown-item"><i class="bi bi-person" aria-hidden="true"></i>My Profile</a>
-                                <a href="{% url 'researchers:edit_profile' %}" class="dropdown-item"><i class="bi bi-mortarboard" aria-hidden="true"></i>Researcher Profile</a>
-                                <a href="{% url 'dashboard:settings' %}" class="dropdown-item"><i class="bi bi-gear" aria-hidden="true"></i>Settings</a>
-                                <a href="{% url 'accounts:change_password' %}" class="dropdown-item"><i class="bi bi-key" aria-hidden="true"></i>Change Password</a>
-                                {% if user.is_staff %}
-                                <hr class="dropdown-divider">
-                                <a href="{% url 'dashboard:office' %}" class="dropdown-item"><i class="bi bi-bank" aria-hidden="true"></i>Research Office</a>
-                                <a href="{% url 'projects:at_risk' %}" class="dropdown-item"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i>At-risk Projects</a>
-                                <a href="{% url 'admin:index' %}" class="dropdown-item"><i class="bi bi-shield-lock" aria-hidden="true"></i>Admin Panel</a>
-                                {% endif %}
-                                <hr class="dropdown-divider">
-                                <form method="post" action="{% url 'accounts:logout' %}" class="m-0">{% csrf_token %}<button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right" aria-hidden="true"></i>Logout</button></form>
-                            </div>
+            <!-- Global Messages Container -->
+            <div class="messages-container container">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible animate-pop-in">
+                            <span class="alert-icon">✨</span>
+                            <span class="alert-text">{{ message }}</span>
+                            <button class="close-alert" aria-label="Close">&times;</button>
                         </div>
-                        {% else %}
-                        <a href="{% url 'accounts:login' %}" class="btn btn-ghost">Sign In</a>
-                        <a href="{% url 'accounts:register' %}" class="btn btn-primary">Register</a>
-                        {% endif %}
-                    </div>
-                </div>
-            </header>
-
-            <div class="top-marquee-strip" aria-label="Latest research">
-                <div class="marquee-track">
-                    {% for item in marquee_items %}<span>{{ item }}</span>{% endfor %}
-                    {% for item in marquee_items %}<span aria-hidden="true">{{ item }}</span>{% endfor %}
-                </div>
+                    {% endfor %}
+                {% endif %}
             </div>
 
-            <main id="main" tabindex="-1" class="ums-main{% if not user.is_authenticated %} ums-main--full{% endif %}">
-                {% block breadcrumb %}
-                <nav class="ums-breadcrumb ums-breadcrumbs" aria-label="Breadcrumb">
-                    <a href="{% if user.is_authenticated %}{% url 'dashboard:home' %}{% else %}{% url 'dashboard:landing' %}{% endif %}">Home</a>
-                    <span class="ums-breadcrumb-sep" aria-hidden="true">/</span>
-                    <span class="ums-breadcrumb-current" aria-current="page">
-                        {% if app == 'dashboard' %}Dashboard
-                        {% elif app == 'papers' %}Papers
-                        {% elif app == 'projects' %}Projects
-                        {% elif app == 'researchers' %}Researchers
-                        {% elif app == 'collaboration' %}Collaboration
-                        {% elif app == 'facilities' %}Facilities
-                        {% elif app == 'funding' %}Funding
-                        {% elif app == 'opportunities' %}Openings
-                        {% elif app == 'analytics' %}Reports
-                        {% elif app == 'search' %}Search
-                        {% elif app == 'ai_engine' %}AI Tools
-                        {% elif app == 'evaluation' %}Evaluation
-                        {% elif app == 'accounts' %}My Account
-                        {% else %}Portal{% endif %}
-                    </span>
-                </nav>
-                {% endblock %}
-
-                {% block content %}{% endblock %}
-            </main>
-
-            <footer class="ums-footer">
-                <p>&copy; {% now "Y" %} Scholar Lens &middot; Research Intelligence Portal &middot; <a href="{% url 'dashboard:privacy' %}">Privacy Policy</a> &middot; <a href="{% url 'dashboard:terms' %}">Terms of Service</a></p>
-            </footer>
-        </div>
-    </div>
-    {% endwith %}
-
-    {# Django messages render as toasts. Errors stay until dismissed and are announced assertively. #}
-    <div class="messages-container toast-region" aria-live="polite">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible"{% if message.level_tag == 'error' %} role="alert" data-persist{% else %} role="status"{% endif %}>
-            <i class="bi {% if message.level_tag == 'success' %}bi-check-circle-fill{% elif message.level_tag == 'error' %}bi-exclamation-octagon-fill{% elif message.level_tag == 'warning' %}bi-exclamation-triangle-fill{% else %}bi-info-circle-fill{% endif %} alert-icon" aria-hidden="true"></i>
-            <span class="alert-text">{{ message }}</span>
-            <button type="button" class="close-alert" aria-label="Dismiss notification">&times;</button>
-        </div>
-        {% endfor %}
+            <!-- Main Page Content Block -->
+            {% block content %}{% endblock %}
+        </main>
     </div>
 
-    <dialog class="sl-dialog" id="confirmDialog" aria-labelledby="confirmTitle" aria-describedby="confirmMessage">
-        <div class="sl-dialog-body">
-            <span class="sl-dialog-icon" aria-hidden="true"><i class="bi bi-exclamation-triangle"></i></span>
-            <div>
-                <h2 id="confirmTitle">Please confirm</h2>
-                <p id="confirmMessage"></p>
-            </div>
+    <!-- Clean Institutional Footer -->
+    <footer class="ums-footer">
+        <div class="container text-center">
+            <p>&copy; {% now "Y" %} Scholar Lens &middot; Developed by Sharique [MSH] &middot; Research Intelligence Portal &middot; <a href="{% url 'dashboard:privacy' %}" style="color: inherit; text-decoration: underline;">Privacy Policy</a> &middot; <a href="{% url 'dashboard:terms' %}" style="color: inherit; text-decoration: underline;">Terms of Service</a></p>
         </div>
-        <div class="sl-dialog-actions">
-            <button type="button" data-dialog-value="cancel" class="btn btn-outline-secondary" autofocus>Go back</button>
-            <button type="button" data-dialog-value="confirm" class="btn btn-danger" id="confirmAccept">Confirm</button>
-        </div>
-    </dialog>
+    </footer>
 
-    <script src="{% static 'js/main.js' %}?v=2.0"></script>
-    <script src="{% static 'js/charts.js' %}?v=2.0"></script>
+    <script src="{% static 'js/main.js' %}?v=1.1"></script>
+    <script src="{% static 'js/charts.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
