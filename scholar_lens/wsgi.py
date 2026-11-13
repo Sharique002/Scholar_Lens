@@ -56,22 +56,21 @@ def ensure_database_ready():
         from django.core.management import call_command
         tables = connection.introspection.table_names()
         if 'auth_user' not in tables:
-            print("[Serverless Init] Required tables missing. Running migrate...")
+            print("[Init] Required tables missing. Running migrate...")
             call_command('migrate', interactive=False, verbosity=0)
-            print("[Serverless Init] Migrations applied.")
-            try:
-                call_command('init_admin', verbosity=0)
-                print("[Serverless Init] Default accounts initialized.")
-            except Exception as e:
-                print(f"[Serverless Init] init_admin notice: {e}")
+            print("[Init] Migrations applied.")
+        try:
+            call_command('init_admin', verbosity=0)
+            print("[Init] Default accounts initialized and verified.")
+        except Exception as e:
+            print(f"[Init] init_admin notice: {e}")
     except Exception as exc:
-        print(f"[Serverless Init] Database readiness check notice: {exc}")
+        print(f"[Init] Database readiness check notice: {exc}")
 
 
 def app(environ, start_response):
-    """WSGI callable for Vercel/serverless environments with exception traceback logging."""
-    if is_serverless:
-        ensure_database_ready()
+    """WSGI callable for Vercel/Render/production environments with exception traceback logging."""
+    ensure_database_ready()
 
     # Ensure HTTPS scheme is propagated properly behind reverse proxies
     if 'HTTP_X_FORWARDED_PROTO' not in environ and environ.get('wsgi.url_scheme') == 'https':

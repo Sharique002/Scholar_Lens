@@ -29,5 +29,5 @@ RUN python manage.py collectstatic --noinput
 # Expose port
 EXPOSE 8000
 
-# Run migrations and start production server with Gunicorn (respects $PORT, binds to 0.0.0.0)
-CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn scholar_lens.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 120"]
+# Run migrations, initialize accounts/seeds, and start production server with Gunicorn (respects $PORT, binds to 0.0.0.0)
+CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py init_admin && gunicorn scholar_lens.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 120"]
