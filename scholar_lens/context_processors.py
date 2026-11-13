@@ -62,7 +62,45 @@ def site_settings(request):
 
     return {
         'SITE_NAME': settings.SITE_NAME,
+        'DEBUG': settings.DEBUG,
         'AI_CONFIGURED': bool(settings.OPENAI_API_KEY),
         'marquee_items': marquee_items,
         'pending_bookings_count': pending_bookings_count,
+        'nav': _nav_context(request.user),
+    }
+
+
+def _nav_context(user):
+    """Role label and nav visibility flags. These mirror the views' own permission checks;
+    hiding a link is a convenience only, every view still enforces access itself."""
+    if not user.is_authenticated:
+        return {}
+    from dashboard.permissions import is_dean
+    is_office = user.is_staff
+    dean = is_dean(user)
+    try:
+        custodian = user.custodian_facilities.exists()
+    except Exception:
+        custodian = False
+    profile = getattr(user, 'profile', None)
+    faculty = bool(profile and profile.role in ('FACULTY', 'ADMIN'))
+    if user.is_superuser:
+        role = 'Admin'
+    elif dean:
+        role = 'Dean'
+    elif is_office:
+        role = 'Research Office'
+    elif custodian:
+        role = 'Custodian'
+    elif faculty:
+        role = 'Faculty'
+    else:
+        role = 'Student'
+    return {
+        'role': role,
+        'is_office': is_office,
+        'can_reports': is_office or dean,
+        'can_office_hub': is_office or dean,
+        'can_manage_facilities': is_office or custodian,
+        'can_import': is_office or faculty,
     }

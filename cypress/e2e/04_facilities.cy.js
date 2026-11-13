@@ -25,7 +25,7 @@ describe('04 - Facilities Catalogue & Booking Workflow', () => {
     cy.loginAs('student');
     cy.visit('/facilities/');
     cy.contains('a', 'GPU Compute Cluster').first().click();
-    cy.contains('a', /book/i).click();
+    cy.get('main').contains('a', /book/i).click();
 
     const nextMon = getNextMonday();
     cy.get('input[name="date"]').clear().type(nextMon);
@@ -44,7 +44,7 @@ describe('04 - Facilities Catalogue & Booking Workflow', () => {
     cy.loginAs('student');
     cy.visit('/facilities/');
     cy.contains('a', 'GPU Compute Cluster').first().click();
-    cy.contains('a', /book/i).click();
+    cy.get('main').contains('a', /book/i).click();
 
     const nextMon = getNextMonday();
     cy.get('input[name="date"]').clear().type(nextMon);
@@ -60,7 +60,7 @@ describe('04 - Facilities Catalogue & Booking Workflow', () => {
     cy.loginAs('student');
     cy.visit('/facilities/');
     cy.contains('a', 'GPU Compute Cluster').first().click();
-    cy.contains('a', /book/i).click();
+    cy.get('main').contains('a', /book/i).click();
 
     const nextMon = getNextMonday();
     cy.get('input[name="date"]').clear().type(nextMon);
@@ -77,7 +77,7 @@ describe('04 - Facilities Catalogue & Booking Workflow', () => {
     cy.loginAs('student');
     cy.visit('/facilities/');
     cy.contains('a', 'GPU Compute Cluster').first().click();
-    cy.contains('a', /book/i).click();
+    cy.get('main').contains('a', /book/i).click();
 
     const nextSun = getNextSunday();
     cy.get('input[name="date"]').clear().type(nextSun);
@@ -105,6 +105,8 @@ describe('04 - Facilities Catalogue & Booking Workflow', () => {
     cy.loginAs('student');
     cy.visit('/facilities/my-bookings/');
     cy.get('button').contains(/cancel/i).first().click();
+    cy.get('#confirmDialog').should('be.visible'); // destructive actions now confirm in an accessible dialog
+    cy.get('#confirmAccept').click();
     cy.contains('Booking cancelled.').should('exist');
   });
 

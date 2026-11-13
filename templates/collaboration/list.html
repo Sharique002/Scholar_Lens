@@ -5,111 +5,12 @@
 
 {% block content %}
 <div class="container py-4">
-    <!-- 1. TOP METRICS STRIP -->
-    <div class="module-metrics-strip">
-        <div class="metric-strip-item">
-            <div class="metric-strip-num">4 States</div>
-            <div class="metric-strip-label">Pending, Accepted, Declined &amp; Canceled</div>
-        </div>
-        <div class="metric-strip-item">
-            <div class="metric-strip-num">100% RBAC</div>
-            <div class="metric-strip-label">Auto-Provisioned Team Membership</div>
-        </div>
-        <div class="metric-strip-item">
-            <div class="metric-strip-num">Instant</div>
-            <div class="metric-strip-label">1-Click Accept or Decline Responses</div>
-        </div>
-        <div class="metric-strip-item">
-            <div class="metric-strip-num">Audit Trail</div>
-            <div class="metric-strip-label">Integrated Collaboration Activity Logs</div>
-        </div>
-    </div>
-
-    <!-- 2. MINT SHOWCASE CONTAINER -->
-    <div class="module-showcase-box">
-        <div class="module-showcase-grid">
-            <!-- Left Hero Column -->
-            <div class="module-hero-left">
-                <div class="module-hero-pill">
-                    <span>🤝</span> MODULE 06 &bull; RESEARCH COLLABORATION HUB
-                </div>
-                <h1 class="module-hero-title">Manage Your Academic Collaboration Requests!</h1>
-                <p class="module-hero-desc">
-                    Review incoming proposals from co-authors and lab leads, accept team invitations with one click, track your sent collaboration proposals, and build high-impact interdisciplinary partnerships.
-                </p>
-                <div class="flex gap-2 align-center">
-                    <a href="{% url 'researchers:list' %}" class="module-hero-btn">
-                        Explore Researcher Directory ➔
-                    </a>
-                </div>
-
-                <!-- Interactive Visual Card -->
-                <div class="module-preview-card">
-                    <div class="preview-card-header">
-                        <span class="preview-tag">INCOMING LAB INVITATION</span>
-                        <span class="preview-chip-status">PENDING REVIEW ⏳</span>
-                    </div>
-                    <h3 class="preview-card-title">From: Dr. Elena Rostova &bull; MIT Dept. of EECS</h3>
-                    <p class="text-secondary small mb-2">
-                        <em>"We would like to invite you to join our Quantum Neural Error Mitigation Project to contribute on RAG pipeline benchmarks."</em>
-                    </p>
-                    <div class="preview-chips-row">
-                        <span class="preview-chip coral">Project: Quantum Neural Lab</span>
-                        <span class="preview-chip yellow">Role: Researcher</span>
-                        <span class="preview-chip">1-Click Accept Ready</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right 5 Feature Cards Stack -->
-            <div class="module-feature-stack">
-                <div class="module-feature-item accent-coral">
-                    <div class="module-feature-icon">🤝</div>
-                    <div class="module-feature-info">
-                        <h4>Automated Team Provisioning</h4>
-                        <p>When you accept a project invitation, you are automatically enrolled as an active project team member.</p>
-                    </div>
-                </div>
-
-                <div class="module-feature-item">
-                    <div class="module-feature-icon">📬</div>
-                    <div class="module-feature-info">
-                        <h4>Structured Research Proposals</h4>
-                        <p>Send clear collaboration invitations with research motivations, proposed roles, and project linkages.</p>
-                    </div>
-                </div>
-
-                <div class="module-feature-item">
-                    <div class="module-feature-icon">🔒</div>
-                    <div class="module-feature-info">
-                        <h4>Duplicate Request Prevention</h4>
-                        <p>The platform prevents redundant pending requests to the same scholar to maintain clean communications.</p>
-                    </div>
-                </div>
-
-                <div class="module-feature-item">
-                    <div class="module-feature-icon">⚡</div>
-                    <div class="module-feature-info">
-                        <h4>One-Click Status Responses</h4>
-                        <p>Accept or decline invitations in real time with immediate database status updates.</p>
-                    </div>
-                </div>
-
-                <div class="module-feature-item">
-                    <div class="module-feature-icon">📊</div>
-                    <div class="module-feature-info">
-                        <h4>Integrated Activity Auditing</h4>
-                        <p>All collaboration events are logged and audited in your central dashboard activity stream.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 
     <!-- 3. WORKING INTERFACE: COLLABORATION INBOX -->
     <div class="module-work-header">
         <div>
-            <h2 class="module-work-title">Collaboration Inbox &amp; Proposals</h2>
+            <h1 class="module-work-title">Collaboration</h1>
             <p class="text-secondary mb-0">Review pending collaboration requests, accept lab invitations, and monitor sent proposals.</p>
         </div>
         <div class="d-flex gap-2">
