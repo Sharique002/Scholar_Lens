@@ -321,13 +321,7 @@ python manage.py collectstatic
 - [ ] Email notifications
 - [ ] Advanced analytics dashboard
 
----
 
-## Course: INT253 — Web Development in Python Using Django
-
-This project demonstrates all major Django concepts covered in the INT253 syllabus. See [docs/int253-mapping.md](docs/int253-mapping.md) for detailed mapping.
-
----
 
 ## License
 
