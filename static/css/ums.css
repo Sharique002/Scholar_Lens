@@ -810,6 +810,9 @@ button[disabled] {
     display: flex;
     min-height: calc(100vh - 56px - 34px - 53px);
     position: relative;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: clip;
 }
 
 /* Institutional Left Sidebar */
@@ -929,22 +932,27 @@ body.sidebar-collapsed .ums-sidebar-collapse {
 
 /* Main Content Area */
 main.ums-main {
-    flex: 1;
+    flex: 1 1 auto;
+    min-width: 0;
     margin-left: 240px;
     padding: 24px;
-    max-width: 1280px;
-    width: 100%;
+    max-width: calc(100vw - 240px);
+    width: calc(100% - 240px);
+    overflow-x: clip;
     transition: margin-left 150ms ease;
     box-sizing: border-box;
 }
 
 body.sidebar-collapsed main.ums-main {
     margin-left: 64px;
+    max-width: calc(100vw - 64px);
+    width: calc(100% - 64px);
 }
 
 main.ums-main--full {
     margin-left: 0 !important;
-    max-width: 100%;
+    max-width: 100% !important;
+    width: 100% !important;
 }
 
 /* Breadcrumbs & Universal Back Button */
