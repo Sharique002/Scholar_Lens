@@ -1,6 +1,7 @@
 """Duplicate detection, scoring, soft merging, and unmerging for Research Papers."""
 from typing import Tuple, Optional
 from django.conf import settings
+from django.db import connection
 from django.db.models import Q
 from django.utils import timezone
 from django.contrib.postgres.search import TrigramSimilarity
@@ -124,11 +125,14 @@ def find_duplicate(
 
     words = norm_title.split()
 
-    candidates = (
-        ResearchPaper.all_objects
-        .annotate(similarity=TrigramSimilarity('normalised_title', norm_title))
-        .filter(similarity__gte=DEDUP_TRIGRAM_MIN)
-    )
+    if connection.vendor == 'postgresql':
+        candidates = (
+            ResearchPaper.all_objects
+            .annotate(similarity=TrigramSimilarity('normalised_title', norm_title))
+            .filter(similarity__gte=DEDUP_TRIGRAM_MIN)
+        )
+    else:
+        candidates = ResearchPaper.all_objects.all()
     if exclude_pk:
         candidates = candidates.exclude(pk=exclude_pk)
 

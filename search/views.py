@@ -66,8 +66,8 @@ def search_view(request):
 
 
 from django.contrib.postgres.search import SearchQuery, SearchRank
-from django.db import models
-from django.db.models import Count
+from django.db import connection, models
+from django.db.models import Count, Q
 from researchers.models import ResearcherProfile, Department, ResearchInterest
 
 
@@ -87,13 +87,29 @@ def expertise_search(request):
     )
 
     if query:
-        search_query = SearchQuery(query)
-        profiles = (
-            profiles
-            .filter(search_document=search_query)
-            .annotate(rank=SearchRank(models.F('search_document'), search_query))
-            .order_by('-rank', '-created_at')
-        )
+        if connection.vendor == 'postgresql':
+            search_query = SearchQuery(query)
+            profiles = (
+                profiles
+                .filter(search_document=search_query)
+                .annotate(rank=SearchRank(models.F('search_document'), search_query))
+                .order_by('-rank', '-created_at')
+            )
+        else:
+            profiles = (
+                profiles
+                .filter(
+                    Q(headline__icontains=query) |
+                    Q(expertise_summary__icontains=query) |
+                    Q(user__first_name__icontains=query) |
+                    Q(user__last_name__icontains=query) |
+                    Q(user__username__icontains=query) |
+                    Q(interests__name__icontains=query) |
+                    Q(skills__name__icontains=query)
+                )
+                .distinct()
+                .order_by('-created_at')
+            )
     else:
         profiles = profiles.order_by('-created_at')
 

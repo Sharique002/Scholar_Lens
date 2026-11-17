@@ -8,6 +8,16 @@ from django.db import migrations, models
 import django.db.models.deletion
 
 
+class PostgresOnlyAddConstraint(migrations.AddConstraint):
+    def database_forwards(self, app_label, schema_editor, from_state, to_state):
+        if schema_editor.connection.vendor == 'postgresql':
+            super().database_forwards(app_label, schema_editor, from_state, to_state)
+
+    def database_backwards(self, app_label, schema_editor, from_state, to_state):
+        if schema_editor.connection.vendor == 'postgresql':
+            super().database_backwards(app_label, schema_editor, from_state, to_state)
+
+
 class Migration(migrations.Migration):
 
     initial = True
@@ -71,7 +81,7 @@ class Migration(migrations.Migration):
             model_name='facilityslot',
             constraint=models.CheckConstraint(check=models.Q(('closes__gt', models.F('opens'))), name='slot_closes_after_opens'),
         ),
-        migrations.AddConstraint(
+        PostgresOnlyAddConstraint(
             model_name='booking',
             constraint=django.contrib.postgres.constraints.ExclusionConstraint(condition=models.Q(('status__in', ['PENDING', 'APPROVED'])), expressions=[('facility', '='), ('during', '&&')], name='no_overlapping_active_bookings'),
         ),

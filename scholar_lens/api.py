@@ -2,6 +2,7 @@
 from functools import wraps
 
 from django.contrib.postgres.search import SearchQuery, SearchRank
+from django.db import connection
 from django.db.models import F, Q
 from django.http import JsonResponse
 from django.urls import path
@@ -67,18 +68,32 @@ def expertise_search(request):
     query = request.GET.get('q', '').strip()
     if not query:
         return JsonResponse({'error': 'q is required'}, status=400)
-    sq = SearchQuery(query)
-    qs = (
-        _profiles()
-        .filter(search_document=sq)
-        .annotate(rank=SearchRank(F('search_document'), sq))
-        .order_by('-rank')
-    )
+    if connection.vendor == 'postgresql':
+        sq = SearchQuery(query)
+        qs = (
+            _profiles()
+            .filter(search_document=sq)
+            .annotate(rank=SearchRank(F('search_document'), sq))
+            .order_by('-rank')
+        )
+    else:
+        qs = (
+            _profiles()
+            .filter(
+                Q(headline__icontains=query) |
+                Q(expertise_summary__icontains=query) |
+                Q(user__first_name__icontains=query) |
+                Q(user__last_name__icontains=query) |
+                Q(user__username__icontains=query)
+            )
+            .distinct()
+            .order_by('-created_at')
+        )
     if request.GET.get('department'):
         qs = qs.filter(department__code__iexact=request.GET['department'])
     return JsonResponse({
         'query': query,
-        'results': [{**_researcher(p), 'rank': round(p.rank, 4)} for p in qs[:_limit(request)]],
+        'results': [{**_researcher(p), 'rank': round(getattr(p, 'rank', 1.0), 4)} for p in qs[:_limit(request)]],
     })
 
 

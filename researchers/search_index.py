@@ -1,6 +1,6 @@
 """PostgreSQL Full-Text Search Vector indexing for Researcher Profiles."""
 from typing import List, Optional
-from django.db import models
+from django.db import connection, models
 from django.contrib.postgres.search import SearchVector
 from .models import ResearcherProfile
 
@@ -14,6 +14,8 @@ def refresh_search_document(profile_ids: Optional[List[int]] = None) -> int:
     - Weight C: Expertise summary, User first_name and last_name
     - Weight D: Confirmed authored paper titles
     """
+    if connection.vendor != 'postgresql':
+        return 0
     qs = (
         ResearcherProfile.objects
         .select_related('user', 'department')
