@@ -149,12 +149,77 @@ def book_facility(request, pk):
                 return redirect('facilities:my_bookings')
             else:
                 form.add_error(None, "That time was just taken. Please pick another slot.")
-                return render(request, 'facilities/book.html', {'facility': facility, 'form': form}, status=200)
     else:
         initial_date = request.GET.get('date', timezone.localdate().strftime('%Y-%m-%d'))
         form = BookingForm(facility=facility, initial={'date': initial_date})
 
-    return render(request, 'facilities/book.html', {'facility': facility, 'form': form})
+    # Prepare 14-day interactive slot booking schedule (aligned with modern slot-grid interface)
+    today = timezone.localdate()
+    now_dt = timezone.now()
+    operating_slots = list(facility.slots.all().order_by('opens'))
+    existing_bookings = list(
+        Booking.objects.filter(
+            facility=facility,
+            status__in=['PENDING', 'APPROVED']
+        )
+    )
+
+    days_data = []
+    # 14 days schedule starting from today
+    for i in range(14):
+        d = today + timedelta(days=i)
+        weekday = d.weekday()
+        day_slots_config = [s for s in operating_slots if s.weekday == weekday]
+
+        slot_list = []
+        if day_slots_config:
+            for s_cfg in day_slots_config:
+                cur_dt = datetime.combine(d, s_cfg.opens)
+                close_dt = datetime.combine(d, s_cfg.closes)
+                # Generate 45-min slots on 1-hour cadence (e.g. 9:00-9:45, 10:00-10:45)
+                while cur_dt + timedelta(minutes=45) <= close_dt:
+                    slot_end_dt = cur_dt + timedelta(minutes=45)
+                    slot_start_aware = timezone.make_aware(cur_dt)
+                    slot_end_aware = timezone.make_aware(slot_end_dt)
+
+                    is_booked = False
+                    for b in existing_bookings:
+                        if b.during and b.during.lower and b.during.upper:
+                            if not (slot_end_aware <= b.during.lower or slot_start_aware >= b.during.upper):
+                                is_booked = True
+                                break
+
+                    is_past = slot_start_aware < now_dt
+                    slot_list.append({
+                        'start_time': cur_dt.strftime('%H:%M'),
+                        'end_time': slot_end_dt.strftime('%H:%M'),
+                        'duration': '45 min',
+                        'label': f"{cur_dt.strftime('%H:%M')} - {slot_end_dt.strftime('%H:%M')}",
+                        'is_booked': is_booked,
+                        'is_past': is_past,
+                    })
+                    cur_dt += timedelta(hours=1)
+
+        days_data.append({
+            'date': d,
+            'date_str': d.strftime('%Y-%m-%d'),
+            'day_num': d.day,
+            'month_name': d.strftime('%B'),
+            'month_num': d.month,
+            'year': d.year,
+            'weekday_short': d.strftime('%a').upper(),
+            'weekday_name': d.strftime('%A'),
+            'is_today': (d == today),
+            'has_slots': len(slot_list) > 0,
+            'slots': slot_list,
+        })
+
+    return render(request, 'facilities/book.html', {
+        'facility': facility,
+        'form': form,
+        'days_data': days_data,
+        'today': today,
+    })
 
 
 @login_required

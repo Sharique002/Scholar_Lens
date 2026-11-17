@@ -3,99 +3,841 @@
 
 {% block title %}Book {{ facility.name }} | Scholar Lens{% endblock %}
 
-{% block breadcrumb %}
-<nav class="ums-breadcrumb" aria-label="Breadcrumb">
-    <a href="{% url 'dashboard:home' %}">Home</a>
-    <span class="ums-breadcrumb-sep">›</span>
-    <a href="{% url 'facilities:list' %}">Facilities</a>
-    <span class="ums-breadcrumb-sep">›</span>
-    <a href="{% url 'facilities:detail' facility.pk %}">{{ facility.name }}</a>
-    <span class="ums-breadcrumb-sep">›</span>
-    <span class="ums-breadcrumb-current">Book Facility</span>
-</nav>
+{% block extra_head %}
+<style>
+/* Modern Calendly-Style Slot Booking Theme */
+.booking-page-wrap {
+    background-color: #F8F9FC;
+    min-height: calc(100vh - 120px);
+    padding: 2rem 1rem 3.5rem;
+}
+.booking-card-shell {
+    background: #FFFFFF;
+    border-radius: 18px;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+    overflow: hidden;
+    position: relative;
+}
+.booking-accent-bar {
+    height: 4px;
+    background: linear-gradient(90deg, #7C3AED 0%, #A855F7 100%);
+    width: 100%;
+}
+.booking-top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 2rem 0.5rem;
+}
+.btn-close-booking {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #475569;
+    text-decoration: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+}
+.btn-close-booking:hover {
+    background-color: #F1F5F9;
+    color: #0F172A;
+}
+
+/* Step & Titles */
+.booking-step-badge {
+    color: #7C3AED;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.35rem;
+}
+.booking-title {
+    font-family: var(--font-display, inherit);
+    font-size: 2.15rem;
+    font-weight: 900;
+    color: #0F172A;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.25rem;
+}
+.booking-subtitle {
+    color: #64748B;
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Day Columns Navigation */
+.days-carousel-wrap {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+.days-container {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 0.5rem 0.25rem 1rem;
+    scrollbar-width: none;
+}
+.days-container::-webkit-scrollbar {
+    display: none;
+}
+.day-column {
+    min-width: 130px;
+    max-width: 145px;
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+}
+.day-column-header {
+    margin-bottom: 1rem;
+    padding-left: 0.5rem;
+    border-left: 3px solid transparent;
+    transition: all 0.15s ease;
+    cursor: pointer;
+}
+.day-column-header.active {
+    border-left-color: #7C3AED;
+}
+.day-column-weekday {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    color: #64748B;
+    text-transform: uppercase;
+}
+.day-column-daynum {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: #0F172A;
+    line-height: 1.15;
+}
+.day-column-header.active .day-column-daynum {
+    color: #7C3AED;
+}
+
+/* Slot Cards */
+.slot-cards-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+.slot-card {
+    background: #FFFFFF;
+    border: 1.5px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 0.65rem 0.85rem;
+    text-align: left;
+    width: 100%;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+.slot-card:hover:not(:disabled) {
+    border-color: #CBD5E1;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+    transform: translateY(-1px);
+}
+.slot-card.active {
+    border-color: #7C3AED !important;
+    background-color: #F5F3FF !important;
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.25) !important;
+}
+.slot-card .slot-time {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #1E293B;
+}
+.slot-card.active .slot-time {
+    color: #6D28D9 !important;
+    font-weight: 800;
+}
+.slot-card .slot-duration {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #64748B;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 3px;
+}
+.slot-card.active .slot-duration {
+    color: #7C3AED !important;
+}
+.slot-card:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    background: #F8FAFC;
+    border-color: #E2E8F0;
+}
+.slot-card.booked {
+    border-style: dashed;
+}
+.slot-closed-card {
+    border: 1.5px dashed #E2E8F0;
+    border-radius: 10px;
+    padding: 1.5rem 0.5rem;
+    text-align: center;
+    color: #94A3B8;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: #FAF5FF;
+}
+
+/* Nav arrow buttons */
+.carousel-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    color: #1E293B;
+    transition: all 0.15s ease;
+}
+.carousel-nav-btn:hover {
+    background: #F8FAFC;
+    border-color: #CBD5E1;
+    color: #7C3AED;
+}
+.carousel-nav-btn.prev {
+    left: -12px;
+}
+.carousel-nav-btn.next {
+    right: -12px;
+}
+
+/* Sidebar Styling */
+.booking-sidebar-card {
+    background: #FFFFFF;
+    border-left: 1px solid #E2E8F0;
+    padding: 1.5rem 1.75rem 2rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.facility-meta-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+    color: #475569;
+    margin-bottom: 0.35rem;
+    font-weight: 600;
+}
+.facility-meta-chip i {
+    color: #7C3AED;
+}
+
+/* Booking Time Box */
+.booking-time-pill-box {
+    border: 1.5px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 0.9rem 1.1rem;
+    background: #FAF5FF;
+    margin: 1.25rem 0;
+    transition: all 0.2s ease;
+}
+.booking-time-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: #7C3AED;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+}
+.booking-time-val {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #1E1B4B;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Mini Calendar Widget */
+.mini-calendar-wrap {
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 1rem;
+    background: #FFFFFF;
+    margin-bottom: 1.25rem;
+}
+.mini-cal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+.mini-cal-month {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #0F172A;
+}
+.mini-cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #64748B;
+    margin-bottom: 0.5rem;
+}
+.mini-cal-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    text-align: center;
+}
+.mini-cal-cell {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #334155;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.15s ease;
+    user-select: none;
+}
+.mini-cal-cell:hover:not(.empty):not(.past) {
+    background-color: #F3E8FF;
+    color: #7C3AED;
+}
+.mini-cal-cell.selected {
+    background-color: #7C3AED !important;
+    color: #FFFFFF !important;
+    font-weight: 800;
+}
+.mini-cal-cell.has-slot::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: #A855F7;
+}
+.mini-cal-cell.selected::after {
+    background-color: #FFFFFF;
+}
+.mini-cal-cell.empty {
+    cursor: default;
+}
+.mini-cal-cell.past {
+    color: #CBD5E1;
+    cursor: not-allowed;
+}
+
+/* Submit Action Button */
+.btn-submit-booking-action {
+    background: #7C3AED;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 12px;
+    padding: 0.9rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 800;
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.28);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    transition: all 0.2s ease;
+}
+.btn-submit-booking-action:hover:not(:disabled) {
+    background: #6D28D9;
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.35);
+    color: #FFFFFF;
+    transform: translateY(-1px);
+}
+.btn-submit-booking-action:disabled {
+    background: #E2E8F0;
+    color: #94A3B8;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+/* Custom time toggle */
+.custom-time-toggle {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #64748B;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+.custom-time-toggle:hover {
+    color: #7C3AED;
+}
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card border rounded-3 shadow-sm bg-white">
-                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
-                    <div>
-                        <span class="badge mb-1" style="background-color: var(--ums-maroon-tint); color: var(--ums-maroon); font-weight: 600;">
-                            {{ facility.get_kind_display }}
-                        </span>
-                        <h1 class="h4 fw-bold mb-1" style="color: var(--ums-maroon);">Book {{ facility.name }}</h1>
-                        <p class="text-secondary small mb-0">
-                            <span>🏢 {{ facility.department }}</span> &bull; <span>📍 {{ facility.location }}</span>
-                        </p>
-                    </div>
-                    <a href="{% url 'facilities:detail' facility.pk %}" class="btn btn-sm btn-outline-secondary">← Back to Facility</a>
+<div class="booking-page-wrap">
+    <div class="container-xl">
+        <div class="booking-card-shell">
+            <!-- Top Gradient Accent Line -->
+            <div class="booking-accent-bar"></div>
+
+            <!-- Top Close Bar -->
+            <div class="booking-top-bar">
+                <a href="{% url 'facilities:detail' facility.pk %}" class="btn-close-booking">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    Close
+                </a>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge" style="background-color: #EDE9FE; color: #6D28D9; font-weight: 700;">
+                        {{ facility.get_kind_display }}
+                    </span>
+                    {% if facility.requires_approval %}
+                    <span class="badge" style="background-color: #FEF3C7; color: #92400E; font-weight: 700;">
+                        Approval Required
+                    </span>
+                    {% else %}
+                    <span class="badge" style="background-color: #DCFCE7; color: #166534; font-weight: 700;">
+                        Instant Booking
+                    </span>
+                    {% endif %}
                 </div>
-                        {% if facility.requires_approval %}
-                        &bull; <span class="text-warning">Approval Required</span>
-                        {% else %}
-                        &bull; <span class="text-success">Instant Confirmation</span>
-                        {% endif %}
-                    </p>
-                </div>
-                <div class="card-body p-4">
+            </div>
+
+            <!-- Main Split Content -->
+            <div class="row g-0">
+                <!-- Left Column: Calendar & Slots Carousel -->
+                <div class="col-lg-8 p-4 p-md-5">
+                    <div class="booking-step-badge">STEP 2 OF 4</div>
+                    <h1 class="booking-title">Book {{ facility.name }}</h1>
+                    <p class="booking-subtitle">Select available date and time for the reservation.</p>
+
                     {% if form.non_field_errors %}
-                    <div class="alert alert-danger" role="alert">
+                    <div class="alert alert-danger mb-4 rounded-3 fw-semibold small" role="alert">
                         {% for err in form.non_field_errors %}
-                        <div>{{ err }}</div>
+                        <div><i class="bi bi-exclamation-triangle-fill me-2"></i>{{ err }}</div>
                         {% endfor %}
                     </div>
                     {% endif %}
 
-                    <form method="post" novalidate>
-                        {% csrf_token %}
+                    <!-- Carousel Controls & Columns -->
+                    <div class="days-carousel-wrap">
+                        <button type="button" class="carousel-nav-btn prev" id="btnScrollDaysLeft" aria-label="Previous days" style="display: none;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                        </button>
+                        <button type="button" class="carousel-nav-btn next" id="btnScrollDaysRight" aria-label="Next days">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </button>
 
+                        <div class="days-container" id="daysContainer">
+                            {% for day in days_data %}
+                            <div class="day-column" id="dayCol-{{ day.date_str }}" data-date="{{ day.date_str }}">
+                                <!-- Column Header -->
+                                <div class="day-column-header {% if day.is_today %}active{% endif %}" onclick="selectDay('{{ day.date_str }}')">
+                                    <div class="day-column-weekday">{{ day.weekday_short }}</div>
+                                    <div class="day-column-daynum">{{ day.day_num }}</div>
+                                </div>
+
+                                <!-- Column Slot Chips -->
+                                <div class="slot-cards-stack">
+                                    {% if day.has_slots %}
+                                        {% for slot in day.slots %}
+                                            {% if slot.is_booked %}
+                                            <button type="button" class="slot-card booked" disabled title="Slot already reserved">
+                                                <span class="slot-time">{{ slot.label }}</span>
+                                                <span class="slot-duration text-muted">
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                                    Booked
+                                                </span>
+                                            </button>
+                                            {% elif slot.is_past %}
+                                            <button type="button" class="slot-card past" disabled title="Past time">
+                                                <span class="slot-time">{{ slot.label }}</span>
+                                                <span class="slot-duration text-muted">
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                                    Passed
+                                                </span>
+                                            </button>
+                                            {% else %}
+                                            <button type="button" 
+                                                    class="slot-card" 
+                                                    data-date="{{ day.date_str }}" 
+                                                    data-start="{{ slot.start_time }}" 
+                                                    data-end="{{ slot.end_time }}" 
+                                                    data-duration="{{ slot.duration }}" 
+                                                    data-display="{{ day.weekday_name }}, {{ day.date|date:'M d' }} • {{ slot.label }}"
+                                                    onclick="selectSlot(this)">
+                                                <span class="slot-time">{{ slot.label }}</span>
+                                                <span class="slot-duration">
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                                    {{ slot.duration }}
+                                                </span>
+                                            </button>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="slot-closed-card">
+                                            Closed
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Sidebar, Mini Calendar & Reservation Form -->
+                <div class="col-lg-4">
+                    <div class="booking-sidebar-card">
+                        <!-- Facility Meta -->
                         <div class="mb-3">
-                            <label for="id_date" class="form-label fw-bold small text-muted">Reservation Date <span class="text-danger">*</span></label>
-                            {{ form.date }}
-                            {% if form.date.errors %}
-                            <div class="text-danger small mt-1">{{ form.date.errors.0 }}</div>
-                            {% endif %}
-                            <div class="form-text small text-muted">Pick a date to book within weekly operating hours.</div>
-                        </div>
-
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-6">
-                                <label for="id_start_time" class="form-label fw-bold small text-muted">Start Time <span class="text-danger">*</span></label>
-                                {{ form.start_time }}
-                                {% if form.start_time.errors %}
-                                <div class="text-danger small mt-1">{{ form.start_time.errors.0 }}</div>
-                                {% endif %}
+                            <div class="facility-meta-chip">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                {{ facility.location }}
                             </div>
-                            <div class="col-md-6">
-                                <label for="id_end_time" class="form-label fw-bold small text-muted">End Time <span class="text-danger">*</span></label>
-                                {{ form.end_time }}
-                                {% if form.end_time.errors %}
-                                <div class="text-danger small mt-1">{{ form.end_time.errors.0 }}</div>
-                                {% endif %}
+                            <div class="facility-meta-chip">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="9" y1="22" x2="9" y2="2"></line><line x1="15" y1="22" x2="15" y2="2"></line><line x1="4" y1="12" x2="20" y2="12"></line></svg>
+                                {{ facility.department }}
+                            </div>
+                            <div class="facility-meta-chip">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                Custodian: {{ facility.custodian.get_full_name|default:facility.custodian.username }}
                             </div>
                         </div>
 
-                        <div class="mb-4">
-                            <label for="id_purpose" class="form-label fw-bold small text-muted">Research Purpose / Project <span class="text-danger">*</span></label>
-                            {{ form.purpose }}
-                            {% if form.purpose.errors %}
-                            <div class="text-danger small mt-1">{{ form.purpose.errors.0 }}</div>
-                            {% endif %}
-                            <div class="form-text small text-muted">Briefly explain what you will be working on during this reservation.</div>
+                        <!-- Mini Calendar Component -->
+                        <div class="mini-calendar-wrap">
+                            <div class="mini-cal-header">
+                                <span class="mini-cal-month" id="miniCalTitle">{{ today|date:"F, Y" }}</span>
+                                <div class="d-flex gap-1">
+                                    <button type="button" class="btn btn-sm btn-light border p-1" style="line-height: 1;" onclick="prevCalMonth()" title="Previous month">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-light border p-1" style="line-height: 1;" onclick="nextCalMonth()" title="Next month">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="mini-cal-weekdays">
+                                <span>MO</span><span>TU</span><span>WE</span><span>TH</span><span>FR</span><span>SA</span><span>SU</span>
+                            </div>
+                            <div class="mini-cal-days" id="miniCalDaysGrid">
+                                <!-- Generated by JS -->
+                            </div>
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
-                            <a href="{% url 'facilities:detail' facility.pk %}" class="btn btn-outline-secondary">Back to Schedule</a>
-                            <button type="submit" class="btn btn-pill-orange">
-                                {% if facility.requires_approval %}Request Booking{% else %}Confirm Booking{% endif %}
-                            </button>
+                        <!-- Selected Booking Time Box -->
+                        <div class="booking-time-pill-box">
+                            <div class="booking-time-label">BOOKING TIME</div>
+                            <div class="booking-time-val" id="selectedSlotBox">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                <span id="selectedSlotText" style="font-size: 0.88rem; color: #64748B;">Select date &amp; time slot on left</span>
+                            </div>
                         </div>
-                    </form>
+
+                        <!-- Main Booking Form -->
+                        <form method="post" id="facilityBookingForm" class="d-flex flex-column flex-grow-1">
+                            {% csrf_token %}
+
+                            <!-- Hidden Form Fields Populated on Slot Click -->
+                            <input type="hidden" name="date" id="id_date" value="{{ form.date.value|default:'' }}">
+                            <input type="hidden" name="start_time" id="id_start_time" value="{{ form.start_time.value|default:'' }}">
+                            <input type="hidden" name="end_time" id="id_end_time" value="{{ form.end_time.value|default:'' }}">
+
+                            <!-- Purpose / Project Field -->
+                            <div class="mb-3">
+                                <label for="id_purpose" class="form-label fw-bold text-muted small text-uppercase" style="letter-spacing: 0.05em; font-size: 0.72rem;">
+                                    Research Purpose / Project <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" 
+                                       name="purpose" 
+                                       id="id_purpose" 
+                                       class="form-control" 
+                                       style="border-radius: 10px; border: 1.5px solid #CBD5E1; padding: 0.75rem 0.9rem; font-size: 0.9rem;"
+                                       placeholder="Describe your research experiment or activity" 
+                                       value="{{ form.purpose.value|default:'' }}" 
+                                       required>
+                                {% if form.purpose.errors %}
+                                <div class="text-danger small mt-1">{{ form.purpose.errors.0 }}</div>
+                                {% endif %}
+                                <div class="form-text small text-muted">Briefly explain what you will be working on during this reservation.</div>
+                            </div>
+
+                            <!-- Optional Custom Time Toggle -->
+                            <div class="mb-3">
+                                <span class="custom-time-toggle" onclick="toggleCustomTimeInputs()">
+                                    Need custom start/end times? Click here
+                                </span>
+                                <div id="customTimeInputs" style="display: none; margin-top: 0.75rem; padding: 0.75rem; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px;">
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <label class="form-label small text-muted fw-bold mb-1">Start</label>
+                                            <input type="time" id="manual_start" class="form-control form-control-sm" onchange="syncManualTime()">
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label small text-muted fw-bold mb-1">End</label>
+                                            <input type="time" id="manual_end" class="form-control form-control-sm" onchange="syncManualTime()">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Submit Button -->
+                            <div class="mt-auto pt-2">
+                                <button type="submit" id="btnSubmitBooking" class="btn-submit-booking-action" disabled>
+                                    {% if facility.requires_approval %}
+                                    <span>Request Booking</span>
+                                    {% else %}
+                                    <span>Confirm Booking</span>
+                                    {% endif %}
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+// Available days data from backend
+const DAYS_DATA = [
+    {% for day in days_data %}
+    {
+        date: "{{ day.date_str }}",
+        dayNum: {{ day.day_num }},
+        month: {{ day.month_num }},
+        year: {{ day.year }},
+        hasSlots: {{ day.has_slots|yesno:"true,false" }}
+    },
+    {% endfor %}
+];
+
+let selectedDate = "{{ today|date:'Y-m-d' }}";
+let calYear = {{ today.year }};
+let calMonth = {{ today.month }}; // 1-based
+
+function selectSlot(el) {
+    // 1. Highlight clicked card
+    document.querySelectorAll('.slot-card').forEach(btn => btn.classList.remove('active'));
+    el.classList.add('active');
+
+    // 2. Extract dataset
+    const dateStr = el.dataset.date;
+    const startTime = el.dataset.start;
+    const endTime = el.dataset.end;
+    const displayLabel = el.dataset.display;
+
+    // 3. Update hidden form inputs
+    document.getElementById('id_date').value = dateStr;
+    document.getElementById('id_start_time').value = startTime;
+    document.getElementById('id_end_time').value = endTime;
+
+    // 4. Update sidebar summary box
+    selectedDate = dateStr;
+    const textSpan = document.getElementById('selectedSlotText');
+    textSpan.innerHTML = `<strong>${displayLabel}</strong>`;
+    textSpan.style.color = '#1E1B4B';
+
+    // 5. Update day headers
+    document.querySelectorAll('.day-column-header').forEach(h => h.classList.remove('active'));
+    const colEl = document.getElementById(`dayCol-${dateStr}`);
+    if (colEl) {
+        colEl.querySelector('.day-column-header').classList.add('active');
+    }
+
+    // 6. Refresh mini calendar selection
+    renderMiniCalendar();
+
+    // 7. Validate and enable submit button
+    validateForm();
+}
+
+function selectDay(dateStr) {
+    selectedDate = dateStr;
+    document.querySelectorAll('.day-column-header').forEach(h => h.classList.remove('active'));
+    const colEl = document.getElementById(`dayCol-${dateStr}`);
+    if (colEl) {
+        colEl.querySelector('.day-column-header').classList.add('active');
+        colEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+    renderMiniCalendar();
+}
+
+function validateForm() {
+    const dateVal = document.getElementById('id_date').value;
+    const startVal = document.getElementById('id_start_time').value;
+    const endVal = document.getElementById('id_end_time').value;
+    const purposeVal = document.getElementById('id_purpose').value.trim();
+
+    const btn = document.getElementById('btnSubmitBooking');
+    if (dateVal && startVal && endVal && purposeVal) {
+        btn.disabled = false;
+    } else {
+        btn.disabled = true;
+    }
+}
+
+document.getElementById('id_purpose').addEventListener('input', validateForm);
+
+// Horizontal carousel scrolling
+const container = document.getElementById('daysContainer');
+const btnLeft = document.getElementById('btnScrollDaysLeft');
+const btnRight = document.getElementById('btnScrollDaysRight');
+
+btnRight.addEventListener('click', () => {
+    container.scrollBy({ left: 320, behavior: 'smooth' });
+});
+btnLeft.addEventListener('click', () => {
+    container.scrollBy({ left: -320, behavior: 'smooth' });
+});
+
+container.addEventListener('scroll', () => {
+    if (container.scrollLeft > 20) {
+        btnLeft.style.display = 'flex';
+    } else {
+        btnLeft.style.display = 'none';
+    }
+});
+
+// Custom time manual toggle
+function toggleCustomTimeInputs() {
+    const box = document.getElementById('customTimeInputs');
+    if (box.style.display === 'none') {
+        box.style.display = 'block';
+        document.getElementById('manual_start').value = document.getElementById('id_start_time').value || '09:00';
+        document.getElementById('manual_end').value = document.getElementById('id_end_time').value || '10:00';
+    } else {
+        box.style.display = 'none';
+    }
+}
+
+function syncManualTime() {
+    const s = document.getElementById('manual_start').value;
+    const e = document.getElementById('manual_end').value;
+    if (s && e) {
+        document.getElementById('id_start_time').value = s;
+        document.getElementById('id_end_time').value = e;
+        if (!document.getElementById('id_date').value) {
+            document.getElementById('id_date').value = selectedDate;
+        }
+        document.getElementById('selectedSlotText').innerHTML = `<strong>${selectedDate} • ${s} - ${e}</strong>`;
+        document.getElementById('selectedSlotText').style.color = '#1E1B4B';
+        validateForm();
+    }
+}
+
+// Mini Calendar Renderer
+function renderMiniCalendar() {
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    document.getElementById('miniCalTitle').innerText = `${monthNames[calMonth - 1]}, ${calYear}`;
+
+    const grid = document.getElementById('miniCalDaysGrid');
+    grid.innerHTML = '';
+
+    // First day of month (0=Sun, 1=Mon, ..., 6=Sat)
+    const firstDay = new Date(calYear, calMonth - 1, 1).getDay();
+    // Adjust to Monday-first (0=Mon, 6=Sun)
+    const startOffset = (firstDay + 6) % 7;
+
+    const daysInMonth = new Date(calYear, calMonth, 0).getDate();
+
+    // Empty lead cells
+    for (let i = 0; i < startOffset; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'mini-cal-cell empty';
+        grid.appendChild(empty);
+    }
+
+    // Days cells
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    for (let day = 1; day <= daysInMonth; day++) {
+        const cell = document.createElement('div');
+        cell.className = 'mini-cal-cell';
+        cell.innerText = day;
+
+        const cellDate = new Date(calYear, calMonth - 1, day);
+        const y = cellDate.getFullYear();
+        const m = String(cellDate.getMonth() + 1).padStart(2, '0');
+        const d = String(cellDate.getDate()).padStart(2, '0');
+        const dateStr = `${y}-${m}-${d}`;
+
+        if (cellDate < today) {
+            cell.classList.add('past');
+        } else {
+            // Check if day has slots in DAYS_DATA
+            const dayEntry = DAYS_DATA.find(item => item.date === dateStr);
+            if (dayEntry && dayEntry.hasSlots) {
+                cell.classList.add('has-slot');
+            }
+
+            if (selectedDate === dateStr) {
+                cell.classList.add('selected');
+            }
+
+            cell.onclick = () => {
+                selectDay(dateStr);
+            };
+        }
+
+        grid.appendChild(cell);
+    }
+}
+
+function prevCalMonth() {
+    calMonth--;
+    if (calMonth < 1) {
+        calMonth = 12;
+        calYear--;
+    }
+    renderMiniCalendar();
+}
+
+function nextCalMonth() {
+    calMonth++;
+    if (calMonth > 12) {
+        calMonth = 1;
+        calYear++;
+    }
+    renderMiniCalendar();
+}
+
+// Initial render
+document.addEventListener('DOMContentLoaded', () => {
+    renderMiniCalendar();
+
+    // Check if initial slot was already chosen (e.g. on validation return)
+    const initialStart = document.getElementById('id_start_time').value;
+    const initialEnd = document.getElementById('id_end_time').value;
+    const initialDate = document.getElementById('id_date').value;
+    if (initialDate && initialStart && initialEnd) {
+        const card = document.querySelector(`.slot-card[data-date="${initialDate}"][data-start="${initialStart}"][data-end="${initialEnd}"]`);
+        if (card) {
+            selectSlot(card);
+        }
+    }
+});
+</script>
 {% endblock %}
